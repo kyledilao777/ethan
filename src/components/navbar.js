@@ -15,13 +15,13 @@ import { useState } from "react";
 export default function NavBar() {
   const [isOpen, setIsOpen] = useState(false);
   return (
-    <div className="flex">
+    <div className="">
       <div
         className={`duration-300 h-screen bg-black ${
           isOpen ? "w-[285px]" : "w-[70px]"
         } transition-width`}
       >
-        <div className="flex justify-center ">
+        <div className="flex justify-center  ">
           <div className="flex items-center space-x-3 mx-5 h-20  mt-5">
             <div className="">
               <div className="flex justify-center items-center rounded-full bg-white h-[45px] w-[45px]">
@@ -55,8 +55,8 @@ export default function NavBar() {
         )}
 
         <div className="flex p-[20px]">
-          <div className=" w-[250px] h-screen">
-            <nav className="h-screen flex w-fit">
+          <div className=" w-[250px]">
+            <nav className=" flex w-fit">
               <ul className="space-y-8">
                 <div>
                   {!isOpen && (
