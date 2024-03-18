@@ -17,8 +17,8 @@ export default function NavBar() {
   return (
     <div className="">
       <div
-        className={`duration-300 h-screen bg-black ${
-          isOpen ? "w-[285px]" : "w-[70px]"
+        className={`duration-300 h-screen text-black bg-white ${
+          isOpen ? "w-[285px]" : "w-[70px]" 
         } transition-width`}
       >
         <div className="flex justify-center  ">
@@ -30,7 +30,7 @@ export default function NavBar() {
             </div>
 
             {isOpen && (
-              <div className="text-white w-[164px] flex flex-col h-fit">
+              <div className=" w-[164px] flex flex-col h-fit">
                 <span className="text-md">Student</span>
                 <span className="text-sm font-medium">
                   Evan Darren Christanto
@@ -41,7 +41,7 @@ export default function NavBar() {
             {isOpen && (
               <div>
                 <button onClick={() => setIsOpen(false)}>
-                  <ArrowLeft color="white" />
+                  <ArrowLeft color="black" />
                 </button>
               </div>
             )}
@@ -50,7 +50,7 @@ export default function NavBar() {
         {isOpen && (
           <div className="px-[20px]">
             {" "}
-            <div className="bg-white w-full h-0.5 mt-5 "></div>
+            <div className="bg-black w-full h-[1px] mt-5 "></div>
           </div>
         )}
 
@@ -62,58 +62,58 @@ export default function NavBar() {
                   {!isOpen && (
                     <div>
                       <button onClick={() => setIsOpen(true)}>
-                        <ArrowRight color="white" size="30" />
+                        <ArrowRight color="black" size="30" />
                       </button>
                     </div>
                   )}
                 </div>
                 <div className="w-[243px]">
                   {isOpen && (
-                    <text className="text-white font-semibold">Assistant</text>
+                    <text className="font-semibold">Assistant</text>
                   )}
 
                   <button className="flex flex-row space-x-5 items-center my-8">
                     <li>
                       {" "}
-                      <Bot size="31" color="white" />{" "}
+                      <Bot size="31" color="black" />{" "}
                     </li>
                     {isOpen && (
                       <div className="">
-                        <text className="text-white font-medium">Ethan</text>
+                        <text className=" font-medium">Ethan</text>
                       </div>
                     )}
                   </button>
 
                   {isOpen && (
-                    <div className="bg-white w-full h-0.5">
-                      <text className="text-black">halo</text>
+                    <div className="bg-black w-full h-[1px]">
+                      <text className="text-white">halo</text>
                     </div>
                   )}
                 </div>
 
                 <div className="space-y-8 ">
                   {isOpen && (
-                    <text className="text-white font-semibold">Features</text>
+                    <text className=" font-semibold">Features</text>
                   )}
                   <button className="flex flex-row space-x-5 items-center">
                     <li>
                       {" "}
-                      <CalendarDays size="30" color="white" />{" "}
+                      <CalendarDays size="30" color="black" />{" "}
                     </li>
                     {isOpen && (
                       <div className=" ">
-                        <text className="text-white font-medium">Calendar</text>
+                        <text className=" font-medium">Calendar</text>
                       </div>
                     )}
                   </button>
                   <button className="flex flex-row space-x-5 items-center">
                     <li>
                       {" "}
-                      <LayoutList size="30" color="white" />{" "}
+                      <LayoutList size="30" color="black" />{" "}
                     </li>
                     {isOpen && (
                       <div className="w-[72px]">
-                        <text className="text-white font-medium">
+                        <text className=" font-medium">
                           To do List
                         </text>
                       </div>
@@ -122,12 +122,12 @@ export default function NavBar() {
                   <button className="flex flex-row space-x-5 items-center">
                     <li>
                       {" "}
-                      <Users size="30" color="white" />{" "}
+                      <Users size="30" color="black" />{" "}
                     </li>
 
                     {isOpen && (
                       <div className="">
-                        <text className="text-white font-medium">Meetings</text>
+                        <text className=" font-medium">Meetings</text>
                       </div>
                     )}
                   </button>
@@ -135,32 +135,32 @@ export default function NavBar() {
                     <button className="flex flex-row space-x-5 items-center">
                       <li>
                         {" "}
-                        <Map size="30" color="white" />{" "}
+                        <Map size="30" color="black" />{" "}
                       </li>
                       {isOpen && (
                         <div className="">
-                          <text className="text-white font-medium">Map</text>
+                          <text className="font-medium">Map</text>
                         </div>
                       )}
                     </button>
                     {isOpen && (
-                      <div className="bg-white w-full h-0.5 mt-8">
-                        <text className="text-black">halo</text>
+                      <div className="bg-black w-full h-[1px] mt-8">
+                        <text className="text-white">halo</text>
                       </div>
                     )}
                   </div>
                   <div>
                     {isOpen && (
-                      <text className="text-white font-semibold">Settings</text>
+                      <text className=" font-semibold">Settings</text>
                     )}
                     <button className="flex flex-row space-x-5 items-center my-8">
                       <li>
                         {" "}
-                        <Settings size="30" color="white" />{" "}
+                        <Settings size="30" color="black" />{" "}
                       </li>
                       {isOpen && (
                         <div className=" ">
-                          <text className="text-white font-medium">
+                          <text className=" font-medium">
                             Settings
                           </text>
                         </div>
