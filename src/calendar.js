@@ -3,13 +3,28 @@ import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction"; 
 import axios from "axios";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { formatISO } from "date-fns";
 
 export default function Home() {
   const [events, setEvents] = useState([]);
   const [date, setDates] = useState([]);
   const [calendar, setCalendar] = useState([]);
+  const [isNavOpen, setIsNavOpen] = useState(false);
+  const calendarRef = useRef(null);
+  const [todayToDoList, setTodayToDoList] = useState([]);
+
+  useEffect(() => {
+    if (calendarRef.current) {
+      let calendarApi = calendarRef.current.getApi();
+      console.log(isNavOpen)
+      setTimeout(() => {
+        calendarApi.updateSize();
+      }, 250);
+    }
+
+    
+  }, [isNavOpen]);
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -31,7 +46,6 @@ export default function Home() {
             allDay,
           };
         });
-
         const transformedEventsCalendar = res.data.map((event) => {
           const start = event.start?.dateTime || event.start?.date;
           const end = event.end?.dateTime || event.end?.date;
@@ -45,7 +59,18 @@ export default function Home() {
         });
         setEvents(transformedEvents);
         setCalendar(transformedEventsCalendar);
-        console.log(transformedEvents);
+        console.log(transformedEventsCalendar)
+        const today = new Date().toISOString().split('T')[0]; // Get today's date in ISO format
+        const todayToDoList = transformedEvents.filter(event => {
+          if (event.start) {
+            return today === event.start.split('T')[0];
+          }
+         // Extract the date part of event start date
+          
+        });
+
+        console.log(todayToDoList); // This will log today's to-do list
+        setTodayToDoList(todayToDoList)
       } catch (error) {
         console.error("Error fetching calendar events:", error);
       }
@@ -77,39 +102,62 @@ export default function Home() {
           </div>
         ) : (
           <div
-            className="rounded-md p-2 m-2"
-            style={{ backgroundColor: "#85C694" }}
-          >
-            <div className="">
-              <strong>
-                <span className="break-words">{event.title}</span>
-              </strong>
-            </div>
-            <div>
-              {startTime} - {endTime}
-            </div>
+          className="rounded bg-green-300 p-2 m-2  w-full md:max-w-xs"
+        >
+          <div className="break-words">
+            <strong>{event.title}</strong>
           </div>
+          <div>
+            {startTime} - {endTime}
+          </div>
+        </div>
         )}
       </>
     );
   };
 
+  const calendarWidth = isNavOpen ? "w-5/6" : "w-4/5"
   return (
     <div>
-      <div className="flex flex-row">
-        <NavBar />
-        <div className="w-full p-5">
-         <text className="text-xl font-bold">My Calendar</text>
-          <FullCalendar
-            plugins={[dayGridPlugin, interactionPlugin]}
-            initialView="dayGridMonth"
-            events={calendar}
-            eventContent={renderEventContent}
-            eventClick={(clickInfo) => {
-              // Handle event click
-              alert(clickInfo.event.title);
-            }}
-          />
+      <div className="flex flex-row ">
+        
+          <NavBar setIsNavOpen={setIsNavOpen}/>
+        
+        <div className="w-full mx-10 mt-5">
+          <div className=" ">
+            <text className="text-3xl font-bold">My Calendar</text>
+          </div>
+        
+         <div className="flex flex-row w-full space-x-5 justify-between mt-8">
+          <div className={`${calendarWidth} p-4 h-fit bg- rounded-lg shadow-lg`}>
+            <FullCalendar
+                ref={calendarRef}
+                plugins={[dayGridPlugin, interactionPlugin]}
+                initialView="dayGridMonth"
+                events={calendar}
+                eventContent={renderEventContent}
+                eventClick={(clickInfo) => {
+                  alert(clickInfo.event.title);
+                }}
+                className=""
+              />
+              
+          </div>
+          <div className="w-1/4 flex-none bg-white shadow-xl rounded-lg p-4">
+                <text className="text-black text-2xl">To do List</text>
+                {todayToDoList.map((item, index) => (
+            <div key={index} className="bg-slate-400 my-4 px-3 rounded-md">
+              <div className="flex justify-between h-10 items-center">
+                <text>{item.summary}</text>
+                <text>{(item.start.split('T')[1]).split('+')[0]} - {(item.end.split('T')[1]).split('+')[0]}</text>
+              </div>
+            </div>
+          ))}
+          </div>
+          
+            
+         </div>
+          
         </div>
       </div>
       

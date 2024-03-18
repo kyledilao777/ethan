@@ -13,8 +13,8 @@ export default function App() {
     <div>
       <Router>
         <Routes>
-          <Route path="/" element={<Home />}/>
-          <Route path="/login" element={<Login />}/>
+          <Route path="/" element={<Login />}/>
+          <Route path="/home" element={<Home />}/>
           <Route path="/calendar" element={<Calendar />}/>
           <Route path="/meeting" element={<Meeting />}/>
           <Route path="/todo" element={<Todo />}/>

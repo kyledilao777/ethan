@@ -11,38 +11,60 @@ import {
   Home
 } from "lucide-react";
 import gans from "./images/Evan.jpg";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import axios from "axios";
 
-export default function NavBar() {
+export default function NavBar( { setIsNavOpen }) {
   const [isOpen, setIsOpen] = useState(false);
+  const [userInfo, setUserInfo] = useState({ name: '', photo: '' });
+
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      try {
+        const { data } = await axios.get('http://localhost:3001/user-info', { withCredentials: true });
+        setUserInfo({ name: data.name, photo: data.photo });
+        console.log("hello")
+      } catch (error) {
+        console.error('Failed to fetch user info:', error);
+      }
+    };
+
+    fetchUserInfo();
+  }, []);
+
+  const handleButton = () => {
+    setIsOpen(true)
+    setIsNavOpen(true)
+  }
   return (
     <div className="">
       <div
         className={`duration-300 h-screen text-black bg-white ${
           isOpen ? "w-[285px]" : "w-[70px]" 
-        } transition-width`}
+        } transition-width border rounded-lg`}
       >
         <div className="flex justify-center  ">
           <div className="flex items-center space-x-3 mx-5 h-20  mt-5">
             <div className="">
               <div className="flex justify-center items-center rounded-full bg-white h-[45px] w-[45px]">
-                <img src={gans} className="rounded-full h-[45px] w-[45px]" />
+                <img src={userInfo.photo} alt="User" className="rounded-full h-[45px] w-[45px]" />
               </div>
             </div>
 
             {isOpen && (
               <div className=" w-[164px] flex flex-col h-fit">
                 <span className="text-md">Student</span>
-                <span className="text-sm font-medium">
-                  Evan Darren Christanto
-                </span>
+                <span className="text-sm font-medium">{userInfo.name}</span>
               </div>
             )}
 
             {isOpen && (
               <div>
-                <button onClick={() => setIsOpen(false)}>
+                <button onClick={() => {
+                  setIsOpen(false)
+                  setIsNavOpen(false)
+                }}>
                   <ArrowLeft color="black" />
                 </button>
               </div>
@@ -63,7 +85,7 @@ export default function NavBar() {
                 <div>
                   {!isOpen && (
                     <div>
-                      <button onClick={() => setIsOpen(true)}>
+                      <button onClick={handleButton}>
                         <ArrowRight color="black" size="30" />
                       </button>
                     </div>
@@ -97,7 +119,7 @@ export default function NavBar() {
                   {isOpen && (
                     <text className=" font-semibold">Features</text>
                   )}
-                  <Link to={{ pathname: "/"}} className="flex flex-row space-x-5 items-center">
+                  <Link to={{ pathname: "/home"}} className="flex flex-row space-x-5 items-center">
                     <li>
                       {" "}
                       <Home size="30" color="black" />{" "}

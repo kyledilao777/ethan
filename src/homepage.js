@@ -1,11 +1,14 @@
 import NavBar from "./components/navbar";
 import { Mic, CalendarDays, LayoutList, Users, Map } from "lucide-react";
+import { useState } from "react";
 
 export default function Home() {
+  const [isNavOpen, setIsNavOpen] = useState(false);
+
   return (
     <div className=" w-full h-screen ">
       <div className="w-full flex flex-row h-screen ">
-        <NavBar />
+        <NavBar setIsNavOpen={setIsNavOpen}/>
         <div className="w-full flex px-[200px] items-center ">
           <div className="flex flex-col justify-center text-center w-full  h-fit">
             <div>

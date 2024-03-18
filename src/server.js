@@ -33,7 +33,8 @@ const oAuth2Client = new google.auth.OAuth2(
 app.get('/login', (req, res) => {
   const url = oAuth2Client.generateAuthUrl({
     access_type: 'offline',
-    scope: ['https://www.googleapis.com/auth/calendar.readonly'],
+    scope: ['https://www.googleapis.com/auth/calendar.readonly', 
+    'https://www.googleapis.com/auth/userinfo.profile'],
   });
   res.redirect(url);
 });
@@ -46,11 +47,35 @@ app.get('/oauth2callback', async (req, res) => {
   // Store the tokens in the session
   req.session.tokens = tokens;
 
-  res.redirect('http://localhost:3000')
+  res.redirect('http://localhost:3000/home')
 });
 
+app.get('/user-info', async (req, res) => {
+  if (!req.session.tokens || !req.session.tokens.access_token) {
+    return res.status(401).send('User not authenticated');
+  }
 
-// New route to fetch calendar events using the access token from the session
+  oAuth2Client.setCredentials(req.session.tokens);
+
+  const peopleService = google.people({version: 'v1', auth: oAuth2Client});
+  try {
+    const me = await peopleService.people.get({
+      resourceName: 'people/me',
+      personFields: 'names,photos',
+    });
+
+    const userInfo = {
+      name: me.data.names[0].displayName,
+      photo: me.data.photos[0].url,
+    };
+
+    res.json(userInfo);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Error fetching user info');
+  }
+});
+
 app.get('/fetch-calendar-events', async (req, res) => {
   if (!req.session.tokens || !req.session.tokens.access_token) {
     return res.status(401).send('User not authenticated');
