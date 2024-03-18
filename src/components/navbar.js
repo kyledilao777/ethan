@@ -8,9 +8,11 @@ import {
   Settings,
   ArrowRight,
   ArrowLeft,
+  Home
 } from "lucide-react";
 import gans from "./images/Evan.jpg";
 import { useState } from "react";
+import { Link } from "react-router-dom";
 
 export default function NavBar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -95,7 +97,18 @@ export default function NavBar() {
                   {isOpen && (
                     <text className=" font-semibold">Features</text>
                   )}
-                  <button className="flex flex-row space-x-5 items-center">
+                  <Link to={{ pathname: "/"}} className="flex flex-row space-x-5 items-center">
+                    <li>
+                      {" "}
+                      <Home size="30" color="black" />{" "}
+                    </li>
+                    {isOpen && (
+                      <div className=" ">
+                        <text className=" font-medium">Home</text>
+                      </div>
+                    )}
+                  </Link>
+                  <Link to={{ pathname: "/calendar"}} className="flex flex-row space-x-5 items-center">
                     <li>
                       {" "}
                       <CalendarDays size="30" color="black" />{" "}
@@ -105,8 +118,8 @@ export default function NavBar() {
                         <text className=" font-medium">Calendar</text>
                       </div>
                     )}
-                  </button>
-                  <button className="flex flex-row space-x-5 items-center">
+                  </Link>
+                  <Link to={{ pathname: "/todo"}} className="flex flex-row space-x-5 items-center">
                     <li>
                       {" "}
                       <LayoutList size="30" color="black" />{" "}
@@ -118,8 +131,8 @@ export default function NavBar() {
                         </text>
                       </div>
                     )}
-                  </button>
-                  <button className="flex flex-row space-x-5 items-center">
+                  </Link>
+                  <Link to={{ pathname: "/meeting"}} className="flex flex-row space-x-5 items-center">
                     <li>
                       {" "}
                       <Users size="30" color="black" />{" "}
@@ -130,9 +143,9 @@ export default function NavBar() {
                         <text className=" font-medium">Meetings</text>
                       </div>
                     )}
-                  </button>
+                  </Link>
                   <div>
-                    <button className="flex flex-row space-x-5 items-center">
+                  <Link to={{ pathname: "/routemap"}}className="flex flex-row space-x-5 items-center">
                       <li>
                         {" "}
                         <Map size="30" color="black" />{" "}
@@ -142,7 +155,7 @@ export default function NavBar() {
                           <text className="font-medium">Map</text>
                         </div>
                       )}
-                    </button>
+                    </Link>
                     {isOpen && (
                       <div className="bg-black w-full h-[1px] mt-8">
                         <text className="text-white">halo</text>
