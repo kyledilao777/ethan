@@ -23,6 +23,7 @@ export default function NavBar( { setIsNavOpen }) {
     const fetchUserInfo = async () => {
       try {
         const { data } = await axios.get('http://localhost:3001/user-info', { withCredentials: true });
+        console.log(data.photo)
         setUserInfo({ name: data.name, photo: data.photo });
         console.log("hello")
       } catch (error) {
@@ -54,7 +55,7 @@ export default function NavBar( { setIsNavOpen }) {
 
             {isOpen && (
               <div className=" w-[164px] flex flex-col h-fit">
-                <span className="text-md">Student</span>
+                <span className="text-md font-semibold">Student</span>
                 <span className="text-sm font-medium">{userInfo.name}</span>
               </div>
             )}

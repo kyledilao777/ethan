@@ -64,6 +64,7 @@ app.get('/user-info', async (req, res) => {
       personFields: 'names,photos',
     });
 
+
     const userInfo = {
       name: me.data.names[0].displayName,
       photo: me.data.photos[0].url,

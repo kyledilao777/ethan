@@ -102,19 +102,20 @@ export default function Home() {
           </div>
         ) : (
           <div
-          className="rounded bg-green-300 p-2 m-2  w-full md:max-w-xs"
+          className="rounded p-2 m-2  w-full md:max-w-xs" style={{backgroundColor: "#ffec8b"}}
         >
           <div className="break-words">
-            <strong>{event.title}</strong>
+            <strong><span className="whitespace-break-spaces">{event.title}</span></strong>
           </div>
-          <div>
-            {startTime} - {endTime}
+          <div className="mt-3">
+            <span className="whitespace-break-spaces">{startTime} - {endTime}</span>
           </div>
         </div>
         )}
       </>
     );
   };
+  const buttonClasses = "px-4 py-2 bg-blue-500 text-white rounded-md mr-2";
 
   const calendarWidth = isNavOpen ? "w-5/6" : "w-4/5"
   return (
@@ -123,7 +124,7 @@ export default function Home() {
         
           <NavBar setIsNavOpen={setIsNavOpen}/>
         
-        <div className="w-full mx-10 mt-5">
+        <div className="w-full mx-10 mt-11">
           <div className=" ">
             <text className="text-3xl font-bold">My Calendar</text>
           </div>
@@ -139,6 +140,34 @@ export default function Home() {
                 eventClick={(clickInfo) => {
                   alert(clickInfo.event.title);
                 }}
+                headerToolbar={{
+                  start: 'title',
+                  center: '',
+                  end: 'prev,today,next'
+                }}
+                customButtons={{
+                  prev: {
+                    text: '<',
+                    click: () => {
+                      calendarRef.current.getApi().prev();
+                    },
+                    classNames: buttonClasses
+                  },
+                  next: {
+                    text: '>',
+                    click: () => {
+                      calendarRef.current.getApi().next();
+                    },
+                    classNames: buttonClasses
+                  },
+                  today: {
+                    text: 'Today',
+                    click: () => {
+                      calendarRef.current.getApi().today();
+                    },
+                    classNames: buttonClasses
+                  }
+                }}
                 className=""
               />
               
@@ -146,8 +175,8 @@ export default function Home() {
           <div className="w-1/4 flex-none bg-white shadow-xl rounded-lg p-4">
                 <text className="text-black text-2xl">To do List</text>
                 {todayToDoList.map((item, index) => (
-            <div key={index} className="bg-slate-400 my-4 px-3 rounded-md">
-              <div className="flex justify-between h-10 items-center">
+            <div key={index} className="bg-slate-300 my-4 px-3 rounded-md">
+              <div className="flex justify-between h-20 items-center">
                 <text>{item.summary}</text>
                 <text>{(item.start.split('T')[1]).split('+')[0]} - {(item.end.split('T')[1]).split('+')[0]}</text>
               </div>
