@@ -1,5 +1,5 @@
 import {
-  Menu,
+  
   CalendarDays,
   LayoutList,
   Users,
@@ -41,7 +41,7 @@ export default function NavBar( { setIsNavOpen }) {
   return (
     <div className="">
       <div
-        className={`duration-300 h-screen text-black bg-white ${
+        className={`duration-300 h-full text-black bg-white ${
           isOpen ? "w-[285px]" : "w-[70px]" 
         } transition-width border rounded-lg`}
       >
