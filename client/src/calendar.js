@@ -99,7 +99,7 @@ export default function Home() {
           </div>
         ) : (
           <div
-            className="rounded p-2 m-2  w-full md:max-w-xs"
+            className="rounded p-2 m-2 w-full md:max-w-xs"
             style={{ backgroundColor: "#ffec8b" }}
           >
             <div className="break-words">
@@ -108,7 +108,7 @@ export default function Home() {
               </strong>
             </div>
             <div className="mt-3">
-              <span className="whitespace-break-spaces">
+              <span className="c">
                 {startTime} - {endTime}
               </span>
             </div>

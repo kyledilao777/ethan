@@ -45,7 +45,7 @@ export default function NavBar( { setIsNavOpen }) {
           isOpen ? "w-[285px]" : "w-[70px]" 
         } transition-width border rounded-lg`}
       >
-        <div className="flex justify-center  ">
+        <div className="flex justify-center ">
           <div className="flex items-center space-x-3 mx-5 h-20  mt-5">
             <div className="">
               <div className="flex justify-center items-center rounded-full bg-white h-[45px] w-[45px]">
