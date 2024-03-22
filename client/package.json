@@ -2,6 +2,7 @@
   "name": "untangled-v2",
   "version": "0.1.0",
   "private": true,
+  "proxy": "http://127.0.0.1:5001",
   "dependencies": {
     "@fullcalendar/daygrid": "^6.1.11",
     "@fullcalendar/interaction": "^6.1.11",
