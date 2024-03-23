@@ -32,7 +32,7 @@ export default function Home() {
     setId(id);
     setData([...data, newData]); // Add the new input to the data array immediately
     setIsAgent(true);
-    fetch("/agent", {
+    fetch(/*"https://untangled-flask.render.com/agent"*/"/agent", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

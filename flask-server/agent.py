@@ -15,7 +15,7 @@ from langchain_core.utils import function_calling
 
 from usecases.calendar_tools import GetCalendarEventsTool, TimeDeltaTool, CreateCalendarEventTool, SpecificTimeTool, DeleteCalendarEventTool
 
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, send_from_directory
 
 
 import threading
@@ -114,4 +114,4 @@ def start_agent(input_data, memory):
     return response_container
     
 if __name__ == "__main__":
-    app.run(debug=True, port=5001)
+    app.run(debug=True, port=int(os.environ.get("PORT", 5001)))

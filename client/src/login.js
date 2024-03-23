@@ -1,6 +1,7 @@
 export default function Login() {
     const handleLogin = () => {
-        window.location.href = 'http://localhost:3001/login';
+        window.location.href = /*'https://untangled-server.render.com/login'*/
+        'http://localhost:3001/login';
     };
     return (
         <div className="w-full h-screen flex justify-center items-center">

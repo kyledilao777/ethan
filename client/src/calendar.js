@@ -28,6 +28,7 @@ export default function Home() {
     const fetchEvents = async () => {
       try {
         const res = await axios.get(
+          /*"https://untangled-server.render.com/fetch-calendar-events"*/
           "http://localhost:3001/fetch-calendar-events",
           { withCredentials: true }
         );
