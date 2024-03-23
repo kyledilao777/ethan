@@ -1,0 +1,13 @@
+{
+    "scripts": {
+        "install-frontend": "cd client && npm install",
+        "install-backend": "cd flask-server && pip install -r requirements.txt",
+        "build-frontend": "cd client && npm run build",
+        "start-server": "cd client &&  node src/server.js",
+        "start-flask": "cd flask-server && touch agent.py && source venv/bin/activate && pip3 install flask_cors && pip3 install pytz && pip3 install langchain && pip3 install langchain_openai && pip3 install python.dotenv && python agent.py",
+        "build-and-start": "concurrently  \"npm run build-frontend\" \"npm run start-server\" \"npm run start-flask\""
+    },
+    "devDependencies": {
+        "concurrently": "^7.6.0"
+    }
+}
