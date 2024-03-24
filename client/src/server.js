@@ -9,6 +9,14 @@ const app = express();
 
 const port = process.env.PORT || 3001;
 
+app.use(express.static(path.join(__dirname, 'client/build')));
+
+// The "catchall" handler: for any request that doesn't
+// match one above, send back React's index.html file.
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'client/build', 'index.html'));
+});
+
 app.use(session({
   secret: process.env.SESSION_SECRET, // Change this to a random secret string
   resave: false,

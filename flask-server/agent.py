@@ -21,7 +21,7 @@ from flask import Flask, jsonify, request, send_from_directory
 import threading
 import time
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder="client/build")
 CORS(app) 
 
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
@@ -33,6 +33,13 @@ llm = ChatOpenAI(temperature=0, model=OPENAI_MODEL, api_key=OPENAI_API_KEY)
 persistent_memory = ConversationSummaryBufferMemory(llm=llm,memory_key="chat_history", return_messages=True, max_token_limit=500)
 
 @app.route("/agent", methods=["POST"])
+@app.route('/', defaults={'path': ''})
+@app.route('/<path:path>')
+def serve(path):
+    if path != "" and os.path.exists(app.static_folder + '/' + path):
+        return send_from_directory(app.static_folder, path)
+    else:
+        return send_from_directory(app.static_folder, 'index.html')
 ### Main interaction loop ###
 def run(): 
     data = request.get_json()
