@@ -6,33 +6,25 @@ const {google} = require('googleapis');
 const axios = require('axios');
 
 const app = express();
-const path = require('path');
 
-app.use(express.static(path.join(__dirname, 'frontend/build')));
-
-// The "catchall" handler: for any request that doesn't
-// match one above, send back React's index.html file.
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'frontend/build', 'index.html'));
-});
 const port = process.env.PORT || 3001;
 
 app.use(session({
-  secret: 'A0255806Y', // Change this to a random secret string
+  secret: process.env.SESSION_SECRET, // Change this to a random secret string
   resave: false,
   saveUninitialized: true,
   cookie: { secure: 'auto' }
 }));
 
 app.use(cors({
-    origin: ['http://localhost:3000'],
+    origin: [process.env.CORS_ORIGIN],
     credentials: true, 
   }));
 
-const clientId = '517714427371-36n7qq9d4vgj1q1qhj5qmtul9n9qgkjp.apps.googleusercontent.com';
-const clientSecret = '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';
+const clientId = process.env.GOOGLE_CLIENT_ID;
+const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
 const redirectUri = /*'https://untangled-server.render.com/oauth2callback'*/
-'http://localhost:3001/oauth2callback';
+process.env.GOOGLE_REDIRECT_URI;
 
 const oAuth2Client = new google.auth.OAuth2(
   clientId,
@@ -57,7 +49,7 @@ app.get('/oauth2callback', async (req, res) => {
   // Store the tokens in the session
   req.session.tokens = tokens;
 const redirectHoho = /*'https://untangled-frontend.render.com/home'*/
-'http://localhost:3000/home'
+process.env.REDIRECT_HOME
   res.redirect(redirectHoho)
 });
 

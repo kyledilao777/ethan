@@ -22,7 +22,7 @@ export default function NavBar( { setIsNavOpen }) {
   useEffect(() => {
     const fetchUserInfo = async () => {
       try {
-        const { data } = await axios.get(/*"https://untangled-server.render.com/user-info"*/'http://localhost:3001/user-info', { withCredentials: true });
+        const { data } = await axios.get(/*"https://untangled-server.render.com/user-info"*/process.env.REACT_APP_USER_INFO || 'http://localhost:3001/user-info', { withCredentials: true });
         console.log(data.photo)
         setUserInfo({ name: data.name, photo: data.photo });
         console.log("hello")

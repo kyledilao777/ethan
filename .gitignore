@@ -1,0 +1,3 @@
+#Environment variables
+/client/.env
+/flask-server/.env

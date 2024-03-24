@@ -32,7 +32,8 @@ export default function Home() {
     setId(id);
     setData([...data, newData]); // Add the new input to the data array immediately
     setIsAgent(true);
-    fetch(/*"https://untangled-flask.render.com/agent"*/"/agent", {
+    const apiUrl = process.env.REACT_APP_API_URL
+    fetch(/*"https://untangled-flask.render.com/agent"*/apiUrl || 'http://127.0.0.1:5001/agent', {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
