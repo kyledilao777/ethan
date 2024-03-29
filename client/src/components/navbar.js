@@ -10,7 +10,6 @@ import {
   ArrowLeft,
   Home
 } from "lucide-react";
-import gans from "./images/Evan.jpg";
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
@@ -18,12 +17,27 @@ import axios from "axios";
 export default function NavBar( { setIsNavOpen }) {
   const [isOpen, setIsOpen] = useState(false);
   const [userInfo, setUserInfo] = useState({ name: '', photo: '' });
+<<<<<<< Updated upstream
 
   useEffect(() => {
     const fetchUserInfo = async () => {
       try {
         const { data } = await axios.get(/*"https://untangled-server.render.com/user-info"*/process.env.REACT_APP_USER_INFO || 'http://localhost:3001/user-info', { withCredentials: true });
         console.log(data.photo)
+=======
+  
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      try {
+        // Fetch user info from backend API
+        // const { data } = await axios.get('http://localhost:3002/user-info', {
+        //   headers: {
+        //     Authorization: `Bearer ${accessToken}`, // Include access token
+        //   },
+        // });
+        const { data } = await axios.get('http://localhost:3002/user-info', { withCredentials: true });
+        // Update userInfo state with fetched data
+>>>>>>> Stashed changes
         setUserInfo({ name: data.name, photo: data.photo });
         console.log("hello")
       } catch (error) {
@@ -31,7 +45,14 @@ export default function NavBar( { setIsNavOpen }) {
       }
     };
 
+<<<<<<< Updated upstream
     fetchUserInfo();
+=======
+    // Call fetchUserInfo function when component mounts
+    fetchUserInfo();
+
+    // Dependency array is empty, so this effect runs only once when the component mounts
+>>>>>>> Stashed changes
   }, []);
 
   const handleButton = () => {

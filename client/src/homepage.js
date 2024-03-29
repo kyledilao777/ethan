@@ -1,5 +1,6 @@
 import NavBar from "./components/navbar";
 import { useState, useEffect } from "react";
+import axios from 'axios';
 import {
   Mic,
   CalendarDays,
@@ -19,7 +20,13 @@ export default function Home() {
   const [data, setData] = useState([]);
   const [displayInput, setDisplayInput] = useState(false);
   const [id, setId] = useState(0);
+<<<<<<< Updated upstream
 
+=======
+  const location = useLocation();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [accessToken, setAccessToken] = useState('');
+>>>>>>> Stashed changes
   const sendUserInput = () => {
     const id = uuidv4();
     setDisplayInput(false);
@@ -32,6 +39,7 @@ export default function Home() {
     setId(id);
     setData([...data, newData]); // Add the new input to the data array immediately
     setIsAgent(true);
+<<<<<<< Updated upstream
     const apiUrl = process.env.REACT_APP_API_URL
     fetch(/*"https://untangled-flask.render.com/agent"*/apiUrl || 'http://127.0.0.1:5001/agent', {
       method: "POST",
@@ -40,6 +48,20 @@ export default function Home() {
       },
       body: JSON.stringify({ user_input: userInput }),
     })
+=======
+    const apiUrl = process.env.REACT_APP_API_URL;
+    fetch(
+      // /*"https://untangled-flask.render.com/agent"*/ apiUrl ||
+      "http://localhost:5001/agent",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ user_input: userInput }),
+      }
+    )
+>>>>>>> Stashed changes
       .then((res) => res.json())
       .then((agentData) => {
         setData((currentData) =>
@@ -55,6 +77,24 @@ export default function Home() {
       .finally(() => setIsLoading(false),  setDisplayInput(true));
   };
 
+<<<<<<< Updated upstream
+=======
+
+  useEffect(() => {
+    const checkAuthStatus = async () => {
+      try {
+        // Note: Adjust the URL based on your server's configuration
+        const { data } = await axios.get('http://localhost:3002/auth-check', { withCredentials: true });
+        setIsAuthenticated(data.isAuthenticated);
+      } catch (error) {
+        console.error('Error checking authentication status:', error);
+      }
+    };
+
+    checkAuthStatus();
+  }, [isAuthenticated]);
+
+>>>>>>> Stashed changes
   return (
     <div className=" w-full h-screen ">
       <div className="w-full flex flex-row h-screen ">

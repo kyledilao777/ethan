@@ -29,7 +29,7 @@ export default function Home() {
       try {
         const res = await axios.get(
           /*"https://untangled-server.render.com/fetch-calendar-events"*/
-          process.env.REACT_APP_FETCH_CALENDAR_URL ||
+          // process.env.REACT_APP_FETCH_CALENDAR_URL ||
           "http://localhost:3001/fetch-calendar-events",
           { withCredentials: true }
         );

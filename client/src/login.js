@@ -1,6 +1,7 @@
 export default function Login() {
     const handleLogin = () => {
-        const loginUrl = process.env.REACT_APP_LOGIN_URL || 'http://localhost:3001/login';
+        // const loginUrl = process.env.REACT_APP_LOGIN_URL || 'http://localhost:3001/login';
+        const loginUrl = 'http://localhost:3002/login';
         window.location.href = loginUrl
     };
     return (

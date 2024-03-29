@@ -1,10 +1,9 @@
 import os
 import requests
-from dotenv import load_dotenv
+import secrets
 
-load_dotenv()
+session = requests.Session()
 
-# Function to get a new access token using the refresh token
 def get_access_token():
     refresh_token = os.getenv("REFRESH_TOKEN")
     client_id = os.getenv("CLIENT_ID")
@@ -15,10 +14,10 @@ def get_access_token():
         "client_secret": client_secret,
         "refresh_token": refresh_token,
     }
-    token_url = "https://oauth2.googleapis.com/token"
+    token_url = os.getenv("TOKEN_URI")
     response = requests.post(token_url, data=params)
     return response.json().get("access_token")
-
+    
 def get_calendar_events(user_email, calendar_id, start_time, end_time, return_event_ids=False):
     access_token = get_access_token()
 
