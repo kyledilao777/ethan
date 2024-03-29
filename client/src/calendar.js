@@ -5,6 +5,7 @@ import interactionPlugin from "@fullcalendar/interaction";
 import axios from "axios";
 import { useEffect, useState, useRef } from "react";
 import { Mic } from "lucide-react";
+import { useLocation } from "react-router-dom";
 
 export default function Home() {
   const [events, setEvents] = useState([]);
@@ -13,7 +14,7 @@ export default function Home() {
   const [isNavOpen, setIsNavOpen] = useState(false);
   const calendarRef = useRef(null);
   const [todayToDoList, setTodayToDoList] = useState([]);
-
+  const location = useLocation(); 
   useEffect(() => {
     if (calendarRef.current) {
       let calendarApi = calendarRef.current.getApi();
@@ -28,8 +29,7 @@ export default function Home() {
     const fetchEvents = async () => {
       try {
         const res = await axios.get(
-          /*"https://untangled-server.render.com/fetch-calendar-events"*/
-          // process.env.REACT_APP_FETCH_CALENDAR_URL ||
+          process.env.REACT_APP_FETCH_CALENDAR_URL ||
           "http://localhost:3001/fetch-calendar-events",
           { withCredentials: true }
         );
@@ -74,7 +74,12 @@ export default function Home() {
         console.error("Error fetching calendar events:", error);
       }
     };
-    fetchEvents();
+
+    const searchParams = new URLSearchParams(location.search);
+    const isAuthenticated = localStorage.getItem('isAuthenticated')
+    if (searchParams.get('auth') === 'success' || isAuthenticated) {
+      fetchEvents();
+    }
   }, []);
 
   const renderEventContent = (eventInfo) => {

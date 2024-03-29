@@ -2,12 +2,16 @@
     "scripts": {
         "install-frontend": "cd client && npm install",
         "install-backend": "cd flask-server && pip install -r requirements.txt",
-        "build-frontend": "cd client && npm run build",
-        "start-server": "cd client &&  node src/server.js",
-        "start-flask": "cd flask-server && gunicorn -w 4 -b 0.0.0.0:5001 agent:app",
+        "build-frontend": "cd client && npm run start",
+        "start-server": "cd server &&  pm2 start server.js",
+        "start-flask": "cd flask-server && touch agent.py && pip install gunicorn pip install flask_cors && pip install pytz && pip install langchain && pip install langchain_openai && pip install python.dotenv && gunicorn -w 4 -b 0.0.0.0:5001 agent:app",
         "build-and-start": "concurrently  \"npm run build-frontend\" \"npm run start-server\" \"npm run start-flask\""
     },
     "devDependencies": {
         "concurrently": "^7.6.0"
+    },
+    "dependencies": {
+        "express": "^4.19.1",
+        "pm2": "^5.3.1"
     }
 }

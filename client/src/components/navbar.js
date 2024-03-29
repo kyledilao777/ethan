@@ -11,20 +11,12 @@ import {
   Home
 } from "lucide-react";
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import axios from "axios";
 
 export default function NavBar( { setIsNavOpen }) {
   const [isOpen, setIsOpen] = useState(false);
   const [userInfo, setUserInfo] = useState({ name: '', photo: '' });
-<<<<<<< Updated upstream
-
-  useEffect(() => {
-    const fetchUserInfo = async () => {
-      try {
-        const { data } = await axios.get(/*"https://untangled-server.render.com/user-info"*/process.env.REACT_APP_USER_INFO || 'http://localhost:3001/user-info', { withCredentials: true });
-        console.log(data.photo)
-=======
   
   useEffect(() => {
     const fetchUserInfo = async () => {
@@ -37,22 +29,16 @@ export default function NavBar( { setIsNavOpen }) {
         // });
         const { data } = await axios.get('http://localhost:3002/user-info', { withCredentials: true });
         // Update userInfo state with fetched data
->>>>>>> Stashed changes
         setUserInfo({ name: data.name, photo: data.photo });
-        console.log("hello")
       } catch (error) {
         console.error('Failed to fetch user info:', error);
       }
     };
 
-<<<<<<< Updated upstream
-    fetchUserInfo();
-=======
     // Call fetchUserInfo function when component mounts
     fetchUserInfo();
 
     // Dependency array is empty, so this effect runs only once when the component mounts
->>>>>>> Stashed changes
   }, []);
 
   const handleButton = () => {

@@ -10,6 +10,7 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import { v4 as uuidv4 } from "uuid";
+import { Link, useLocation } from "react-router-dom";
 
 export default function Home() {
   const [isNavOpen, setIsNavOpen] = useState(false);
@@ -20,13 +21,9 @@ export default function Home() {
   const [data, setData] = useState([]);
   const [displayInput, setDisplayInput] = useState(false);
   const [id, setId] = useState(0);
-<<<<<<< Updated upstream
-
-=======
   const location = useLocation();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [accessToken, setAccessToken] = useState('');
->>>>>>> Stashed changes
   const sendUserInput = () => {
     const id = uuidv4();
     setDisplayInput(false);
@@ -39,20 +36,8 @@ export default function Home() {
     setId(id);
     setData([...data, newData]); // Add the new input to the data array immediately
     setIsAgent(true);
-<<<<<<< Updated upstream
-    const apiUrl = process.env.REACT_APP_API_URL
-    fetch(/*"https://untangled-flask.render.com/agent"*/apiUrl || 'http://127.0.0.1:5001/agent', {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ user_input: userInput }),
-    })
-=======
-    const apiUrl = process.env.REACT_APP_API_URL;
     fetch(
-      // /*"https://untangled-flask.render.com/agent"*/ apiUrl ||
-      "http://localhost:5001/agent",
+      process.env.REACT_APP_API_URL|| "http://localhost:5001/agent",
       {
         method: "POST",
         headers: {
@@ -61,7 +46,6 @@ export default function Home() {
         body: JSON.stringify({ user_input: userInput }),
       }
     )
->>>>>>> Stashed changes
       .then((res) => res.json())
       .then((agentData) => {
         setData((currentData) =>
@@ -74,11 +58,9 @@ export default function Home() {
 
         setAgentResponse(agentData.response + "hola"); // Update the response in the data array
       })
-      .finally(() => setIsLoading(false),  setDisplayInput(true));
+      .finally(() => setIsLoading(false), setDisplayInput(true));
   };
 
-<<<<<<< Updated upstream
-=======
 
   useEffect(() => {
     const checkAuthStatus = async () => {
@@ -94,7 +76,6 @@ export default function Home() {
     checkAuthStatus();
   }, [isAuthenticated]);
 
->>>>>>> Stashed changes
   return (
     <div className=" w-full h-screen ">
       <div className="w-full flex flex-row h-screen ">
@@ -147,7 +128,7 @@ export default function Home() {
                   onClick={() => {
                     setIsAgent(false);
                     setAgentResponse(null);
-                    setData([])
+                    setData([]);
                   }}
                 >
                   <ArrowLeft color="black" size="20" />
