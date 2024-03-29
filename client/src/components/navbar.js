@@ -27,7 +27,7 @@ export default function NavBar( { setIsNavOpen }) {
         //     Authorization: `Bearer ${accessToken}`, // Include access token
         //   },
         // });
-        const { data } = await axios.get('http://localhost:3002/user-info', { withCredentials: true });
+        const { data } = await axios.get( process.env.REACT_APP_USER_INFO || 'http://localhost:3001/user-info', { withCredentials: true });
         // Update userInfo state with fetched data
         setUserInfo({ name: data.name, photo: data.photo });
       } catch (error) {
