@@ -21,7 +21,7 @@ from flask import Flask, jsonify, request, send_from_directory
 import threading
 import time
 
-app = Flask(__name__, static_folder="client/build")
+app = Flask(__name__)
 CORS(app) 
 
 OPENAI_API_KEY = "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"
@@ -33,13 +33,7 @@ llm = ChatOpenAI(temperature=0, model=OPENAI_MODEL, api_key=OPENAI_API_KEY)
 persistent_memory = ConversationSummaryBufferMemory(llm=llm,memory_key="chat_history", return_messages=True, max_token_limit=500)
 
 @app.route("/agent", methods=["POST"])
-@app.route('/', defaults={'path': ''})
-@app.route('/<path:path>')
-def serve(path):
-    if path != "" and os.path.exists(app.static_folder + '/' + path):
-        return send_from_directory(app.static_folder, path)
-    else:
-        return send_from_directory(app.static_folder, 'index.html')
+
 ### Main interaction loop ###
 def run(): 
     data = request.get_json()
@@ -121,8 +115,4 @@ def start_agent(input_data, memory):
     return response_container
     
 if __name__ == "__main__":
-<<<<<<< Updated upstream
-    app.run(debug=True, port=int(os.environ.get("PORT", 5001)))
-=======
     app.run(debug=True, port=5001)
->>>>>>> Stashed changes
