@@ -19,7 +19,7 @@ app.use(
     }),
     resave: false,
     saveUninitialized: true,
-    cookie: { secure: "auto", sameSite: "none" },
+    cookie: { secure: true, sameSite: "none" },
     // cookie: { secure: false, sameSite: "lax" }, only for local development
   })
 );
