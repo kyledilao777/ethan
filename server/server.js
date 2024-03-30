@@ -19,8 +19,8 @@ app.use(
     }),
     resave: false,
     saveUninitialized: true,
-    // cookie: { secure: true, sameSite: "none" },
-    cookie: { secure: false, sameSite: "lax" }, /*only for local development*/
+    cookie: { secure: true, sameSite: "none" },
+    //cookie: { secure: false, sameSite: "lax" }, only for local development
   })
 );
 
