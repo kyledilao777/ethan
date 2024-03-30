@@ -8,7 +8,7 @@ const axios = require("axios");
 const { apikeys } = require("googleapis/build/src/apis/apikeys");
 
 const app = express();
-const port = process.env.PORT || 3001;
+const port = process.env.PORT /* || 3001*/;
 
 app.use(
   session({
@@ -19,14 +19,14 @@ app.use(
     }),
     resave: false,
     saveUninitialized: true,
-    cookie: { secure: true, sameSite: "none" },
-    // cookie: { secure: false, sameSite: "lax" }, only for local development
+    // cookie: { secure: true, sameSite: "none" },
+    cookie: { secure: false, sameSite: "lax" }, /*only for local development*/
   })
 );
 
 app.use(
   cors({
-    origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
+    origin: process.env.CORS_ORIGIN /*|| 'http://localhost:3000'*/,
     credentials: true,
   })
 );
@@ -64,7 +64,7 @@ app.use((req, res, next) => {
 
 const clientId = process.env.GOOGLE_CLIENT_ID;
 const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
-const redirectUri = process.env.GOOGLE_REDIRECT_URI || "http://localhost:3001/oauth2callback";
+const redirectUri = process.env.GOOGLE_REDIRECT_URI /*|| "http://localhost:3001/oauth2callback"*/;
 const oAuth2Client = new google.auth.OAuth2(
   clientId,
   clientSecret,
@@ -108,7 +108,7 @@ app.get("/oauth2callback", async (req, res) => {
 
       console.log("Session saved successfully with tokens");
       // Redirect with auth=success query parameter
-      const redirectUrl = `${process.env.REDIRECT_HOME}?auth=success` || "http://localhost:3000/home?auth=success";
+      const redirectUrl = `${process.env.REDIRECT_HOME}?auth=success` /*|| "http://localhost:3000/home?auth=success"*/;
       res.redirect(redirectUrl);
     });
   } catch (error) {
@@ -118,10 +118,10 @@ app.get("/oauth2callback", async (req, res) => {
 });
 
 app.get("/auth-check", async (req, res) => {
-  if (!req.session.tokens || !req.session.tokens.access_token) {
-    console.log("Token issue or not authenticatedd");
-    return res.status(401).send("User not authenticated");
-  }
+  // if (!req.session.tokens || !req.session.tokens.access_token) {
+  //   console.log("Token issue or not authenticated");
+  //   return res.status(401).send("User not authenticated");
+  // }
 
   // Extract user info from the session
   const { tokens } = req.session;
@@ -137,10 +137,10 @@ app.get("/auth-check", async (req, res) => {
 });
 
 app.get("/user-info", async (req, res) => {
-  if (!req.session.tokens || !req.session.tokens.access_token) {
-    console.log("Token issue or not authenticatedd");
-    return res.status(401).send("User not authenticated");
-  }
+  // if (!req.session.tokens || !req.session.tokens.access_token) {
+  //   console.log("Token issue or not authenticated");
+  //   return res.status(401).send("User not authenticated");
+  // }
 
   // Extract user info from the session
   const { tokens } = req.session;
