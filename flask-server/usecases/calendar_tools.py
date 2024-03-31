@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 from typing import Type, Optional
 from pydantic import BaseModel, Field
 from langchain.tools import BaseTool
-from usecases.calendar_functions import get_calendar_events, create_event, delete_event
+from usecases.calendar_functions import get_calendar_events, create_event, delete_event, update_event
 import pytz
 
 asia_singapore_timezone = pytz.timezone("Asia/Singapore")
@@ -199,3 +199,42 @@ class DeleteCalendarEventTool(BaseTool):
 
     def _arun(self):
         raise NotImplementedError("delete_calendar_event does not support async")
+
+class UpdateCalendarEventInput(BaseModel):
+    """Inputs for update_calendar_event"""
+    user_email: str = Field(description="email of the user")
+    calendar_id: str = Field(description="calendar id of the calendar")
+    event_id: str = Field(description="id of the event to update")
+    event_name: Optional[str] = Field(description="new name of the event")
+    start_datetime: Optional[str] = Field(description="new start datetime of the event in RFC3339 format")
+    end_datetime: Optional[str] = Field(description="new end datetime of the event in RFC3339 format")
+    attendee: Optional[str] = Field(description="new attendee of the event")
+    location: Optional[str] = Field(description="new location of the event")
+    
+
+class UpdateCalendarEventTool(BaseTool):
+    name = "update_calendar_event"
+    description = """
+    Useful when you want to update a calendar event given a calendar id, event id, and new event details.
+    """
+    args_schema: Type[BaseModel] = UpdateCalendarEventInput
+
+    def _run(
+        self,
+        user_email: str,
+        calendar_id: str,
+        event_id: str,
+        event_name: Optional[str] = None,
+        start_datetime: Optional[str] = None,
+        end_datetime: Optional[str] = None,
+        attendee: Optional[str] = None,
+        location: Optional[str] = None
+    ):
+        # Call the update_event function with the provided parameters
+        update_response = update_event(
+            user_email, calendar_id, event_id, event_name, start_datetime, end_datetime, attendee, location
+        )
+        return update_response
+
+    def _arun(self):
+        raise NotImplementedError("update_calendar_event does not support async")

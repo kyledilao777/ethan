@@ -1,5 +1,4 @@
 import {
-  
   CalendarDays,
   LayoutList,
   Users,
@@ -8,30 +7,27 @@ import {
   Settings,
   ArrowRight,
   ArrowLeft,
-  Home
+  Home,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import axios from "axios";
 
-export default function NavBar( { setIsNavOpen }) {
+export default function NavBar({ setIsNavOpen }) {
   const [isOpen, setIsOpen] = useState(false);
-  const [userInfo, setUserInfo] = useState({ name: '', photo: '' });
-  
+  const [userInfo, setUserInfo] = useState({ name: "", photo: "" });
+
   useEffect(() => {
     const fetchUserInfo = async () => {
       try {
-        // Fetch user info from backend API
-        // const { data } = await axios.get('http://localhost:3002/user-info', {
-        //   headers: {
-        //     Authorization: `Bearer ${accessToken}`, // Include access token
-        //   },
-        // });
-        const { data } = await axios.get( process.env.REACT_APP_USER_INFO /*|| 'http://localhost:3001/user-info'*/, { withCredentials: true });
+        const { data } = await axios.get(
+          process.env.REACT_APP_USER_INFO /*|| 'http://localhost:3001/user-info'*/,
+          { withCredentials: true }
+        );
         // Update userInfo state with fetched data
         setUserInfo({ name: data.name, photo: data.photo });
       } catch (error) {
-        console.error('Failed to fetch user info:', error);
+        console.error("Failed to fetch user info:", error);
       }
     };
 
@@ -42,21 +38,25 @@ export default function NavBar( { setIsNavOpen }) {
   }, []);
 
   const handleButton = () => {
-    setIsOpen(true)
-    setIsNavOpen(true)
-  }
+    setIsOpen(true);
+    setIsNavOpen(true);
+  };
   return (
     <div className="">
       <div
         className={`duration-300 h-full text-black bg-white ${
-          isOpen ? "w-[285px]" : "w-[70px]" 
+          isOpen ? "w-[285px]" : "w-[70px]"
         } transition-width border rounded-lg`}
       >
         <div className="flex justify-center ">
           <div className="flex items-center space-x-3 mx-5 h-20  mt-5">
             <div className="">
               <div className="flex justify-center items-center rounded-full bg-white h-[45px] w-[45px]">
-                <img src={userInfo.photo} alt="User" className="rounded-full h-[45px] w-[45px]" />
+                <img
+                  src={userInfo.photo}
+                  alt="User"
+                  className="rounded-full h-[45px] w-[45px]"
+                />
               </div>
             </div>
 
@@ -69,10 +69,12 @@ export default function NavBar( { setIsNavOpen }) {
 
             {isOpen && (
               <div>
-                <button onClick={() => {
-                  setIsOpen(false)
-                  setIsNavOpen(false)
-                }}>
+                <button
+                  onClick={() => {
+                    setIsOpen(false);
+                    setIsNavOpen(false);
+                  }}
+                >
                   <ArrowLeft color="black" />
                 </button>
               </div>
@@ -100,9 +102,7 @@ export default function NavBar( { setIsNavOpen }) {
                   )}
                 </div>
                 <div className="w-[243px]">
-                  {isOpen && (
-                    <text className="font-semibold">Assistant</text>
-                  )}
+                  {isOpen && <text className="font-semibold">Assistant</text>}
 
                   <button className="flex flex-row space-x-5 items-center my-8">
                     <li>
@@ -124,10 +124,11 @@ export default function NavBar( { setIsNavOpen }) {
                 </div>
 
                 <div className="space-y-8 ">
-                  {isOpen && (
-                    <text className=" font-semibold">Features</text>
-                  )}
-                  <Link to={{ pathname: "/home"}} className="flex flex-row space-x-5 items-center">
+                  {isOpen && <text className=" font-semibold">Features</text>}
+                  <Link
+                    to={{ pathname: "/home" }}
+                    className="flex flex-row space-x-5 items-center"
+                  >
                     <li>
                       {" "}
                       <Home size="30" color="black" />{" "}
@@ -138,7 +139,10 @@ export default function NavBar( { setIsNavOpen }) {
                       </div>
                     )}
                   </Link>
-                  <Link to={{ pathname: "/calendar"}} className="flex flex-row space-x-5 items-center">
+                  <Link
+                    to={{ pathname: "/calendar" }}
+                    className="flex flex-row space-x-5 items-center"
+                  >
                     <li>
                       {" "}
                       <CalendarDays size="30" color="black" />{" "}
@@ -149,20 +153,24 @@ export default function NavBar( { setIsNavOpen }) {
                       </div>
                     )}
                   </Link>
-                  <Link to={{ pathname: "/todo"}} className="flex flex-row space-x-5 items-center">
+                  <Link
+                    to={{ pathname: "/todo" }}
+                    className="flex flex-row space-x-5 items-center"
+                  >
                     <li>
                       {" "}
                       <LayoutList size="30" color="black" />{" "}
                     </li>
                     {isOpen && (
                       <div className="w-[72px]">
-                        <text className=" font-medium">
-                          To do List
-                        </text>
+                        <text className=" font-medium">To do List</text>
                       </div>
                     )}
                   </Link>
-                  <Link to={{ pathname: "/meeting"}} className="flex flex-row space-x-5 items-center">
+                  <Link
+                    to={{ pathname: "/meeting" }}
+                    className="flex flex-row space-x-5 items-center"
+                  >
                     <li>
                       {" "}
                       <Users size="30" color="black" />{" "}
@@ -175,7 +183,10 @@ export default function NavBar( { setIsNavOpen }) {
                     )}
                   </Link>
                   <div>
-                  <Link to={{ pathname: "/routemap"}}className="flex flex-row space-x-5 items-center">
+                    <Link
+                      to={{ pathname: "/routemap" }}
+                      className="flex flex-row space-x-5 items-center"
+                    >
                       <li>
                         {" "}
                         <Map size="30" color="black" />{" "}
@@ -193,9 +204,7 @@ export default function NavBar( { setIsNavOpen }) {
                     )}
                   </div>
                   <div>
-                    {isOpen && (
-                      <text className=" font-semibold">Settings</text>
-                    )}
+                    {isOpen && <text className=" font-semibold">Settings</text>}
                     <button className="flex flex-row space-x-5 items-center my-8">
                       <li>
                         {" "}
@@ -203,9 +212,7 @@ export default function NavBar( { setIsNavOpen }) {
                       </li>
                       {isOpen && (
                         <div className=" ">
-                          <text className=" font-medium">
-                            Settings
-                          </text>
+                          <text className=" font-medium">Settings</text>
                         </div>
                       )}
                     </button>

@@ -29,8 +29,8 @@ export default function Home() {
     const fetchEvents = async () => {
       try {
         const res = await axios.get(
-          process.env.REACT_APP_FETCH_CALENDAR_URL ||
-          "http://localhost:3001/fetch-calendar-events",
+          process.env.REACT_APP_FETCH_CALENDAR_URL /*||
+          "http://localhost:3001/fetch-calendar-events"*/,
           { withCredentials: true }
         );
         // Transform events to the format FullCalendar expects
@@ -75,12 +75,8 @@ export default function Home() {
       }
     };
 
-    const searchParams = new URLSearchParams(location.search);
-    const isAuthenticated = localStorage.getItem('isAuthenticated')
-    if (searchParams.get('auth') === 'success' || isAuthenticated) {
-      fetchEvents();
-    }
-  }, []);
+    fetchEvents();
+  }, [events]);
 
   const renderEventContent = (eventInfo) => {
     const { event } = eventInfo;

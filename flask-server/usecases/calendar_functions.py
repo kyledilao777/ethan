@@ -135,3 +135,45 @@ def delete_event(user_email, calendar_id, event_id):
 
     else:
         return {"error": "Failed to delete event"}
+
+def update_event(calendar_id, event_id, event_name=None, start_datetime=None, end_datetime=None, attendee=None, location=None):
+    access_token = get_access_token()
+
+    endpoint = f"https://www.googleapis.com/calendar/v3/calendars/{calendar_id}/events/{event_id}"
+
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+        "Accept": "application/json",
+        "Content-Type": "application/json",
+    }
+
+    # Retrieve the existing event to get the current timezone
+    existing_event_response = requests.get(endpoint, headers=headers)
+    existing_event = existing_event_response.json()
+    timezone = existing_event.get("start").get("timeZone")
+
+    # Initialize the event data dictionary with the existing event details
+    event_data = {
+        "id": event_id,
+        "summary": existing_event.get("summary"),
+        "start": existing_event.get("start"),
+        "end": existing_event.get("end"),
+    }
+
+    # Update the event details if provided
+    if event_name:
+        event_data["summary"] = event_name
+    if start_datetime:
+        event_data["start"]["dateTime"] = start_datetime
+        event_data["start"]["timeZone"] = timezone
+    if end_datetime:
+        event_data["end"]["dateTime"] = end_datetime
+        event_data["end"]["timeZone"] = timezone
+    if attendee:
+        event_data["attendees"] = [{"email": attendee}]
+    if location:
+        event_data["location"] = location
+
+    # Make the API request to update the event
+    response = requests.put(endpoint, headers=headers, json=event_data)
+    return response.json()

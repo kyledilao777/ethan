@@ -66,7 +66,7 @@ export default function Home() {
     const checkAuthStatus = async () => {
       try {
         // Note: Adjust the URL based on your server's configuration
-        const { data } = await axios.get(process.env.REACT_APP_AUTH_CHECK /*|| 'http://localhost:3001/auth-check'*/, { withCredentials: true });
+        const { data } = await axios.get(process.env.REACT_APP_AUTH_CHECK /*||'http://localhost:3001/auth-check'*/, { withCredentials: true });
         setIsAuthenticated(data.isAuthenticated);
       } catch (error) {
         console.error('Error checking authentication status:', error);
