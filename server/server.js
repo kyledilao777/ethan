@@ -89,6 +89,16 @@ app.get("/oauth2callback", async (req, res) => {
 
     console.log("Tokens stored in session:", req.session.tokens);
 
+    // Explicitly setting a cookie if needed
+    if (process.env.NODE_ENV === 'production') {
+      res.cookie('sessionId', req.session.id, {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'None', // Use 'None' for cross-origin, 'Lax' or 'Strict' for same-origin
+        maxAge: 86400000 // Example: cookie will expire in 24 hours
+      });
+    }
+
     // Save the session explicitly, if needed, then redirect
     req.session.save((err) => {
       if (err) {
