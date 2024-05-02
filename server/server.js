@@ -2,7 +2,8 @@ require("dotenv").config();
 const cors = require("cors");
 const express = require("express");
 const session = require("express-session");
-const LokiStore = require("connect-loki")(session);
+const MongoStore = require("connect-mongo");
+// const LokiStore = require("connect-loki")(session);
 const { google } = require("googleapis");
 const axios = require("axios");
 const { apikeys } = require("googleapis/build/src/apis/apikeys");
@@ -10,13 +11,14 @@ const { apikeys } = require("googleapis/build/src/apis/apikeys");
 const app = express();
 const port = process.env.PORT /*|| 3001*/;
 
+const sessionStore = MongoStore.create({
+  mongoUrl: process.env.MONGODB_URI,
+});
+
 app.use(
   session({
     secret: process.env.SESSION_SECRET, // Change this to a random secret string
-    store: new LokiStore({
-      path: "./sessions.json", // The file path to store sessions (optional, defaults to './sessions.json')
-      logErrors: true, // Whether to log errors (optional)
-    }),
+    store: sessionStore,
     resave: false,
     saveUninitialized: false,
     cookie: { domain: '.onrender.com', path: '/', secure: process.env.NODE_ENV === 'production', sameSite: 'None' },
