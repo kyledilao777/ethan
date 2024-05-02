@@ -13,10 +13,16 @@
   "dependencies": {
     "axios": "^1.6.8",
     "connect-loki": "^1.2.0",
+    "connect-mongo": "^5.1.0",
+    "connect-mongodb-session": "^5.0.0",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.19.1",
     "express-session": "^1.18.0",
-    "googleapis": "^134.0.0"
+    "firebase": "^10.11.1",
+    "firebase-admin": "^12.1.0",
+    "googleapis": "^134.0.0",
+    "mongodb": "^6.5.0"
   }
 }
+
