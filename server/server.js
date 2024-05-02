@@ -20,7 +20,7 @@ app.use(
     secret: process.env.SESSION_SECRET, // Change this to a random secret string
     store: sessionStore,
     resave: false,
-    saveUninitialized: false,
+    saveUninitialized: true,
     cookie: { domain: 'https://untangled-v2-main.onrender.com', path: '/', secure: process.env.NODE_ENV === 'production', sameSite: 'None' },
     //cookie: { secure: false, sameSite: "lax" }, /*only for local development*/
   })
