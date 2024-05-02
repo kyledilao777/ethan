@@ -21,7 +21,7 @@ app.use(
     store: sessionStore,
     resave: false,
     saveUninitialized: true,
-    cookie: { domain: 'https://untangled-v2-main.onrender.com', path: '/', secure: process.env.NODE_ENV === 'production', sameSite: 'None' },
+    cookie: { domain: '.onrender.com', path: '/', secure: process.env.NODE_ENV === 'production', sameSite: 'None' },
     //cookie: { secure: false, sameSite: "lax" }, /*only for local development*/
   })
 );
