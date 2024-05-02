@@ -33,20 +33,20 @@ app.use(
   })
 );
 
-// app.use((req, res, next) => {
-//   const allowedOrigins = ['http://localhost:3000', process.env.CORS_ORIGIN];
-//   const origin = req.headers.origin;
-//   if (allowedOrigins.includes(origin)) {
-//      res.header('Access-Control-Allow-Origin', origin);
-//   }
+app.use((req, res, next) => {
+  const allowedOrigins = ['http://localhost:3000', process.env.CORS_ORIGIN];
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+     res.header('Access-Control-Allow-Origin', origin);
+  }
 
-//   res.header('Access-Control-Allow-Credentials', 'true');
-//   res.header(
-//     'Access-Control-Allow-Headers',
-//     'Origin, X-Requested-With, Content-Type, Accept, Authorization'
-//   );
-//   next();
-// });
+  res.header('Access-Control-Allow-Credentials', 'true');
+  res.header(
+    'Access-Control-Allow-Headers',
+    'Origin, X-Requested-With, Content-Type, Accept, Authorization'
+  );
+  next();
+});
 
 app.use((req, res, next) => {
   console.log("Session State:", req.session);
