@@ -21,7 +21,7 @@ app.use(
     store: sessionStore,
     resave: false,
     saveUninitialized: true,
-    cookie: { domain: '.onrender.com', path: '/', secure: process.env.NODE_ENV === 'production', sameSite: 'None' },
+    cookie: { domain: '.onrender.com', path: '/', secure: process.env.NODE_ENV === 'production', sameSite: 'none', maxAge: 1000 * 60 * 60 * 24 * 7 },
     //cookie: { secure: false, sameSite: "lax" }, /*only for local development*/
   })
 );
