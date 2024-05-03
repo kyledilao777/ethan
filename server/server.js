@@ -91,6 +91,8 @@ app.get("/oauth2callback", async (req, res) => {
     res.cookie('userId', tokens, {
       httpOnly: true, // Recommended to prevent access via client-side JS
       secure: process.env.NODE_ENV === 'production', // Ensure cookies are sent over HTTPS
+      domain: '.onrender.com',
+      path: '/',
       sameSite: 'None', // Necessary if your frontend and backend are not on the same domain
       maxAge: 1000 * 60 * 60 * 24 * 7 // 7 days for cookie expiration
     });
