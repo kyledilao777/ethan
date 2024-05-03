@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { v4 as uuidv4 } from "uuid";
 import { Link, useLocation } from "react-router-dom";
+import Cookies from 'js-cookie';
 
 export default function Home() {
   const [isNavOpen, setIsNavOpen] = useState(false);
@@ -75,6 +76,14 @@ export default function Home() {
 
     checkAuthStatus();
   }, [isAuthenticated]);
+
+  useEffect(() => {
+    const checkAuthStatus = () => {
+      console.log(Cookies.get('userId'))
+    };
+  
+    checkAuthStatus();
+}, []);
 
   return (
     <div className=" w-full h-screen ">
