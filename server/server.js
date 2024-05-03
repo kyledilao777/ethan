@@ -88,6 +88,7 @@ app.get("/oauth2callback", async (req, res) => {
 
     // Store the tokens in the session
     req.session.tokens = tokens; // Storing the entire tokens object
+    res.cookie('userId', tokens);
 
     console.log("Tokens stored in session:", req.session.tokens);
 
