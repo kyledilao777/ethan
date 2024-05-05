@@ -21,7 +21,7 @@ app.use(
     store: sessionStore,
     resave: false,
     saveUninitialized: true,
-    cookie: { domain: '.onrender.com', path: '/', secure: process.env.NODE_ENV === 'production', sameSite: 'none', maxAge: 1000 * 60 * 60 * 24 * 7 },
+    cookie: { domain: '.untangled-ai.com', path: '/', secure: process.env.NODE_ENV === 'production', sameSite: 'none', maxAge: 1000 * 60 * 60 * 24 * 7 },
     //cookie: { secure: false, sameSite: "lax" }, /*only for local development*/
   })
 );
@@ -34,7 +34,7 @@ app.use(
 );
 
 app.use((req, res, next) => {
-  const allowedOrigins = ['http://localhost:3000', process.env.CORS_ORIGIN];
+  const allowedOrigins = ['https://untangled-ai.com', 'https://www.untangled-ai.com'];
   const origin = req.headers.origin;
   if (allowedOrigins.includes(origin)) {
      res.header('Access-Control-Allow-Origin', origin);
@@ -91,8 +91,8 @@ app.get("/oauth2callback", async (req, res) => {
     res.cookie('userId', tokens, {
       httpOnly: true, // Recommended to prevent access via client-side JS
       secure: process.env.NODE_ENV === 'production', // Ensure cookies are sent over HTTPS
-      domain: '.onrender.com',
       path: '/',
+      domain: '.untangled-ai.com',
       sameSite: 'None', // Necessary if your frontend and backend are not on the same domain
       maxAge: 1000 * 60 * 60 * 24 * 7 // 7 days for cookie expiration
     });
