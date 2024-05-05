@@ -25,7 +25,7 @@ app.use(
       secure: true, // Ensure cookies are sent over HTTPS
       path: '/',
       domain: '.untangled-ai.com',
-      sameSite: 'None', // Necessary if your frontend and backend are not on the same domain
+      sameSite: 'none', // Necessary if your frontend and backend are not on the same domain
       maxAge: 1000 * 60 * 60 * 24 * 7 // 7 days for cookie expiration},
     //cookie: { secure: false, sameSite: "lax" }, /*only for local development*/
     }
@@ -97,7 +97,7 @@ app.get("/oauth2callback", async (req, res) => {
       secure: true, // Ensure cookies are sent over HTTPS
       path: '/',
       domain: '.untangled-ai.com',
-      sameSite: 'None', // Necessary if your frontend and backend are not on the same domain
+      sameSite: 'none', // Necessary if your frontend and backend are not on the same domain
       maxAge: 1000 * 60 * 60 * 24 * 7 // 7 days for cookie expiration
     });
 
