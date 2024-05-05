@@ -77,14 +77,28 @@ export default function Home() {
     checkAuthStatus();
   }, [isAuthenticated]);
 
-  useEffect(() => {
+ useEffect(() => {
     const checkAuthStatus = () => {
-      console.log(Cookies.get('userId'))
-    };
-  
-    checkAuthStatus();
-}, []);
+      const userIdCookie = Cookies.get("userId");
+      let accessToken = "";
 
+      if (userIdCookie) {
+        try {
+          const parsedCookie = JSON.parse(userIdCookie);
+          accessToken = parsedCookie.access_token || "";
+        } catch (error) {
+          console.error("Failed to parse userId cookie:", error);
+        }
+      } else {
+        console.error("No userId cookie found");
+      }
+
+      console.log("Access Token:", accessToken);
+    };
+
+    checkAuthStatus();
+  }, []);
+    
   return (
     <div className=" w-full h-screen ">
       <div className="w-full flex flex-row h-screen ">
