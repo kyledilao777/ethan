@@ -34,13 +34,13 @@ app.use(
 
 app.use(
   cors({
-    origin: [process.env.CORS_ORIGIN, "https://www.untangled-ai.com"],
+    origin: [process.env.CORS_ORIGIN, "https://www.untangled-ai.com", "https://untangled-ai.com"],
     credentials: true,
   })
 );
 
 app.use((req, res, next) => {
-  const allowedOrigins = ['https://untangled-ai.com', 'https://www.untangled-ai.com'];
+  const allowedOrigins = [process.env.CORS_ORIGIN, "https://www.untangled-ai.com", "https://www.untangled-ai.com", "https://backend.untangled-ai.com"];
   const origin = req.headers.origin;
   if (allowedOrigins.includes(origin)) {
      res.header('Access-Control-Allow-Origin', origin);
