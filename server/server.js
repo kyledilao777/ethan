@@ -21,14 +21,14 @@ app.use(
     store: sessionStore,
     resave: false,
     saveUninitialized: true,
-    cookie: { domain: '.untangled-ai.com', path: '/', secure: process.env.NODE_ENV === 'production', sameSite: 'none', maxAge: 1000 * 60 * 60 * 24 * 7 },
+    cookie: { domain: '.untangled-ai.com', path: '/', secure: process.env.NODE_ENV === 'production', sameSite: 'None', maxAge: 1000 * 60 * 60 * 24 * 7 },
     //cookie: { secure: false, sameSite: "lax" }, /*only for local development*/
   })
 );
 
 app.use(
   cors({
-    origin: process.env.CORS_ORIGIN /*||  'http://localhost:3000'*/,
+    origin: [process.env.CORS_ORIGIN, "https://www.untangled-ai.com"],
     credentials: true,
   })
 );
@@ -41,10 +41,8 @@ app.use((req, res, next) => {
   }
 
   res.header('Access-Control-Allow-Credentials', 'true');
-  res.header(
-    'Access-Control-Allow-Headers',
-    'Origin, X-Requested-With, Content-Type, Accept, Authorization'
-  );
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
+  res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, DELETE");
   next();
 });
 
