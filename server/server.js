@@ -3,13 +3,11 @@ const cors = require("cors");
 const express = require("express");
 const session = require("express-session");
 const MongoStore = require("connect-mongo");
-// const LokiStore = require("connect-loki")(session);
 const { google } = require("googleapis");
 const axios = require("axios");
-const { apikeys } = require("googleapis/build/src/apis/apikeys");
 
 const app = express();
-const port = process.env.PORT /*|| 3001*/;
+const port = process.env.PORT;
 
 const sessionStore = MongoStore.create({
   mongoUrl: process.env.MONGODB_URI,
@@ -17,37 +15,50 @@ const sessionStore = MongoStore.create({
 
 app.use(
   session({
-    secret: process.env.SESSION_SECRET, // Change this to a random secret string
+    secret: process.env.SESSION_SECRET,
     store: sessionStore,
     resave: false,
     saveUninitialized: true,
-    cookie: {  httpOnly: true, // Recommended to prevent access via client-side JS
-      secure: true, // Ensure cookies are sent over HTTPS
+    cookie: {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
       path: '/',
       domain: '.untangled-ai.com',
-      sameSite: 'none', // Necessary if your frontend and backend are not on the same domain
-      maxAge: 1000 * 60 * 60 * 24 * 7 // 7 days for cookie expiration},
-    //cookie: { secure: false, sameSite: "lax" }, /*only for local development*/
-    }
+      sameSite: 'none',
+      maxAge: 1000 * 60 * 60 * 24 * 7,
+    },
   })
 );
 
 app.use(
   cors({
-    origin: [process.env.CORS_ORIGIN, "https://www.untangled-ai.com", "https://untangled-ai.com"],
+    origin: [
+      "https://main.untangled-ai.com",
+      "https://backend.untangled-ai.com",
+      "https://untangled-ai.com",
+      "https://www.untangled-ai.com",
+    ],
     credentials: true,
   })
 );
 
 app.use((req, res, next) => {
-  const allowedOrigins = [process.env.CORS_ORIGIN, "https://www.untangled-ai.com", "https://www.untangled-ai.com", "https://backend.untangled-ai.com"];
+  const allowedOrigins = [
+    "https://main.untangled-ai.com",
+    "https://backend.untangled-ai.com",
+    "https://untangled-ai.com",
+    "https://www.untangled-ai.com",
+  ];
   const origin = req.headers.origin;
   if (allowedOrigins.includes(origin)) {
-     res.header('Access-Control-Allow-Origin', origin);
+    res.header("Access-Control-Allow-Origin", origin);
   }
 
-  res.header('Access-Control-Allow-Credentials', 'true');
-  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
+  res.header("Access-Control-Allow-Credentials", "true");
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept, Authorization"
+  );
   res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, DELETE");
   next();
 });
@@ -57,15 +68,10 @@ app.use((req, res, next) => {
   next();
 });
 
-
 const clientId = process.env.GOOGLE_CLIENT_ID;
 const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
-const redirectUri = process.env.GOOGLE_REDIRECT_URI /*||  "http://localhost:3001/oauth2callback"*/;
-const oAuth2Client = new google.auth.OAuth2(
-  clientId,
-  clientSecret,
-  redirectUri
-);
+const redirectUri = process.env.GOOGLE_REDIRECT_URI;
+const oAuth2Client = new google.auth.OAuth2(clientId, clientSecret, redirectUri);
 
 app.get("/login", (req, res) => {
   const url = oAuth2Client.generateAuthUrl({
@@ -92,13 +98,13 @@ app.get("/oauth2callback", async (req, res) => {
 
     // Store the tokens in the session
     req.session.tokens = tokens; // Storing the entire tokens object
-    res.cookie('userId', tokens, {
-      httpOnly: true, // Recommended to prevent access via client-side JS
-      secure: true, // Ensure cookies are sent over HTTPS
-      path: '/',
-      domain: '.untangled-ai.com',
-      sameSite: 'none', // Necessary if your frontend and backend are not on the same domain
-      maxAge: 1000 * 60 * 60 * 24 * 7 // 7 days for cookie expiration
+    res.cookie("userId", tokens, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      path: "/",
+      domain: ".untangled-ai.com",
+      sameSite: "none",
+      maxAge: 1000 * 60 * 60 * 24 * 7,
     });
 
     console.log("Tokens stored in session:", req.session.tokens);
@@ -109,19 +115,18 @@ app.get("/oauth2callback", async (req, res) => {
         console.error("Session save error:", err);
         return res.status(500).send("Failed to save session");
       }
-      const redirectUrl = `${process.env.REDIRECT_HOME}?auth=success` /*||  "http://localhost:3000/home?auth=success"*/;
+      const redirectUrl = `${process.env.REDIRECT_HOME}?auth=success`;
       res.redirect(redirectUrl);
       console.log("Session saved successfully with tokens");
     });
-
-    
   } catch (error) {
     console.error("Error during OAuth2 callback", error);
-    res.status(500).send("Authentication errorr");
+    res.status(500).send("Authentication error");
   }
 });
 
 app.get("/auth-check", async (req, res) => {
+  console.log("auth-check Session:", req.session);
   if (!req.session.tokens || !req.session.tokens.access_token) {
     console.log("Token issue or not authenticated");
     return res.status(401).send("User not authenticated");
@@ -141,6 +146,7 @@ app.get("/auth-check", async (req, res) => {
 });
 
 app.get("/user-info", async (req, res) => {
+  console.log("user-info Session:", req.session);
   if (!req.session.tokens || !req.session.tokens.access_token) {
     console.log("Token issue or not authenticated");
     return res.status(401).send("User not authenticated");
@@ -172,10 +178,14 @@ app.get("/user-info", async (req, res) => {
 });
 
 app.get("/fetch-calendar-events", async (req, res) => {
-  // Extract user info from the session
+  console.log("fetch-calendar-events Session:", req.session);
   const { tokens } = req.session;
-  oAuth2Client.setCredentials(tokens);
+  if (!tokens || !tokens.access_token) {
+    console.log("Token issue or not authenticated");
+    return res.status(401).send("User not authenticated");
+  }
 
+  oAuth2Client.setCredentials(tokens);
   console.log("fetch events", tokens.access_token);
 
   try {
@@ -193,6 +203,7 @@ app.get("/fetch-calendar-events", async (req, res) => {
     res.status(500).send("Error fetching calendar events");
   }
 });
+
 app.listen(port, "0.0.0.0", () => {
   console.log(`Server started at http://localhost:${port}`);
 });
