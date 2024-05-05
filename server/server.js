@@ -28,6 +28,7 @@ app.use(
       sameSite: 'None', // Necessary if your frontend and backend are not on the same domain
       maxAge: 1000 * 60 * 60 * 24 * 7 // 7 days for cookie expiration},
     //cookie: { secure: false, sameSite: "lax" }, /*only for local development*/
+    }
   })
 );
 
