@@ -108,12 +108,12 @@ app.get("/oauth2callback", async (req, res) => {
         console.error("Session save error:", err);
         return res.status(500).send("Failed to save session");
       }
-
+      const redirectUrl = `${process.env.REDIRECT_HOME}?auth=success` /*||  "http://localhost:3000/home?auth=success"*/;
+      res.redirect(redirectUrl);
       console.log("Session saved successfully with tokens");
     });
 
-    const redirectUrl = `${process.env.REDIRECT_HOME}?auth=success` /*||  "http://localhost:3000/home?auth=success"*/;
-    res.redirect(redirectUrl);
+    
   } catch (error) {
     console.error("Error during OAuth2 callback", error);
     res.status(500).send("Authentication errorr");
