@@ -18,7 +18,7 @@ app.use(
     secret: process.env.SESSION_SECRET,
     store: sessionStore,
     resave: false,
-    saveUninitialized: true,
+    saveUninitialized: false,
     cookie: {
       httpOnly: true,
       secure: false,
@@ -98,15 +98,7 @@ app.get("/oauth2callback", async (req, res) => {
 
     // Store the tokens in the session
     req.session.tokens = tokens; // Storing the entire tokens object
-    res.cookie("userId", tokens, {
-      httpOnly: true,
-      secure: false,
-      path: "/",
-      domain: ".untangled-ai.com",
-      sameSite: "none",
-      maxAge: 1000 * 60 * 60 * 24 * 7,
-    });
-
+    
     console.log("Tokens stored in session:", req.session.tokens);
 
     // Save the session explicitly, if needed, then redirect
