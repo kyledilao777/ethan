@@ -18,10 +18,10 @@ app.use(
     secret: process.env.SESSION_SECRET,
     store: sessionStore,
     resave: false,
-    saveUninitialized: false,
+    saveUninitialized: true,
     cookie: {
       httpOnly: true,
-      secure: false,
+      secure: true,
       path: '/',
       domain: '.untangled-ai.com',
       sameSite: 'none',
@@ -107,9 +107,11 @@ app.get("/oauth2callback", async (req, res) => {
         console.error("Session save error:", err);
         return res.status(500).send("Failed to save session");
       }
-      const redirectUrl = `${process.env.REDIRECT_HOME}?auth=success`;
-      res.redirect(redirectUrl);
+      
       console.log("Session saved successfully with tokens");
+      res.flushHeaders();  // Ensure headers (including session ID cookie) are sent
+      const redirectUrl = `${process.env.REDIRECT_HOME}?auth=success` /*||  "http://localhost:3000/home?auth=success"*/;
+      res.redirect(redirectUrl);
     });
   } catch (error) {
     console.error("Error during OAuth2 callback", error);
