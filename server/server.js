@@ -20,7 +20,7 @@ app.use(
     resave: false,
     saveUninitialized: true,
     cookie: {
-      httpOnly: false,
+      httpOnly: true,
       secure: false,
       path: '/',
       domain: '.untangled-ai.com',
@@ -99,7 +99,7 @@ app.get("/oauth2callback", async (req, res) => {
     // Store the tokens in the session
     req.session.tokens = tokens; // Storing the entire tokens object
     res.cookie("userId", tokens, {
-      httpOnly: false,
+      httpOnly: true,
       secure: false,
       path: "/",
       domain: ".untangled-ai.com",
