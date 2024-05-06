@@ -80,21 +80,26 @@ export default function Home() {
  useEffect(() => {
     const checkAuthStatus = () => {
       const userIdCookie = Cookies.get("userId");
+      const jsonString = userIdCookie.slice(2);
+
+// Parse the JSON string
+
       let accessToken = "";
 
       if (userIdCookie) {
         try {
-          const parsedCookie = JSON.parse(userIdCookie);
+          const parsedCookie = JSON.parse(jsonString);
           accessToken = parsedCookie.access_token || "";
+          console.log(accessToken, "here");
         } catch (error) {
           console.error("Failed to parse userId cookie:", error);
         }
       } else {
         console.error("No userId cookie found");
       }
-
-      console.log("Access Token:", accessToken);
     };
+
+   
 
     checkAuthStatus();
   }, []);
