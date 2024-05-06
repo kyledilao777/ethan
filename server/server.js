@@ -109,7 +109,6 @@ app.get("/oauth2callback", async (req, res) => {
       }
       
       console.log("Session saved successfully with tokens");
-      res.flushHeaders();  // Ensure headers (including session ID cookie) are sent
       const redirectUrl = `${process.env.REDIRECT_HOME}?auth=success` /*||  "http://localhost:3000/home?auth=success"*/;
       res.redirect(redirectUrl);
     });
