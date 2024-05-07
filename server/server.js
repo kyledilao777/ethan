@@ -18,7 +18,8 @@ app.use(
     secret: process.env.SESSION_SECRET,
     store: sessionStore,
     resave: false,
-    saveUninitialized: true,
+    // saveUninitialized: true,
+    saveUninitialized: false,
     cookie: {
       httpOnly: true,
       secure: true,
@@ -29,6 +30,10 @@ app.use(
     },
   })
 );
+app.use((req, res, next) => {
+  console.log("Session State:", req.session);
+  next();
+});
 
 app.use(
   cors({
@@ -42,31 +47,26 @@ app.use(
   })
 );
 
-app.use((req, res, next) => {
-  const allowedOrigins = [
-    "https://main.untangled-ai.com",
-    "https://backend.untangled-ai.com",
-    "https://untangled-ai.com",
-    "https://www.untangled-ai.com",
-  ];
-  const origin = req.headers.origin;
-  if (allowedOrigins.includes(origin)) {
-    res.header("Access-Control-Allow-Origin", origin);
-  }
+// app.use((req, res, next) => {
+//   const allowedOrigins = [
+//     "https://main.untangled-ai.com",
+//     "https://backend.untangled-ai.com",
+//     "https://untangled-ai.com",
+//     "https://www.untangled-ai.com",
+//   ];
+//   const origin = req.headers.origin;
+//   if (allowedOrigins.includes(origin)) {
+//     res.header("Access-Control-Allow-Origin", origin);
+//   }
 
-  res.header("Access-Control-Allow-Credentials", "true");
-  res.header(
-    "Access-Control-Allow-Headers",
-    "Origin, X-Requested-With, Content-Type, Accept, Authorization"
-  );
-  res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, DELETE");
-  next();
-});
-
-app.use((req, res, next) => {
-  console.log("Session State:", req.session);
-  next();
-});
+//   res.header("Access-Control-Allow-Credentials", "true");
+//   res.header(
+//     "Access-Control-Allow-Headers",
+//     "Origin, X-Requested-With, Content-Type, Accept, Authorization"
+//   );
+//   res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, DELETE");
+//   next();
+// });
 
 const clientId = process.env.GOOGLE_CLIENT_ID;
 const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
@@ -129,13 +129,19 @@ app.get("/auth-check", async (req, res) => {
   const { tokens } = req.session;
   oAuth2Client.setCredentials(tokens);
 
-  console.log("auth check", tokens.access_token);
-
-  if (req.session.tokens && req.session.tokens.access_token) {
-    res.json({ isAuthenticated: true });
-  } else {
-    res.json({ isAuthenticated: false });
+  try {
+    // Validate the token
+    await oAuth2Client.getTokenInfo(tokens.access_token);
+    console.log("auth check", tokens.access_token);
+    return res.json({ isAuthenticated: true });
+  } catch (error) {
+    console.error("Invalid or expired token:", error);
+    return res.status(401).json({ isAuthenticated: false, error: "Invalid or expired token" });
   }
+});
+
+app.options("/user-info", (req, res) => {
+  res.sendStatus(204);
 });
 
 app.get("/user-info", async (req, res) => {
@@ -148,8 +154,6 @@ app.get("/user-info", async (req, res) => {
   // Extract user info from the session
   const { tokens } = req.session;
   oAuth2Client.setCredentials(tokens);
-
-  console.log("user info", tokens.access_token);
 
   const peopleService = google.people({ version: "v1", auth: oAuth2Client });
   try {
