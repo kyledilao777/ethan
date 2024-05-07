@@ -1,5 +1,6 @@
 require("dotenv").config();
 const cors = require("cors");
+const url = require("url");
 const express = require("express");
 const session = require("express-session");
 const crypto = require("crypto");
@@ -7,6 +8,15 @@ const MongoStore = require("connect-mongo");
 const { google } = require("googleapis");
 const axios = require("axios");
 const port = process.env.PORT;
+
+const clientId = process.env.GOOGLE_CLIENT_ID;
+const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+const redirectUri = process.env.GOOGLE_REDIRECT_URI;
+const oAuth2Client = new google.auth.OAuth2(
+  clientId,
+  clientSecret,
+  redirectUri
+);
 
 let userCredential = null;
 async function main() {
@@ -76,19 +86,9 @@ async function main() {
   //   next();
   // });
 
-  const clientId = process.env.GOOGLE_CLIENT_ID;
-  const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
-  const redirectUri = process.env.GOOGLE_REDIRECT_URI;
-  const oAuth2Client = new google.auth.OAuth2(
-    clientId,
-    clientSecret,
-    redirectUri
-  );
-
   app.get("/login", (req, res) => {
     // Generate a secure random state value.
     const state = crypto.randomBytes(32).toString("hex");
-
     // Store state in the session
     req.session.state = state;
 
@@ -106,53 +106,61 @@ async function main() {
     res.redirect(url);
   });
 
-  const url = require("url");
-
   app.get("/oauth2callback", async (req, res) => {
     let q = url.parse(req.url, true).query;
 
     if (q.error) {
-      // An error response e.g. error=access_denied
       console.log("Error:" + q.error);
+      return res.status(400).send("Authentication error");
     } else if (q.state !== req.session.state) {
-      //check state value
       console.log("State mismatch. Possible CSRF attack");
-      res.end("State mismatch. Possible CSRF attack");
+      return res.status(400).send("State mismatch. Possible CSRF attack");
     } else {
-      // Get access and refresh tokens (if access_type is offline)
+      let { tokens } = await oAuth2Client.getToken(q.code);
+      oAuth2Client.setCredentials(tokens);
+      req.session.tokens = tokens;
+      delete req.session.state;
 
-      let { tokens } = await oauth2Client.getToken(q.code);
-      oauth2Client.setCredentials(tokens);
+      req.session.save((err) => {
+        if (err) {
+          console.error("Session save error:", err);
+          return res.status(500).send("Failed to save session");
+        }
 
-      // try {
-      //   const { tokens } = await oAuth2Client.getToken(code);
-      //   if (!tokens) {
-      //     console.error("Failed to retrieve tokens");
-      //     return res.status(500).send("Failed to authenticate");
-      //   }
-
-      //   oAuth2Client.setCredentials(tokens);
-
-      //   // Store the tokens in the session
-      //   req.session.tokens = tokens; // Storing the entire tokens object
-
-      //   console.log("Tokens stored in session:", req.session.tokens);
-
-      //   // Save the session explicitly, if needed, then redirect
-      //   req.session.save((err) => {
-      //     if (err) {
-      //       console.error("Session save error:", err);
-      //       return res.status(500).send("Failed to save session");
-      //     }
-
-      //     console.log("Session saved successfully with tokens");
-      //     const redirectUrl = `${process.env.REDIRECT_HOME}` /*||  "http://localhost:3000/home?auth=success"*/;
-      //     res.redirect(redirectUrl);
-      //   });
-      // } catch (error) {
-      //   console.error("Error during OAuth2 callback", error);
-      //   res.status(500).send("Authentication error");
+        const redirectUrl = `${process.env.REDIRECT_HOME}`;
+        res.redirect(redirectUrl);
+      });
     }
+
+    // try {
+    //   const { tokens } = await oAuth2Client.getToken(code);
+    //   if (!tokens) {
+    //     console.error("Failed to retrieve tokens");
+    //     return res.status(500).send("Failed to authenticate");
+    //   }
+
+    //   oAuth2Client.setCredentials(tokens);
+
+    //   // Store the tokens in the session
+    //   req.session.tokens = tokens; // Storing the entire tokens object
+
+    //   console.log("Tokens stored in session:", req.session.tokens);
+
+    //   // Save the session explicitly, if needed, then redirect
+    //   req.session.save((err) => {
+    //     if (err) {
+    //       console.error("Session save error:", err);
+    //       return res.status(500).send("Failed to save session");
+    //     }
+
+    //     console.log("Session saved successfully with tokens");
+    //     const redirectUrl = `${process.env.REDIRECT_HOME}` /*||  "http://localhost:3000/home?auth=success"*/;
+    //     res.redirect(redirectUrl);
+    //   });
+    // } catch (error) {
+    //   console.error("Error during OAuth2 callback", error);
+    //   res.status(500).send("Authentication error");
+    // }
   });
 
   app.get("/auth-check", async (req, res) => {
@@ -189,8 +197,6 @@ async function main() {
       console.log("Token issue or not authenticated");
       return res.status(401).send("User not authenticated");
     }
-
-    
 
     // // Extract user info from the session
     // const { tokens } = req.session;
