@@ -3,7 +3,6 @@ const cors = require("cors");
 const url = require("url");
 const express = require("express");
 const session = require("express-session");
-const crypto = require("crypto");
 const MongoStore = require("connect-mongo");
 const { google } = require("googleapis");
 const axios = require("axios");
@@ -18,7 +17,6 @@ const oAuth2Client = new google.auth.OAuth2(
   redirectUri
 );
 
-let userCredential = null;
 async function main() {
   const app = express();
 
@@ -86,50 +84,60 @@ async function main() {
   //   next();
   // });
 
-  app.get("/login", (req, res) => {
-    // Generate a secure random state value.
-    const state = crypto.randomBytes(32).toString("hex");
-    // Store state in the session
-    req.session.state = state;
+  const { v4: uuidv4 } = require("uuid");
 
+  app.get("/login", (req, res) => {
+    const state = uuidv4(); // Generate a unique state value
+    req.session.state = state;
+    console.log("Login state:", state);
     const url = oAuth2Client.generateAuthUrl({
       access_type: "offline",
       scope: [
         "https://www.googleapis.com/auth/calendar",
         "https://www.googleapis.com/auth/userinfo.profile",
       ],
-      // Enable incremental authorization. Recommended as a best practice.
       include_granted_scopes: true,
-      // Include the state parameter to reduce the risk of CSRF attacks.
       state: state,
     });
     res.redirect(url);
   });
 
-  app.get("/oauth2callback", async (req, res) => {
-    let q = url.parse(req.url, true).query;
+  app.get(
+    "/oauth2callback",
+    async (req, res) => {
+      let q = url.parse(req.url, true).query;
+      console.log("Callback state:", q.state); // Log state in callback
+      console.log("Session state:", req.session.state); // Log session state
+      console.log("Callback:", q);
+      console.log("Session state:", req.session);
 
-    if (q.error) {
-      console.log("Error:" + q.error);
-      return res.status(400).send("Authentication error");
-    } else if (q.state !== req.session.state) {
-      console.log("State mismatch. Possible CSRF attack");
-      return res.status(400).send("State mismatch. Possible CSRF attack");
-    } else {
-      let { tokens } = await oAuth2Client.getToken(q.code);
-      oAuth2Client.setCredentials(tokens);
-      req.session.tokens = tokens;
-      delete req.session.state;
+      if (q.error) {
+        console.log("Error:" + q.error);
+        return res.status(400).send("Authentication error");
+      } else if (q.state !== req.session.state) {
+        console.log("State mismatch. Possible CSRF attack");
+        return res.status(400).send("State mismatch. Possible CSRF attack");
+      } else {
+        try {
+          const { tokens } = await oAuth2Client.getToken(q.code);
+          oAuth2Client.setCredentials(tokens);
+          req.session.tokens = tokens;
+          delete req.session.state;
 
-      req.session.save((err) => {
-        if (err) {
-          console.error("Session save error:", err);
-          return res.status(500).send("Failed to save session");
+          req.session.save((err) => {
+            if (err) {
+              console.error("Session save error:", err);
+              return res.status(500).send("Failed to save session");
+            }
+
+            const redirectUrl = `${process.env.REDIRECT_HOME}`;
+            res.redirect(redirectUrl);
+          });
+        } catch (error) {
+          console.error("Error during OAuth2 callback", error);
+          return res.status(500).send("Authentication error");
         }
-
-        const redirectUrl = `${process.env.REDIRECT_HOME}`;
-        res.redirect(redirectUrl);
-      });
+      }
     }
 
     // try {
@@ -161,43 +169,41 @@ async function main() {
     //   console.error("Error during OAuth2 callback", error);
     //   res.status(500).send("Authentication error");
     // }
-  });
+  );
 
   app.get("/auth-check", async (req, res) => {
-    console.log("auth-check Session:", req.session);
-    if (!req.session.tokens || !req.session.tokens.access_token) {
-      console.log("Token issue or not authenticated");
-      return res.status(401).send("User not authenticated");
-    }
+    console.log("auth-check Session:", req.session.tokens);
+    const tokens = req.session.tokens; // Corrected line
 
-    // // Extract user info from the session
-    // const { tokens } = req.session;
-    // oAuth2Client.setCredentials(tokens);
+    if (!tokens || !tokens.access_token) {
+        console.log("Token issue or not authenticated");
+        return res.status(401).send("User not authenticated");
+    }
 
     try {
-      // Validate the token
-      await oAuth2Client.getTokenInfo(tokens.access_token);
-      console.log("auth check", tokens.access_token);
-      return res.json({ isAuthenticated: true });
+        await oAuth2Client.getTokenInfo(tokens.access_token);
+        console.log("auth check", tokens.access_token);
+        return res.json({ isAuthenticated: true });
     } catch (error) {
-      console.error("Invalid or expired token:", error);
-      return res
-        .status(401)
-        .json({ isAuthenticated: false, error: "Invalid or expired token" });
+        console.error("Invalid or expired token:", error);
+        return res
+            .status(401)
+            .json({ isAuthenticated: false, error: "Invalid or expired token" });
     }
-  });
+});
+
 
   app.options("/user-info", (req, res) => {
     res.sendStatus(204);
   });
 
   app.get("/user-info", async (req, res) => {
-    console.log("user-info Session:", req.session);
-    if (!req.session.tokens || !req.session.tokens.access_token) {
+    console.log("user-info Session:", req.session.tokens);
+    const tokens = req.session.tokens;
+    if (!tokens || !tokens.access_token) {
       console.log("Token issue or not authenticated");
       return res.status(401).send("User not authenticated");
     }
-
     // // Extract user info from the session
     // const { tokens } = req.session;
     // oAuth2Client.setCredentials(tokens);
@@ -222,31 +228,33 @@ async function main() {
   });
 
   app.get("/fetch-calendar-events", async (req, res) => {
-    console.log("fetch-calendar-events Session:", req.session);
-    const { tokens } = req.session;
+    console.log("fetch-calendar-events Session:", req.session.tokens);
+    const tokens = req.session.tokens; // Corrected line
+    
     if (!tokens || !tokens.access_token) {
-      console.log("Token issue or not authenticated");
-      return res.status(401).send("User not authenticated");
+        console.log("Token issue or not authenticated");
+        return res.status(401).send("User not authenticated");
     }
 
     oAuth2Client.setCredentials(tokens);
     console.log("fetch events", tokens.access_token);
 
     try {
-      const response = await axios.get(
-        "https://www.googleapis.com/calendar/v3/calendars/primary/events",
-        {
-          headers: {
-            Authorization: `Bearer ${tokens.access_token}`,
-          },
-        }
-      );
-      res.json(response.data.items);
+        const response = await axios.get(
+            "https://www.googleapis.com/calendar/v3/calendars/primary/events",
+            {
+                headers: {
+                    Authorization: `Bearer ${tokens.access_token}`,
+                },
+            }
+        );
+        res.json(response.data.items);
     } catch (error) {
-      console.error(error);
-      res.status(500).send("Error fetching calendar events");
+        console.error("Error fetching calendar events:", error);
+        res.status(500).send("Error fetching calendar events");
     }
-  });
+});
+
 
   app.listen(port, "0.0.0.0", () => {
     console.log(`Server started at http://localhost:${port}`);
