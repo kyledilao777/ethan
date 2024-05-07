@@ -28,7 +28,6 @@ export default function NavBar({ setIsNavOpen }) {
         setUserInfo({ name: data.name, photo: data.photo });
       } catch (error) {
         console.error("Failed to fetch user info:", error);
-        setUserInfo(null);
       }
     };
 
