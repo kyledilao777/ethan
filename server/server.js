@@ -89,7 +89,9 @@ async function main() {
   app.get("/login", (req, res) => {
     const state = uuidv4(); // Generate a unique state value
     req.session.state = state;
-    console.log("Login state:", state);
+    console.log("Login - Generated state:", state);
+    console.log("Login - Session state:", req.session.state);
+    
     const url = oAuth2Client.generateAuthUrl({
       access_type: "offline",
       scope: [
@@ -109,7 +111,7 @@ async function main() {
       console.log("Callback state:", q.state); // Log state in callback
       console.log("Session state:", req.session.state); // Log session state
       console.log("Callback:", q);
-      console.log("Session state:", req.session);
+      console.log("Session state q:", req.session);
 
       if (q.error) {
         console.log("Error:" + q.error);
