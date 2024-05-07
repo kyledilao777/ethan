@@ -30,10 +30,6 @@ app.use(
     },
   })
 );
-app.use((req, res, next) => {
-  console.log("Session State:", req.session);
-  next();
-});
 
 app.use(
   cors({
@@ -48,6 +44,12 @@ app.use(
     allowedHeaders: "Origin, X-Requested-With, Content-Type, Accept, Authorization"
   })
 );
+
+app.use((req, res, next) => {
+  console.log("Session ID:", req.sessionID);
+  console.log("Session State:", req.session);
+  next();
+});
 
 // app.use((req, res, next) => {
 //   const allowedOrigins = [
