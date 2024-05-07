@@ -71,11 +71,12 @@ export default function Home() {
         setIsAuthenticated(data.isAuthenticated);
       } catch (error) {
         console.error('Error checking authentication status:', error);
+        setIsAuthenticated(false);
       }
     };
 
     checkAuthStatus();
-  }, [isAuthenticated]);
+  }, []);
     
   return (
     <div className=" w-full h-screen ">
