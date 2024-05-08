@@ -42,6 +42,8 @@ def get_calendar_events(user_email, calendar_id, start_time, end_time, return_ev
     response = requests.get(endpoint, headers=headers, params=params)
     events = response.json()
 
+    print(events)
+
     # List the events
     event_list = []
     for event in events.get("items", []):
