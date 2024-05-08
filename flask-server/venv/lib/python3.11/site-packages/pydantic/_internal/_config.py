@@ -82,6 +82,8 @@ class ConfigWrapper:
     coerce_numbers_to_str: bool
     regex_engine: Literal['rust-regex', 'python-re']
     validation_error_cause: bool
+    use_attribute_docstrings: bool
+    cache_strings: bool | Literal['all', 'keys', 'none']
 
     def __init__(self, config: ConfigDict | dict[str, Any] | type[Any] | None, *, check: bool = True):
         if check:
@@ -114,6 +116,13 @@ class ConfigWrapper:
 
         config_class_from_namespace = namespace.get('Config')
         config_dict_from_namespace = namespace.get('model_config')
+
+        raw_annotations = namespace.get('__annotations__', {})
+        if raw_annotations.get('model_config') and not config_dict_from_namespace:
+            raise PydanticUserError(
+                '`model_config` cannot be used as a model field name. Use `model_config` for model configuration.',
+                code='model-config-invalid-field-name',
+            )
 
         if config_class_from_namespace and config_dict_from_namespace:
             raise PydanticUserError('"Config" and "model_config" cannot be used together', code='config-both')
@@ -180,6 +189,7 @@ class ConfigWrapper:
                 coerce_numbers_to_str=self.config_dict.get('coerce_numbers_to_str'),
                 regex_engine=self.config_dict.get('regex_engine'),
                 validation_error_cause=self.config_dict.get('validation_error_cause'),
+                cache_strings=self.config_dict.get('cache_strings'),
             )
         )
         return core_config
@@ -253,6 +263,8 @@ config_defaults = ConfigDict(
     coerce_numbers_to_str=False,
     regex_engine='rust-regex',
     validation_error_cause=False,
+    use_attribute_docstrings=False,
+    cache_strings=True,
 )
 
 

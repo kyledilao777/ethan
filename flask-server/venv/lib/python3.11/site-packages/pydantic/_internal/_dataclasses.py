@@ -65,15 +65,20 @@ else:
     DeprecationWarning = PydanticDeprecatedSince20
 
 
-def set_dataclass_fields(cls: type[StandardDataclass], types_namespace: dict[str, Any] | None = None) -> None:
+def set_dataclass_fields(
+    cls: type[StandardDataclass],
+    types_namespace: dict[str, Any] | None = None,
+    config_wrapper: _config.ConfigWrapper | None = None,
+) -> None:
     """Collect and set `cls.__pydantic_fields__`.
 
     Args:
         cls: The class.
         types_namespace: The types namespace, defaults to `None`.
+        config_wrapper: The config wrapper instance, defaults to `None`.
     """
     typevars_map = get_standard_typevars_map(cls)
-    fields = collect_dataclass_fields(cls, types_namespace, typevars_map=typevars_map)
+    fields = collect_dataclass_fields(cls, types_namespace, typevars_map=typevars_map, config_wrapper=config_wrapper)
 
     cls.__pydantic_fields__ = fields  # type: ignore
 
@@ -111,7 +116,7 @@ def complete_dataclass(
     if types_namespace is None:
         types_namespace = _typing_extra.get_cls_types_namespace(cls)
 
-    set_dataclass_fields(cls, types_namespace)
+    set_dataclass_fields(cls, types_namespace, config_wrapper=config_wrapper)
 
     typevars_map = get_standard_typevars_map(cls)
     gen_schema = GenerateSchema(
@@ -180,8 +185,8 @@ def complete_dataclass(
     if config_wrapper.validate_assignment:
 
         @wraps(cls.__setattr__)
-        def validated_setattr(instance: Any, __field: str, __value: str) -> None:
-            validator.validate_assignment(instance, __field, __value)
+        def validated_setattr(instance: Any, field: str, value: str, /) -> None:
+            validator.validate_assignment(instance, field, value)
 
         cls.__setattr__ = validated_setattr.__get__(None, cls)  # type: ignore
 

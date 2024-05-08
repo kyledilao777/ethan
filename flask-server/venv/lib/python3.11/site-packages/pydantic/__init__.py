@@ -19,7 +19,7 @@ if typing.TYPE_CHECKING:
     from ._internal._generate_schema import GenerateSchema as GenerateSchema
     from .aliases import AliasChoices, AliasGenerator, AliasPath
     from .annotated_handlers import GetCoreSchemaHandler, GetJsonSchemaHandler
-    from .config import ConfigDict
+    from .config import ConfigDict, with_config
     from .errors import *
     from .fields import Field, PrivateAttr, computed_field
     from .functional_serializers import (
@@ -80,6 +80,7 @@ __all__ = (
     'WrapSerializer',
     # config
     'ConfigDict',
+    'with_config',
     # deprecated V1 config, these are imported via `__getattr__` below
     'BaseConfig',
     'Extra',
@@ -108,6 +109,9 @@ __all__ = (
     'AnyHttpUrl',
     'FileUrl',
     'HttpUrl',
+    'FtpUrl',
+    'WebsocketUrl',
+    'AnyWebsocketUrl',
     'UrlConstraints',
     'EmailStr',
     'NameEmail',
@@ -123,6 +127,7 @@ __all__ = (
     'NatsDsn',
     'MySQLDsn',
     'MariaDBDsn',
+    'ClickHouseDsn',
     'validate_email',
     # root_model
     'RootModel',
@@ -161,6 +166,7 @@ __all__ = (
     'DirectoryPath',
     'NewPath',
     'Json',
+    'Secret',
     'SecretStr',
     'SecretBytes',
     'StrictBool',
@@ -234,6 +240,7 @@ _dynamic_imports: 'dict[str, tuple[str, str]]' = {
     'WrapSerializer': (__package__, '.functional_serializers'),
     # config
     'ConfigDict': (__package__, '.config'),
+    'with_config': (__package__, '.config'),
     # validate call
     'validate_call': (__package__, '.validate_call_decorator'),
     # errors
@@ -259,6 +266,9 @@ _dynamic_imports: 'dict[str, tuple[str, str]]' = {
     'AnyHttpUrl': (__package__, '.networks'),
     'FileUrl': (__package__, '.networks'),
     'HttpUrl': (__package__, '.networks'),
+    'FtpUrl': (__package__, '.networks'),
+    'WebsocketUrl': (__package__, '.networks'),
+    'AnyWebsocketUrl': (__package__, '.networks'),
     'UrlConstraints': (__package__, '.networks'),
     'EmailStr': (__package__, '.networks'),
     'NameEmail': (__package__, '.networks'),
@@ -274,6 +284,7 @@ _dynamic_imports: 'dict[str, tuple[str, str]]' = {
     'NatsDsn': (__package__, '.networks'),
     'MySQLDsn': (__package__, '.networks'),
     'MariaDBDsn': (__package__, '.networks'),
+    'ClickHouseDsn': (__package__, '.networks'),
     'validate_email': (__package__, '.networks'),
     # root_model
     'RootModel': (__package__, '.root_model'),
@@ -308,6 +319,7 @@ _dynamic_imports: 'dict[str, tuple[str, str]]' = {
     'DirectoryPath': (__package__, '.types'),
     'NewPath': (__package__, '.types'),
     'Json': (__package__, '.types'),
+    'Secret': (__package__, '.types'),
     'SecretStr': (__package__, '.types'),
     'SecretBytes': (__package__, '.types'),
     'StrictBool': (__package__, '.types'),

@@ -93,6 +93,7 @@ async function main() {
       scope: [
         "https://www.googleapis.com/auth/calendar",
         "https://www.googleapis.com/auth/userinfo.profile",
+        "https://www.googleapis.com/auth/user.emails.read",
       ],
       include_granted_scopes: true,
       state: state,
@@ -210,12 +211,15 @@ async function main() {
     try {
       const me = await peopleService.people.get({
         resourceName: "people/me",
-        personFields: "names,photos",
+        personFields: "names,photos,emailAddresses",
       });
+
+      console.log("me: ", me.data)
 
       const userInfo = {
         name: me.data.names[0].displayName,
         photo: me.data.photos[0].url,
+        email: me.data.emailAddresses[0].value,
       };
 
       res.json(userInfo);

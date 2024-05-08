@@ -18,17 +18,17 @@ from ..._compat import cached_property
 from ..._resource import SyncAPIResource, AsyncAPIResource
 from ..._response import to_streamed_response_wrapper, async_to_streamed_response_wrapper
 from ..._streaming import Stream, AsyncStream
-from ...types.chat import (
-    ChatCompletion,
-    ChatCompletionChunk,
-    ChatCompletionToolParam,
-    ChatCompletionMessageParam,
-    ChatCompletionToolChoiceOptionParam,
-    completion_create_params,
-)
+from ...types.chat import completion_create_params
 from ..._base_client import (
     make_request_options,
 )
+from ...types.chat_model import ChatModel
+from ...types.chat.chat_completion import ChatCompletion
+from ...types.chat.chat_completion_chunk import ChatCompletionChunk
+from ...types.chat.chat_completion_tool_param import ChatCompletionToolParam
+from ...types.chat.chat_completion_message_param import ChatCompletionMessageParam
+from ...types.chat.chat_completion_stream_options_param import ChatCompletionStreamOptionsParam
+from ...types.chat.chat_completion_tool_choice_option_param import ChatCompletionToolChoiceOptionParam
 
 __all__ = ["Completions", "AsyncCompletions"]
 
@@ -47,28 +47,7 @@ class Completions(SyncAPIResource):
         self,
         *,
         messages: Iterable[ChatCompletionMessageParam],
-        model: Union[
-            str,
-            Literal[
-                "gpt-4-0125-preview",
-                "gpt-4-turbo-preview",
-                "gpt-4-1106-preview",
-                "gpt-4-vision-preview",
-                "gpt-4",
-                "gpt-4-0314",
-                "gpt-4-0613",
-                "gpt-4-32k",
-                "gpt-4-32k-0314",
-                "gpt-4-32k-0613",
-                "gpt-3.5-turbo",
-                "gpt-3.5-turbo-16k",
-                "gpt-3.5-turbo-0301",
-                "gpt-3.5-turbo-0613",
-                "gpt-3.5-turbo-1106",
-                "gpt-3.5-turbo-0125",
-                "gpt-3.5-turbo-16k-0613",
-            ],
-        ],
+        model: Union[str, ChatModel],
         frequency_penalty: Optional[float] | NotGiven = NOT_GIVEN,
         function_call: completion_create_params.FunctionCall | NotGiven = NOT_GIVEN,
         functions: Iterable[completion_create_params.Function] | NotGiven = NOT_GIVEN,
@@ -81,6 +60,7 @@ class Completions(SyncAPIResource):
         seed: Optional[int] | NotGiven = NOT_GIVEN,
         stop: Union[Optional[str], List[str]] | NotGiven = NOT_GIVEN,
         stream: Optional[Literal[False]] | NotGiven = NOT_GIVEN,
+        stream_options: Optional[ChatCompletionStreamOptionsParam] | NotGiven = NOT_GIVEN,
         temperature: Optional[float] | NotGiven = NOT_GIVEN,
         tool_choice: ChatCompletionToolChoiceOptionParam | NotGiven = NOT_GIVEN,
         tools: Iterable[ChatCompletionToolParam] | NotGiven = NOT_GIVEN,
@@ -137,8 +117,7 @@ class Completions(SyncAPIResource):
 
           logprobs: Whether to return log probabilities of the output tokens or not. If true,
               returns the log probabilities of each output token returned in the `content` of
-              `message`. This option is currently not available on the `gpt-4-vision-preview`
-              model.
+              `message`.
 
           max_tokens: The maximum number of [tokens](/tokenizer) that can be generated in the chat
               completion.
@@ -188,21 +167,23 @@ class Completions(SyncAPIResource):
               message.
               [Example Python code](https://cookbook.openai.com/examples/how_to_stream_completions).
 
+          stream_options: Options for streaming response. Only set this when you set `stream: true`.
+
           temperature: What sampling temperature to use, between 0 and 2. Higher values like 0.8 will
               make the output more random, while lower values like 0.2 will make it more
               focused and deterministic.
 
               We generally recommend altering this or `top_p` but not both.
 
-          tool_choice: Controls which (if any) function is called by the model. `none` means the model
-              will not call a function and instead generates a message. `auto` means the model
-              can pick between generating a message or calling a function. Specifying a
-              particular function via
+          tool_choice: Controls which (if any) tool is called by the model. `none` means the model will
+              not call any tool and instead generates a message. `auto` means the model can
+              pick between generating a message or calling one or more tools. `required` means
+              the model must call one or more tools. Specifying a particular tool via
               `{"type": "function", "function": {"name": "my_function"}}` forces the model to
-              call that function.
+              call that tool.
 
-              `none` is the default when no functions are present. `auto` is the default if
-              functions are present.
+              `none` is the default when no tools are present. `auto` is the default if tools
+              are present.
 
           tools: A list of tools the model may call. Currently, only functions are supported as a
               tool. Use this to provide a list of functions the model may generate JSON inputs
@@ -237,28 +218,7 @@ class Completions(SyncAPIResource):
         self,
         *,
         messages: Iterable[ChatCompletionMessageParam],
-        model: Union[
-            str,
-            Literal[
-                "gpt-4-0125-preview",
-                "gpt-4-turbo-preview",
-                "gpt-4-1106-preview",
-                "gpt-4-vision-preview",
-                "gpt-4",
-                "gpt-4-0314",
-                "gpt-4-0613",
-                "gpt-4-32k",
-                "gpt-4-32k-0314",
-                "gpt-4-32k-0613",
-                "gpt-3.5-turbo",
-                "gpt-3.5-turbo-16k",
-                "gpt-3.5-turbo-0301",
-                "gpt-3.5-turbo-0613",
-                "gpt-3.5-turbo-1106",
-                "gpt-3.5-turbo-0125",
-                "gpt-3.5-turbo-16k-0613",
-            ],
-        ],
+        model: Union[str, ChatModel],
         stream: Literal[True],
         frequency_penalty: Optional[float] | NotGiven = NOT_GIVEN,
         function_call: completion_create_params.FunctionCall | NotGiven = NOT_GIVEN,
@@ -271,6 +231,7 @@ class Completions(SyncAPIResource):
         response_format: completion_create_params.ResponseFormat | NotGiven = NOT_GIVEN,
         seed: Optional[int] | NotGiven = NOT_GIVEN,
         stop: Union[Optional[str], List[str]] | NotGiven = NOT_GIVEN,
+        stream_options: Optional[ChatCompletionStreamOptionsParam] | NotGiven = NOT_GIVEN,
         temperature: Optional[float] | NotGiven = NOT_GIVEN,
         tool_choice: ChatCompletionToolChoiceOptionParam | NotGiven = NOT_GIVEN,
         tools: Iterable[ChatCompletionToolParam] | NotGiven = NOT_GIVEN,
@@ -334,8 +295,7 @@ class Completions(SyncAPIResource):
 
           logprobs: Whether to return log probabilities of the output tokens or not. If true,
               returns the log probabilities of each output token returned in the `content` of
-              `message`. This option is currently not available on the `gpt-4-vision-preview`
-              model.
+              `message`.
 
           max_tokens: The maximum number of [tokens](/tokenizer) that can be generated in the chat
               completion.
@@ -378,21 +338,23 @@ class Completions(SyncAPIResource):
 
           stop: Up to 4 sequences where the API will stop generating further tokens.
 
+          stream_options: Options for streaming response. Only set this when you set `stream: true`.
+
           temperature: What sampling temperature to use, between 0 and 2. Higher values like 0.8 will
               make the output more random, while lower values like 0.2 will make it more
               focused and deterministic.
 
               We generally recommend altering this or `top_p` but not both.
 
-          tool_choice: Controls which (if any) function is called by the model. `none` means the model
-              will not call a function and instead generates a message. `auto` means the model
-              can pick between generating a message or calling a function. Specifying a
-              particular function via
+          tool_choice: Controls which (if any) tool is called by the model. `none` means the model will
+              not call any tool and instead generates a message. `auto` means the model can
+              pick between generating a message or calling one or more tools. `required` means
+              the model must call one or more tools. Specifying a particular tool via
               `{"type": "function", "function": {"name": "my_function"}}` forces the model to
-              call that function.
+              call that tool.
 
-              `none` is the default when no functions are present. `auto` is the default if
-              functions are present.
+              `none` is the default when no tools are present. `auto` is the default if tools
+              are present.
 
           tools: A list of tools the model may call. Currently, only functions are supported as a
               tool. Use this to provide a list of functions the model may generate JSON inputs
@@ -427,28 +389,7 @@ class Completions(SyncAPIResource):
         self,
         *,
         messages: Iterable[ChatCompletionMessageParam],
-        model: Union[
-            str,
-            Literal[
-                "gpt-4-0125-preview",
-                "gpt-4-turbo-preview",
-                "gpt-4-1106-preview",
-                "gpt-4-vision-preview",
-                "gpt-4",
-                "gpt-4-0314",
-                "gpt-4-0613",
-                "gpt-4-32k",
-                "gpt-4-32k-0314",
-                "gpt-4-32k-0613",
-                "gpt-3.5-turbo",
-                "gpt-3.5-turbo-16k",
-                "gpt-3.5-turbo-0301",
-                "gpt-3.5-turbo-0613",
-                "gpt-3.5-turbo-1106",
-                "gpt-3.5-turbo-0125",
-                "gpt-3.5-turbo-16k-0613",
-            ],
-        ],
+        model: Union[str, ChatModel],
         stream: bool,
         frequency_penalty: Optional[float] | NotGiven = NOT_GIVEN,
         function_call: completion_create_params.FunctionCall | NotGiven = NOT_GIVEN,
@@ -461,6 +402,7 @@ class Completions(SyncAPIResource):
         response_format: completion_create_params.ResponseFormat | NotGiven = NOT_GIVEN,
         seed: Optional[int] | NotGiven = NOT_GIVEN,
         stop: Union[Optional[str], List[str]] | NotGiven = NOT_GIVEN,
+        stream_options: Optional[ChatCompletionStreamOptionsParam] | NotGiven = NOT_GIVEN,
         temperature: Optional[float] | NotGiven = NOT_GIVEN,
         tool_choice: ChatCompletionToolChoiceOptionParam | NotGiven = NOT_GIVEN,
         tools: Iterable[ChatCompletionToolParam] | NotGiven = NOT_GIVEN,
@@ -524,8 +466,7 @@ class Completions(SyncAPIResource):
 
           logprobs: Whether to return log probabilities of the output tokens or not. If true,
               returns the log probabilities of each output token returned in the `content` of
-              `message`. This option is currently not available on the `gpt-4-vision-preview`
-              model.
+              `message`.
 
           max_tokens: The maximum number of [tokens](/tokenizer) that can be generated in the chat
               completion.
@@ -568,21 +509,23 @@ class Completions(SyncAPIResource):
 
           stop: Up to 4 sequences where the API will stop generating further tokens.
 
+          stream_options: Options for streaming response. Only set this when you set `stream: true`.
+
           temperature: What sampling temperature to use, between 0 and 2. Higher values like 0.8 will
               make the output more random, while lower values like 0.2 will make it more
               focused and deterministic.
 
               We generally recommend altering this or `top_p` but not both.
 
-          tool_choice: Controls which (if any) function is called by the model. `none` means the model
-              will not call a function and instead generates a message. `auto` means the model
-              can pick between generating a message or calling a function. Specifying a
-              particular function via
+          tool_choice: Controls which (if any) tool is called by the model. `none` means the model will
+              not call any tool and instead generates a message. `auto` means the model can
+              pick between generating a message or calling one or more tools. `required` means
+              the model must call one or more tools. Specifying a particular tool via
               `{"type": "function", "function": {"name": "my_function"}}` forces the model to
-              call that function.
+              call that tool.
 
-              `none` is the default when no functions are present. `auto` is the default if
-              functions are present.
+              `none` is the default when no tools are present. `auto` is the default if tools
+              are present.
 
           tools: A list of tools the model may call. Currently, only functions are supported as a
               tool. Use this to provide a list of functions the model may generate JSON inputs
@@ -617,28 +560,7 @@ class Completions(SyncAPIResource):
         self,
         *,
         messages: Iterable[ChatCompletionMessageParam],
-        model: Union[
-            str,
-            Literal[
-                "gpt-4-0125-preview",
-                "gpt-4-turbo-preview",
-                "gpt-4-1106-preview",
-                "gpt-4-vision-preview",
-                "gpt-4",
-                "gpt-4-0314",
-                "gpt-4-0613",
-                "gpt-4-32k",
-                "gpt-4-32k-0314",
-                "gpt-4-32k-0613",
-                "gpt-3.5-turbo",
-                "gpt-3.5-turbo-16k",
-                "gpt-3.5-turbo-0301",
-                "gpt-3.5-turbo-0613",
-                "gpt-3.5-turbo-1106",
-                "gpt-3.5-turbo-0125",
-                "gpt-3.5-turbo-16k-0613",
-            ],
-        ],
+        model: Union[str, ChatModel],
         frequency_penalty: Optional[float] | NotGiven = NOT_GIVEN,
         function_call: completion_create_params.FunctionCall | NotGiven = NOT_GIVEN,
         functions: Iterable[completion_create_params.Function] | NotGiven = NOT_GIVEN,
@@ -651,6 +573,7 @@ class Completions(SyncAPIResource):
         seed: Optional[int] | NotGiven = NOT_GIVEN,
         stop: Union[Optional[str], List[str]] | NotGiven = NOT_GIVEN,
         stream: Optional[Literal[False]] | Literal[True] | NotGiven = NOT_GIVEN,
+        stream_options: Optional[ChatCompletionStreamOptionsParam] | NotGiven = NOT_GIVEN,
         temperature: Optional[float] | NotGiven = NOT_GIVEN,
         tool_choice: ChatCompletionToolChoiceOptionParam | NotGiven = NOT_GIVEN,
         tools: Iterable[ChatCompletionToolParam] | NotGiven = NOT_GIVEN,
@@ -682,6 +605,7 @@ class Completions(SyncAPIResource):
                     "seed": seed,
                     "stop": stop,
                     "stream": stream,
+                    "stream_options": stream_options,
                     "temperature": temperature,
                     "tool_choice": tool_choice,
                     "tools": tools,
@@ -714,28 +638,7 @@ class AsyncCompletions(AsyncAPIResource):
         self,
         *,
         messages: Iterable[ChatCompletionMessageParam],
-        model: Union[
-            str,
-            Literal[
-                "gpt-4-0125-preview",
-                "gpt-4-turbo-preview",
-                "gpt-4-1106-preview",
-                "gpt-4-vision-preview",
-                "gpt-4",
-                "gpt-4-0314",
-                "gpt-4-0613",
-                "gpt-4-32k",
-                "gpt-4-32k-0314",
-                "gpt-4-32k-0613",
-                "gpt-3.5-turbo",
-                "gpt-3.5-turbo-16k",
-                "gpt-3.5-turbo-0301",
-                "gpt-3.5-turbo-0613",
-                "gpt-3.5-turbo-1106",
-                "gpt-3.5-turbo-0125",
-                "gpt-3.5-turbo-16k-0613",
-            ],
-        ],
+        model: Union[str, ChatModel],
         frequency_penalty: Optional[float] | NotGiven = NOT_GIVEN,
         function_call: completion_create_params.FunctionCall | NotGiven = NOT_GIVEN,
         functions: Iterable[completion_create_params.Function] | NotGiven = NOT_GIVEN,
@@ -748,6 +651,7 @@ class AsyncCompletions(AsyncAPIResource):
         seed: Optional[int] | NotGiven = NOT_GIVEN,
         stop: Union[Optional[str], List[str]] | NotGiven = NOT_GIVEN,
         stream: Optional[Literal[False]] | NotGiven = NOT_GIVEN,
+        stream_options: Optional[ChatCompletionStreamOptionsParam] | NotGiven = NOT_GIVEN,
         temperature: Optional[float] | NotGiven = NOT_GIVEN,
         tool_choice: ChatCompletionToolChoiceOptionParam | NotGiven = NOT_GIVEN,
         tools: Iterable[ChatCompletionToolParam] | NotGiven = NOT_GIVEN,
@@ -804,8 +708,7 @@ class AsyncCompletions(AsyncAPIResource):
 
           logprobs: Whether to return log probabilities of the output tokens or not. If true,
               returns the log probabilities of each output token returned in the `content` of
-              `message`. This option is currently not available on the `gpt-4-vision-preview`
-              model.
+              `message`.
 
           max_tokens: The maximum number of [tokens](/tokenizer) that can be generated in the chat
               completion.
@@ -855,21 +758,23 @@ class AsyncCompletions(AsyncAPIResource):
               message.
               [Example Python code](https://cookbook.openai.com/examples/how_to_stream_completions).
 
+          stream_options: Options for streaming response. Only set this when you set `stream: true`.
+
           temperature: What sampling temperature to use, between 0 and 2. Higher values like 0.8 will
               make the output more random, while lower values like 0.2 will make it more
               focused and deterministic.
 
               We generally recommend altering this or `top_p` but not both.
 
-          tool_choice: Controls which (if any) function is called by the model. `none` means the model
-              will not call a function and instead generates a message. `auto` means the model
-              can pick between generating a message or calling a function. Specifying a
-              particular function via
+          tool_choice: Controls which (if any) tool is called by the model. `none` means the model will
+              not call any tool and instead generates a message. `auto` means the model can
+              pick between generating a message or calling one or more tools. `required` means
+              the model must call one or more tools. Specifying a particular tool via
               `{"type": "function", "function": {"name": "my_function"}}` forces the model to
-              call that function.
+              call that tool.
 
-              `none` is the default when no functions are present. `auto` is the default if
-              functions are present.
+              `none` is the default when no tools are present. `auto` is the default if tools
+              are present.
 
           tools: A list of tools the model may call. Currently, only functions are supported as a
               tool. Use this to provide a list of functions the model may generate JSON inputs
@@ -904,28 +809,7 @@ class AsyncCompletions(AsyncAPIResource):
         self,
         *,
         messages: Iterable[ChatCompletionMessageParam],
-        model: Union[
-            str,
-            Literal[
-                "gpt-4-0125-preview",
-                "gpt-4-turbo-preview",
-                "gpt-4-1106-preview",
-                "gpt-4-vision-preview",
-                "gpt-4",
-                "gpt-4-0314",
-                "gpt-4-0613",
-                "gpt-4-32k",
-                "gpt-4-32k-0314",
-                "gpt-4-32k-0613",
-                "gpt-3.5-turbo",
-                "gpt-3.5-turbo-16k",
-                "gpt-3.5-turbo-0301",
-                "gpt-3.5-turbo-0613",
-                "gpt-3.5-turbo-1106",
-                "gpt-3.5-turbo-0125",
-                "gpt-3.5-turbo-16k-0613",
-            ],
-        ],
+        model: Union[str, ChatModel],
         stream: Literal[True],
         frequency_penalty: Optional[float] | NotGiven = NOT_GIVEN,
         function_call: completion_create_params.FunctionCall | NotGiven = NOT_GIVEN,
@@ -938,6 +822,7 @@ class AsyncCompletions(AsyncAPIResource):
         response_format: completion_create_params.ResponseFormat | NotGiven = NOT_GIVEN,
         seed: Optional[int] | NotGiven = NOT_GIVEN,
         stop: Union[Optional[str], List[str]] | NotGiven = NOT_GIVEN,
+        stream_options: Optional[ChatCompletionStreamOptionsParam] | NotGiven = NOT_GIVEN,
         temperature: Optional[float] | NotGiven = NOT_GIVEN,
         tool_choice: ChatCompletionToolChoiceOptionParam | NotGiven = NOT_GIVEN,
         tools: Iterable[ChatCompletionToolParam] | NotGiven = NOT_GIVEN,
@@ -1001,8 +886,7 @@ class AsyncCompletions(AsyncAPIResource):
 
           logprobs: Whether to return log probabilities of the output tokens or not. If true,
               returns the log probabilities of each output token returned in the `content` of
-              `message`. This option is currently not available on the `gpt-4-vision-preview`
-              model.
+              `message`.
 
           max_tokens: The maximum number of [tokens](/tokenizer) that can be generated in the chat
               completion.
@@ -1045,21 +929,23 @@ class AsyncCompletions(AsyncAPIResource):
 
           stop: Up to 4 sequences where the API will stop generating further tokens.
 
+          stream_options: Options for streaming response. Only set this when you set `stream: true`.
+
           temperature: What sampling temperature to use, between 0 and 2. Higher values like 0.8 will
               make the output more random, while lower values like 0.2 will make it more
               focused and deterministic.
 
               We generally recommend altering this or `top_p` but not both.
 
-          tool_choice: Controls which (if any) function is called by the model. `none` means the model
-              will not call a function and instead generates a message. `auto` means the model
-              can pick between generating a message or calling a function. Specifying a
-              particular function via
+          tool_choice: Controls which (if any) tool is called by the model. `none` means the model will
+              not call any tool and instead generates a message. `auto` means the model can
+              pick between generating a message or calling one or more tools. `required` means
+              the model must call one or more tools. Specifying a particular tool via
               `{"type": "function", "function": {"name": "my_function"}}` forces the model to
-              call that function.
+              call that tool.
 
-              `none` is the default when no functions are present. `auto` is the default if
-              functions are present.
+              `none` is the default when no tools are present. `auto` is the default if tools
+              are present.
 
           tools: A list of tools the model may call. Currently, only functions are supported as a
               tool. Use this to provide a list of functions the model may generate JSON inputs
@@ -1094,28 +980,7 @@ class AsyncCompletions(AsyncAPIResource):
         self,
         *,
         messages: Iterable[ChatCompletionMessageParam],
-        model: Union[
-            str,
-            Literal[
-                "gpt-4-0125-preview",
-                "gpt-4-turbo-preview",
-                "gpt-4-1106-preview",
-                "gpt-4-vision-preview",
-                "gpt-4",
-                "gpt-4-0314",
-                "gpt-4-0613",
-                "gpt-4-32k",
-                "gpt-4-32k-0314",
-                "gpt-4-32k-0613",
-                "gpt-3.5-turbo",
-                "gpt-3.5-turbo-16k",
-                "gpt-3.5-turbo-0301",
-                "gpt-3.5-turbo-0613",
-                "gpt-3.5-turbo-1106",
-                "gpt-3.5-turbo-0125",
-                "gpt-3.5-turbo-16k-0613",
-            ],
-        ],
+        model: Union[str, ChatModel],
         stream: bool,
         frequency_penalty: Optional[float] | NotGiven = NOT_GIVEN,
         function_call: completion_create_params.FunctionCall | NotGiven = NOT_GIVEN,
@@ -1128,6 +993,7 @@ class AsyncCompletions(AsyncAPIResource):
         response_format: completion_create_params.ResponseFormat | NotGiven = NOT_GIVEN,
         seed: Optional[int] | NotGiven = NOT_GIVEN,
         stop: Union[Optional[str], List[str]] | NotGiven = NOT_GIVEN,
+        stream_options: Optional[ChatCompletionStreamOptionsParam] | NotGiven = NOT_GIVEN,
         temperature: Optional[float] | NotGiven = NOT_GIVEN,
         tool_choice: ChatCompletionToolChoiceOptionParam | NotGiven = NOT_GIVEN,
         tools: Iterable[ChatCompletionToolParam] | NotGiven = NOT_GIVEN,
@@ -1191,8 +1057,7 @@ class AsyncCompletions(AsyncAPIResource):
 
           logprobs: Whether to return log probabilities of the output tokens or not. If true,
               returns the log probabilities of each output token returned in the `content` of
-              `message`. This option is currently not available on the `gpt-4-vision-preview`
-              model.
+              `message`.
 
           max_tokens: The maximum number of [tokens](/tokenizer) that can be generated in the chat
               completion.
@@ -1235,21 +1100,23 @@ class AsyncCompletions(AsyncAPIResource):
 
           stop: Up to 4 sequences where the API will stop generating further tokens.
 
+          stream_options: Options for streaming response. Only set this when you set `stream: true`.
+
           temperature: What sampling temperature to use, between 0 and 2. Higher values like 0.8 will
               make the output more random, while lower values like 0.2 will make it more
               focused and deterministic.
 
               We generally recommend altering this or `top_p` but not both.
 
-          tool_choice: Controls which (if any) function is called by the model. `none` means the model
-              will not call a function and instead generates a message. `auto` means the model
-              can pick between generating a message or calling a function. Specifying a
-              particular function via
+          tool_choice: Controls which (if any) tool is called by the model. `none` means the model will
+              not call any tool and instead generates a message. `auto` means the model can
+              pick between generating a message or calling one or more tools. `required` means
+              the model must call one or more tools. Specifying a particular tool via
               `{"type": "function", "function": {"name": "my_function"}}` forces the model to
-              call that function.
+              call that tool.
 
-              `none` is the default when no functions are present. `auto` is the default if
-              functions are present.
+              `none` is the default when no tools are present. `auto` is the default if tools
+              are present.
 
           tools: A list of tools the model may call. Currently, only functions are supported as a
               tool. Use this to provide a list of functions the model may generate JSON inputs
@@ -1284,28 +1151,7 @@ class AsyncCompletions(AsyncAPIResource):
         self,
         *,
         messages: Iterable[ChatCompletionMessageParam],
-        model: Union[
-            str,
-            Literal[
-                "gpt-4-0125-preview",
-                "gpt-4-turbo-preview",
-                "gpt-4-1106-preview",
-                "gpt-4-vision-preview",
-                "gpt-4",
-                "gpt-4-0314",
-                "gpt-4-0613",
-                "gpt-4-32k",
-                "gpt-4-32k-0314",
-                "gpt-4-32k-0613",
-                "gpt-3.5-turbo",
-                "gpt-3.5-turbo-16k",
-                "gpt-3.5-turbo-0301",
-                "gpt-3.5-turbo-0613",
-                "gpt-3.5-turbo-1106",
-                "gpt-3.5-turbo-0125",
-                "gpt-3.5-turbo-16k-0613",
-            ],
-        ],
+        model: Union[str, ChatModel],
         frequency_penalty: Optional[float] | NotGiven = NOT_GIVEN,
         function_call: completion_create_params.FunctionCall | NotGiven = NOT_GIVEN,
         functions: Iterable[completion_create_params.Function] | NotGiven = NOT_GIVEN,
@@ -1318,6 +1164,7 @@ class AsyncCompletions(AsyncAPIResource):
         seed: Optional[int] | NotGiven = NOT_GIVEN,
         stop: Union[Optional[str], List[str]] | NotGiven = NOT_GIVEN,
         stream: Optional[Literal[False]] | Literal[True] | NotGiven = NOT_GIVEN,
+        stream_options: Optional[ChatCompletionStreamOptionsParam] | NotGiven = NOT_GIVEN,
         temperature: Optional[float] | NotGiven = NOT_GIVEN,
         tool_choice: ChatCompletionToolChoiceOptionParam | NotGiven = NOT_GIVEN,
         tools: Iterable[ChatCompletionToolParam] | NotGiven = NOT_GIVEN,
@@ -1349,6 +1196,7 @@ class AsyncCompletions(AsyncAPIResource):
                     "seed": seed,
                     "stop": stop,
                     "stream": stream,
+                    "stream_options": stream_options,
                     "temperature": temperature,
                     "tool_choice": tool_choice,
                     "tools": tools,

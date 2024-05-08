@@ -24,7 +24,29 @@ export default function Home() {
   const [id, setId] = useState(0);
   const location = useLocation();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [accessToken, setAccessToken] = useState('');
+
+  const [userInfo, setUserInfo] = useState({ name: "", photo: "", email: "" });
+
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      try {
+        const { data } = await axios.get(
+         /*process.env.REACT_APP_USER_INFO ||*/ "http://localhost:3001/user-info",
+         { withCredentials: true }
+        );
+        // Update userInfo state with fetched data
+        console.log(data.email);
+        setUserInfo({ name: data.name, photo: data.photo,  email: data.email });
+      } catch (error) {
+        console.error("Failed to fetch user info:", error);
+      }
+    };
+
+    // Call fetchUserInfo function when component mounts
+    fetchUserInfo();
+
+    // Dependency array is empty, so this effect runs only once when the component mounts
+  }, []);
   const sendUserInput = () => {
     const id = uuidv4();
     setDisplayInput(false);
@@ -44,7 +66,7 @@ export default function Home() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ user_input: userInput }),
+        body: JSON.stringify({ user_input: userInput, user_email: userInfo.email }),
       }
     )
       .then((res) => res.json())
@@ -115,6 +137,7 @@ export default function Home() {
             <div className=" flex items-center">
               <Mic className="mx-3" size="50" />
             </div>
+            <button onClick={() => console.log(userInfo.email)}>check</button>
           </div>
         )}
 

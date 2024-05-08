@@ -1,23 +1,11 @@
-from __future__ import annotations
-
 import datetime
-import sys
-from typing import Any, Callable, Generic, Optional, Type, TypeVar
+from typing import Any, Callable, Generic, Literal, TypeVar, final
+
+from _typeshed import SupportsAllComparisons
+from typing_extensions import LiteralString, Self, TypeAlias
 
 from pydantic_core import ErrorDetails, ErrorTypeInfo, InitErrorDetails, MultiHostHost
 from pydantic_core.core_schema import CoreConfig, CoreSchema, ErrorType
-
-if sys.version_info < (3, 8):
-    from typing_extensions import final
-else:
-    from typing import final
-
-if sys.version_info < (3, 11):
-    from typing_extensions import Literal, LiteralString, Self, TypeAlias
-else:
-    from typing import Literal, LiteralString, Self, TypeAlias
-
-from _typeshed import SupportsAllComparisons
 
 __all__ = [
     '__version__',
@@ -73,7 +61,7 @@ class Some(Generic[_T]):
         Returns the value wrapped by `Some`.
         """
     @classmethod
-    def __class_getitem__(cls, __item: Any) -> Type[Self]: ...
+    def __class_getitem__(cls, item: Any, /) -> type[Self]: ...
 
 @final
 class SchemaValidator:
@@ -101,7 +89,7 @@ class SchemaValidator:
         *,
         strict: bool | None = None,
         from_attributes: bool | None = None,
-        context: 'dict[str, Any] | None' = None,
+        context: dict[str, Any] | None = None,
         self_instance: Any | None = None,
     ) -> Any:
         """
@@ -131,7 +119,7 @@ class SchemaValidator:
         *,
         strict: bool | None = None,
         from_attributes: bool | None = None,
-        context: 'dict[str, Any] | None' = None,
+        context: dict[str, Any] | None = None,
         self_instance: Any | None = None,
     ) -> bool:
         """
@@ -148,7 +136,7 @@ class SchemaValidator:
         input: str | bytes | bytearray,
         *,
         strict: bool | None = None,
-        context: 'dict[str, Any] | None' = None,
+        context: dict[str, Any] | None = None,
         self_instance: Any | None = None,
     ) -> Any:
         """
@@ -176,7 +164,7 @@ class SchemaValidator:
             The validated Python object.
         """
     def validate_strings(
-        self, input: _StringInput, *, strict: bool | None = None, context: 'dict[str, Any] | None' = None
+        self, input: _StringInput, *, strict: bool | None = None, context: dict[str, Any] | None = None
     ) -> Any:
         """
         Validate a string against the schema and return the validated Python object.
@@ -206,7 +194,7 @@ class SchemaValidator:
         *,
         strict: bool | None = None,
         from_attributes: bool | None = None,
-        context: 'dict[str, Any] | None' = None,
+        context: dict[str, Any] | None = None,
     ) -> dict[str, Any] | tuple[dict[str, Any], dict[str, Any] | None, set[str]]:
         """
         Validate an assignment to a field on a model.
@@ -276,8 +264,10 @@ class SchemaSerializer:
         exclude_defaults: bool = False,
         exclude_none: bool = False,
         round_trip: bool = False,
-        warnings: bool = True,
+        warnings: bool | Literal['none', 'warn', 'error'] = True,
         fallback: Callable[[Any], Any] | None = None,
+        serialize_as_any: bool = False,
+        context: dict[str, Any] | None = None,
     ) -> Any:
         """
         Serialize/marshal a Python object to a Python object including transforming and filtering data.
@@ -294,9 +284,13 @@ class SchemaSerializer:
             exclude_defaults: Whether to exclude fields that are equal to their default value.
             exclude_none: Whether to exclude fields that have a value of `None`.
             round_trip: Whether to enable serialization and validation round-trip support.
-            warnings: Whether to log warnings when invalid fields are encountered.
+            warnings: How to handle invalid fields. False/"none" ignores them, True/"warn" logs errors,
+                "error" raises a [`PydanticSerializationError`][pydantic_core.PydanticSerializationError].
             fallback: A function to call when an unknown value is encountered,
                 if `None` a [`PydanticSerializationError`][pydantic_core.PydanticSerializationError] error is raised.
+            serialize_as_any: Whether to serialize fields with duck-typing serialization behavior.
+            context: The context to use for serialization, this is passed to functional serializers as
+                [`info.context`][pydantic_core.core_schema.SerializationInfo.context].
 
         Raises:
             PydanticSerializationError: If serialization fails and no `fallback` function is provided.
@@ -316,8 +310,10 @@ class SchemaSerializer:
         exclude_defaults: bool = False,
         exclude_none: bool = False,
         round_trip: bool = False,
-        warnings: bool = True,
+        warnings: bool | Literal['none', 'warn', 'error'] = True,
         fallback: Callable[[Any], Any] | None = None,
+        serialize_as_any: bool = False,
+        context: dict[str, Any] | None = None,
     ) -> bytes:
         """
         Serialize a Python object to JSON including transforming and filtering data.
@@ -333,9 +329,13 @@ class SchemaSerializer:
             exclude_defaults: Whether to exclude fields that are equal to their default value.
             exclude_none: Whether to exclude fields that have a value of `None`.
             round_trip: Whether to enable serialization and validation round-trip support.
-            warnings: Whether to log warnings when invalid fields are encountered.
+            warnings: How to handle invalid fields. False/"none" ignores them, True/"warn" logs errors,
+                "error" raises a [`PydanticSerializationError`][pydantic_core.PydanticSerializationError].
             fallback: A function to call when an unknown value is encountered,
                 if `None` a [`PydanticSerializationError`][pydantic_core.PydanticSerializationError] error is raised.
+            serialize_as_any: Whether to serialize fields with duck-typing serialization behavior.
+            context: The context to use for serialization, this is passed to functional serializers as
+                [`info.context`][pydantic_core.core_schema.SerializationInfo.context].
 
         Raises:
             PydanticSerializationError: If serialization fails and no `fallback` function is provided.
@@ -358,6 +358,8 @@ def to_json(
     inf_nan_mode: Literal['null', 'constants'] = 'constants',
     serialize_unknown: bool = False,
     fallback: Callable[[Any], Any] | None = None,
+    serialize_as_any: bool = False,
+    context: dict[str, Any] | None = None,
 ) -> bytes:
     """
     Serialize a Python object to JSON including transforming and filtering data.
@@ -379,6 +381,9 @@ def to_json(
             `"<Unserializable {value_type} object>"` will be used.
         fallback: A function to call when an unknown value is encountered,
             if `None` a [`PydanticSerializationError`][pydantic_core.PydanticSerializationError] error is raised.
+        serialize_as_any: Whether to serialize fields with duck-typing serialization behavior.
+        context: The context to use for serialization, this is passed to functional serializers as
+            [`info.context`][pydantic_core.core_schema.SerializationInfo.context].
 
     Raises:
         PydanticSerializationError: If serialization fails and no `fallback` function is provided.
@@ -387,17 +392,26 @@ def to_json(
        JSON bytes.
     """
 
-def from_json(data: str | bytes | bytearray, *, allow_inf_nan: bool = True, cache_strings: bool = True) -> Any:
+def from_json(
+    data: str | bytes | bytearray,
+    *,
+    allow_inf_nan: bool = True,
+    cache_strings: bool | Literal['all', 'keys', 'none'] = True,
+    allow_partial: bool = False,
+) -> Any:
     """
     Deserialize JSON data to a Python object.
 
-    This is effectively a faster version of `json.loads()`.
+    This is effectively a faster version of `json.loads()`, with some extra functionality.
 
     Arguments:
         data: The JSON data to deserialize.
         allow_inf_nan: Whether to allow `Infinity`, `-Infinity` and `NaN` values as `json.loads()` does by default.
         cache_strings: Whether to cache strings to avoid constructing new Python objects,
-            this should have a significant impact on performance while increasing memory usage slightly.
+            this should have a significant impact on performance while increasing memory usage slightly,
+            `all/True` means cache all strings, `keys` means cache only dict keys, `none/False` means no caching.
+        allow_partial: Whether to allow partial deserialization, if `True` JSON data is returned if the end of the
+            input is reached before the full object is deserialized, e.g. `["aa", "bb", "c` would return `['aa', 'bb']`.
 
     Raises:
         ValueError: If deserialization fails.
@@ -419,6 +433,8 @@ def to_jsonable_python(
     inf_nan_mode: Literal['null', 'constants'] = 'constants',
     serialize_unknown: bool = False,
     fallback: Callable[[Any], Any] | None = None,
+    serialize_as_any: bool = False,
+    context: dict[str, Any] | None = None,
 ) -> Any:
     """
     Serialize/marshal a Python object to a JSON-serializable Python object including transforming and filtering data.
@@ -440,6 +456,9 @@ def to_jsonable_python(
             `"<Unserializable {value_type} object>"` will be used.
         fallback: A function to call when an unknown value is encountered,
             if `None` a [`PydanticSerializationError`][pydantic_core.PydanticSerializationError] error is raised.
+        serialize_as_any: Whether to serialize fields with duck-typing serialization behavior.
+        context: The context to use for serialization, this is passed to functional serializers as
+            [`info.context`][pydantic_core.core_schema.SerializationInfo.context].
 
     Raises:
         PydanticSerializationError: If serialization fails and no `fallback` function is provided.
@@ -557,13 +576,13 @@ class Url(SupportsAllComparisons):
         cls,
         *,
         scheme: str,
-        username: Optional[str] = None,
-        password: Optional[str] = None,
+        username: str | None = None,
+        password: str | None = None,
         host: str,
-        port: Optional[int] = None,
-        path: Optional[str] = None,
-        query: Optional[str] = None,
-        fragment: Optional[str] = None,
+        port: int | None = None,
+        path: str | None = None,
+        query: str | None = None,
+        fragment: str | None = None,
     ) -> Self:
         """
         Build a new `Url` instance from its component parts.
@@ -671,14 +690,14 @@ class MultiHostUrl(SupportsAllComparisons):
         cls,
         *,
         scheme: str,
-        hosts: Optional[list[MultiHostHost]] = None,
-        username: Optional[str] = None,
-        password: Optional[str] = None,
-        host: Optional[str] = None,
-        port: Optional[int] = None,
-        path: Optional[str] = None,
-        query: Optional[str] = None,
-        fragment: Optional[str] = None,
+        hosts: list[MultiHostHost] | None = None,
+        username: str | None = None,
+        password: str | None = None,
+        host: str | None = None,
+        port: int | None = None,
+        path: str | None = None,
+        query: str | None = None,
+        fragment: str | None = None,
     ) -> Self:
         """
         Build a new `MultiHostUrl` instance from its component parts.
@@ -871,7 +890,7 @@ class TzInfo(datetime.tzinfo):
     def utcoffset(self, _dt: datetime.datetime | None) -> datetime.timedelta: ...
     def dst(self, _dt: datetime.datetime | None) -> datetime.timedelta: ...
     def fromutc(self, dt: datetime.datetime) -> datetime.datetime: ...
-    def __deepcopy__(self, _memo: dict[Any, Any]) -> 'TzInfo': ...
+    def __deepcopy__(self, _memo: dict[Any, Any]) -> TzInfo: ...
 
 def validate_core_schema(schema: CoreSchema, *, strict: bool | None = None) -> CoreSchema:
     """Validate a CoreSchema

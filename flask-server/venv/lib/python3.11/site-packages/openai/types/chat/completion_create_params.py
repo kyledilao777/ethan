@@ -6,8 +6,10 @@ from typing import Dict, List, Union, Iterable, Optional
 from typing_extensions import Literal, Required, TypedDict
 
 from ...types import shared_params
+from ..chat_model import ChatModel
 from .chat_completion_tool_param import ChatCompletionToolParam
 from .chat_completion_message_param import ChatCompletionMessageParam
+from .chat_completion_stream_options_param import ChatCompletionStreamOptionsParam
 from .chat_completion_tool_choice_option_param import ChatCompletionToolChoiceOptionParam
 from .chat_completion_function_call_option_param import ChatCompletionFunctionCallOptionParam
 
@@ -28,30 +30,7 @@ class CompletionCreateParamsBase(TypedDict, total=False):
     [Example Python code](https://cookbook.openai.com/examples/how_to_format_inputs_to_chatgpt_models).
     """
 
-    model: Required[
-        Union[
-            str,
-            Literal[
-                "gpt-4-0125-preview",
-                "gpt-4-turbo-preview",
-                "gpt-4-1106-preview",
-                "gpt-4-vision-preview",
-                "gpt-4",
-                "gpt-4-0314",
-                "gpt-4-0613",
-                "gpt-4-32k",
-                "gpt-4-32k-0314",
-                "gpt-4-32k-0613",
-                "gpt-3.5-turbo",
-                "gpt-3.5-turbo-16k",
-                "gpt-3.5-turbo-0301",
-                "gpt-3.5-turbo-0613",
-                "gpt-3.5-turbo-1106",
-                "gpt-3.5-turbo-0125",
-                "gpt-3.5-turbo-16k-0613",
-            ],
-        ]
-    ]
+    model: Required[Union[str, ChatModel]]
     """ID of the model to use.
 
     See the
@@ -102,8 +81,7 @@ class CompletionCreateParamsBase(TypedDict, total=False):
     """Whether to return log probabilities of the output tokens or not.
 
     If true, returns the log probabilities of each output token returned in the
-    `content` of `message`. This option is currently not available on the
-    `gpt-4-vision-preview` model.
+    `content` of `message`.
     """
 
     max_tokens: Optional[int]
@@ -164,6 +142,9 @@ class CompletionCreateParamsBase(TypedDict, total=False):
     stop: Union[Optional[str], List[str]]
     """Up to 4 sequences where the API will stop generating further tokens."""
 
+    stream_options: Optional[ChatCompletionStreamOptionsParam]
+    """Options for streaming response. Only set this when you set `stream: true`."""
+
     temperature: Optional[float]
     """What sampling temperature to use, between 0 and 2.
 
@@ -175,15 +156,15 @@ class CompletionCreateParamsBase(TypedDict, total=False):
 
     tool_choice: ChatCompletionToolChoiceOptionParam
     """
-    Controls which (if any) function is called by the model. `none` means the model
-    will not call a function and instead generates a message. `auto` means the model
-    can pick between generating a message or calling a function. Specifying a
-    particular function via
+    Controls which (if any) tool is called by the model. `none` means the model will
+    not call any tool and instead generates a message. `auto` means the model can
+    pick between generating a message or calling one or more tools. `required` means
+    the model must call one or more tools. Specifying a particular tool via
     `{"type": "function", "function": {"name": "my_function"}}` forces the model to
-    call that function.
+    call that tool.
 
-    `none` is the default when no functions are present. `auto` is the default if
-    functions are present.
+    `none` is the default when no tools are present. `auto` is the default if tools
+    are present.
     """
 
     tools: Iterable[ChatCompletionToolParam]
