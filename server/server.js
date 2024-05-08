@@ -208,6 +208,7 @@ async function main() {
     // oAuth2Client.setCredentials(tokens);
 
     const peopleService = google.people({ version: "v1", auth: oAuth2Client });
+    const calendarService = google.calendar({ version: 'v3', auth: oAuth2Client });
     try {
       const me = await peopleService.people.get({
         resourceName: "people/me",
@@ -221,6 +222,11 @@ async function main() {
         photo: me.data.photos[0].url,
         email: me.data.emailAddresses[0].value,
       };
+
+      const calendarList = await calendarService.calendarList.list();
+      const primaryCalendar = calendarList.data.items.find(calendar => calendar.primary);
+
+      userInfo.calendarId = primaryCalendar ? primaryCalendar.id : 'No primary calendar found';
 
       res.json(userInfo);
     } catch (error) {

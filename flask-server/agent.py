@@ -42,7 +42,8 @@ def run():
     data = request.get_json()
     user_input = data["user_input"]
     user_email = data["user_email"]
-    output = start_agent(user_input, user_email, persistent_memory)
+    calendar_id = data["calendar_id"]
+    output = start_agent(user_input, user_email, calendar_id, persistent_memory)
     return jsonify(output)
         
 def run_agent_executor(user_email: str, user_input: str, calendar_id: str, memory, response_container):
@@ -100,22 +101,22 @@ def run_agent_executor(user_email: str, user_input: str, calendar_id: str, memor
     response_container["response"] = result.get("output")
 
 ### running the agent ###
-def agent_task(input_data, user_email, memory, response_container):
+def agent_task(input_data, user_email, calendar_id, memory, response_container):
     """
     This is where the agent's work based on the user input  is executed.
     Replace the print statement with the actual work of your agent.
     """
 
-    run_agent_executor(user_email, input_data, user_email, memory, response_container)
+    run_agent_executor(user_email, input_data, calendar_id, memory, response_container)
 
     # Simulate some work with a sleep
     time.sleep(2)
-def start_agent(input_data, user_email, memory):
+def start_agent(input_data, user_email, calendar_id, memory):
     """
     Starts the agent task in a new thread based on the given input_data.
     """
     response_container = {}
-    agent_thread = threading.Thread(target=agent_task, args=(input_data, user_email, memory, response_container))
+    agent_thread = threading.Thread(target=agent_task, args=(input_data, user_email, calendar_id, memory, response_container))
     agent_thread.start()
     agent_thread.join()
     

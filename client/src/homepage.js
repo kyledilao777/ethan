@@ -25,7 +25,7 @@ export default function Home() {
   const location = useLocation();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  const [userInfo, setUserInfo] = useState({ name: "", photo: "", email: "" });
+  const [userInfo, setUserInfo] = useState({ name: "", photo: "", email: "", calendarId: "" });
 
   useEffect(() => {
     const fetchUserInfo = async () => {
@@ -35,8 +35,9 @@ export default function Home() {
          { withCredentials: true }
         );
         // Update userInfo state with fetched data
-        console.log(data.email);
-        setUserInfo({ name: data.name, photo: data.photo,  email: data.email });
+        console.log("email", data.email);
+        console.log("calendar ID", data.calendarId);
+        setUserInfo({ name: data.name, photo: data.photo,  email: data.email, calendarId: data.calendarId });
       } catch (error) {
         console.error("Failed to fetch user info:", error);
       }
@@ -66,7 +67,7 @@ export default function Home() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ user_input: userInput, user_email: userInfo.email }),
+        body: JSON.stringify({ user_input: userInput, user_email: userInfo.email, calendar_id: userInfo.calendarId }),
       }
     )
       .then((res) => res.json())
