@@ -22,8 +22,10 @@ async function main() {
 
   const sessionStore = MongoStore.create({
     mongoUrl: process.env.MONGODB_URI,
+    collection: 'sessions',
   });
-
+  app.set('trust proxy', 1)
+  
   app.use(
     session({
       secret: process.env.SESSION_SECRET,
@@ -33,10 +35,10 @@ async function main() {
       saveUninitialized: false,
       cookie: {
         httpOnly: true,
-        secure: true,
+        secure: process.env.NODE_ENV === 'production',
         path: "/",
         domain: ".untangled-ai.com",
-        sameSite: "none",
+        sameSite: process.env.NODE_ENV === "production" ? 'none' : 'lax',
         maxAge: 1000 * 60 * 60 * 24 * 7,
       },
     })
