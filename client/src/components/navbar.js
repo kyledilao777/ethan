@@ -8,12 +8,13 @@ import {
   ArrowRight,
   ArrowLeft,
   Home,
+  Menu,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import axios from "axios";
 
-export default function NavBar({ setIsNavOpen }) {
+export default function NavBar({ setIsNavOpen, setIsAgent }) {
   const [isOpen, setIsOpen] = useState(false);
   const [userInfo, setUserInfo] = useState({ name: "", photo: "" });
 
@@ -21,7 +22,8 @@ export default function NavBar({ setIsNavOpen }) {
     const fetchUserInfo = async () => {
       try {
         const { data } = await axios.get(
-          process.env.REACT_APP_USER_INFO /*|| 'http://localhost:3001/user-info'*/,
+          process.env
+            .REACT_APP_USER_INFO /*|| "http://localhost:3001/user-info"*/,
           { withCredentials: true }
         );
         // Update userInfo state with fetched data
@@ -36,15 +38,255 @@ export default function NavBar({ setIsNavOpen }) {
 
     // Dependency array is empty, so this effect runs only once when the component mounts
   }, []);
-
   const handleButton = () => {
     setIsOpen(true);
     setIsNavOpen(true);
   };
+
+  const handleButton2 = () => {
+    setIsOpen(false);
+    setIsNavOpen(false);
+  };
   return (
     <div className="">
+      <div className="visible xsm:visible sxl:hidden xl:hidden p-[10px]">
+        {" "}
+        {/* Ensure the sidebar and button don't affect the main layout */}
+        {!isOpen && (
+          <button onClick={handleButton} className="bg-white fixed z-30">
+            <Menu size="30" /> {/* Replaced <text> with <span> */}
+          </button>
+        )}
+        <div
+          className={`fixed z-20 duration-300 left-0 top-0 h-screen bg-white transition-all border rounded-lg ${
+            isOpen ? "w-[285px]" : "w-0"
+          }`} // Use Tailwind's width utilities for animation
+        >
+          <div className="overflow-hidden w-[285px]">
+            {" "}
+            {/* Prevents content from spilling out */}
+            <div className="flex flex-col space-y-8 p-5">
+              {" "}
+              {/* Added padding and flex-column layout */}
+              {isOpen && (
+                <div>
+                  <div className="flex justify-between items-center mb-4">
+                    {" "}
+                    {/* Better control of spacing */}
+                    <span className="font-semibold">Assistant</span>
+                    <button onClick={handleButton2}>
+                      <ArrowLeft />
+                    </button>
+                  </div>
+
+                  <button className="flex items-center space-x-5 my-8">
+                    <Bot size="31" color="black" />
+                    <span className="font-medium">Ethan</span>
+                  </button>
+
+                  <div className="bg-black h-px my-2">
+                    {" "}
+                    {/* Use height for horizontal lines */}
+                    <span className="text-white">halo</span>{" "}
+                    {/* This might not be visible */}
+                  </div>
+                  <div className="my-8">
+                    <text className=" font-semibold">Features</text>
+                  </div>
+                  <div className="space-y-8">
+                    <Link
+                      to={{ pathname: "/home" }}
+                      className="flex flex-row space-x-5 items-center"
+                    >
+                      <div className="flex flex-row items-center justify-between w-[100px] ">
+                        <Home size="30" color="black" />{" "}
+                        <text className=" font-medium">Home</text>
+                      </div>
+                    </Link>
+                    <Link
+                      to={{ pathname: "/calendar" }}
+                      className="flex flex-row space-x-5 items-center"
+                    >
+                      <div className="flex flex-row items-center justify-between w-[123px] ">
+                        <CalendarDays size="30" color="black" />{" "}
+                        <text className=" font-medium">Calendar</text>
+                      </div>
+                    </Link>
+                    <div className="bg-black w-full h-[1px]">
+                      <text className="text-white">halo</text>
+                    </div>
+                  </div>
+
+                  <div className="my-8">
+                    <text className=" font-semibold">Settings</text>
+                  </div>
+                  <Link
+                    to={{ pathname: "/calendar" }}
+                    className="flex flex-row space-x-5 items-center"
+                  >
+                    <div className="flex flex-row items-center justify-between w-[118px] ">
+                      <Settings size="30" color="black" />{" "}
+                      <text className=" font-medium">Settings</text>
+                    </div>
+                  </Link>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* <div
+          className="fixed z-20 duration-300 left-0 top-0 h-screen bg-white transition-width border rounded-lg"
+          style={{ width: isOpen ? "285px" : "0px" }}
+        >
+          <div className="flex p-[20px]">
+          <div className=" w-[250px]">
+            <div className=" flex w-fit">
+              <ul className="space-y-8">
+                <div className="w-[243px]">
+                  {isOpen && 
+                  <div className="flex flex-row justify-between">
+                    <text className="font-semibold">Assistant</text>
+                    <button onClick={handleButton2}>
+                      <ArrowLeft />
+                    </button>
+                    
+                  </div>
+                  
+                  }
+
+                  <button className="flex flex-row space-x-5 items-center my-8">
+                    
+                    {isOpen && (
+                      
+                      <div className="">
+                        <li>
+                      {" "}
+                      <Bot size="31" color="black" />{" "}
+                    </li>
+                        <text className=" font-medium">Ethan</text>
+                      </div>
+                    )}
+                  </button>
+
+                  {isOpen && (
+                    <div className="bg-black w-full h-[1px]">
+                      <text className="text-white">halo</text>
+                    </div>
+                  )}
+                </div>
+
+                <div className="space-y-8 ">
+                  {isOpen && <text className=" font-semibold">Features</text>}
+                  <Link
+                    to={{ pathname: "/home" }}
+                    className="flex flex-row space-x-5 items-center"
+                  >
+                    
+                    {isOpen && (
+                      <div className=" ">
+                        <li>
+                      {" "}
+                      <Home size="30" color="black" />{" "}
+                    </li>
+                        <text className=" font-medium">Home</text>
+                      </div>
+                    )}
+                  </Link>
+                  <Link
+                    to={{ pathname: "/calendar" }}
+                    className="flex flex-row space-x-5 items-center"
+                  >
+                    
+                    {isOpen && (
+                      <div className=" ">
+                        <li>
+                      {" "}
+                      <CalendarDays size="30" color="black" />{" "}
+                    </li>
+                        <text className=" font-medium">Calendar</text>
+                      </div>
+                    )}
+                  </Link>
+                  <Link
+                    to={{ pathname: "/todo" }}
+                    className="flex flex-row space-x-5 items-center"
+                  >
+                    
+                    {isOpen && (
+                      <div className="w-[72px]">
+                        <li>
+                      {" "}
+                      <LayoutList size="30" color="black" />{" "}
+                    </li>
+                        <text className=" font-medium">To do List</text>
+                      </div>
+                    )}
+                  </Link>
+                  <Link
+                    to={{ pathname: "/meeting" }}
+                    className="flex flex-row space-x-5 items-center"
+                  >
+                    
+                    {isOpen && (
+                      <div className="">
+                        <li>
+                      {" "}
+                      <Users size="30" color="black" />{" "}
+                    </li>
+
+                        <text className=" font-medium">Meetings</text>
+                      </div>
+                    )}
+                  </Link>
+                  <div>
+                    <Link
+                      to={{ pathname: "/routemap" }}
+                      className="flex flex-row space-x-5 items-center"
+                    >
+                      
+                      {isOpen && (
+                        <div className="">
+                          <li>
+                        {" "}
+                        <Map size="30" color="black" />{" "}
+                      </li>
+                          <text className="font-medium">Map</text>
+                        </div>
+                      )}
+                    </Link>
+                    {isOpen && (
+                      <div className="bg-black w-full h-[1px] mt-8">
+                        <text className="text-white">halo</text>
+                      </div>
+                    )}
+                  </div>
+                  <div>
+                    {isOpen && <text className=" font-semibold">Settings</text>}
+                    <button className="flex flex-row space-x-5 items-center my-8">
+                      
+                      {isOpen && (
+                        <div className=" ">
+                          <li>
+                        {" "}
+                        <Settings size="30" color="black" />{" "}
+                      </li>
+                          <text className=" font-medium">Settings</text>
+                        </div>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        </div>  */}
+
       <div
-        className={`duration-300 h-full text-black bg-white ${
+        className={`duration-300 visible xsm:hidden xl:block sxl:block  h-screen text-black bg-white ${
           isOpen ? "w-[285px]" : "w-[70px]"
         } transition-width border rounded-lg`}
       >

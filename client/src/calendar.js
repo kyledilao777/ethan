@@ -14,7 +14,7 @@ export default function Home() {
   const [isNavOpen, setIsNavOpen] = useState(false);
   const calendarRef = useRef(null);
   const [todayToDoList, setTodayToDoList] = useState([]);
-  const location = useLocation(); 
+  const location = useLocation();
   useEffect(() => {
     if (calendarRef.current) {
       let calendarApi = calendarRef.current.getApi();
@@ -196,9 +196,9 @@ export default function Home() {
                 ))}
               </div>
               <div className=" flex items-center w-full justify-between">
-                  <input className="border-gray-200 border-solid border-2 p-1 w-[250px] rounded-md"/>
-            <Mic className="" size="30" />
-          </div>
+                <input className="border-gray-200 border-solid border-2 p-1 w-[250px] rounded-md" />
+                <Mic className="" size="30" />
+              </div>
             </div>
           </div>
         </div>
