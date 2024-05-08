@@ -9,6 +9,8 @@ import {
   Map,
   ArrowLeft,
   Send,
+  StickyNote,
+  Linkedin,
 } from "lucide-react";
 import { v4 as uuidv4 } from "uuid";
 import { Link, useLocation } from "react-router-dom";
