@@ -395,7 +395,7 @@ export default function NavBar({ setIsNavOpen, setIsAgent }) {
                       </div>
                     )}
                   </Link>
-                  <Link
+                  {/* <Link
                     to={{ pathname: "/todo" }}
                     className="flex flex-row space-x-5 items-center"
                   >
@@ -423,9 +423,9 @@ export default function NavBar({ setIsNavOpen, setIsAgent }) {
                         <text className=" font-medium">Meetings</text>
                       </div>
                     )}
-                  </Link>
+                  </Link> */}
                   <div>
-                    <Link
+                    {/* <Link
                       to={{ pathname: "/routemap" }}
                       className="flex flex-row space-x-5 items-center"
                     >
@@ -438,7 +438,7 @@ export default function NavBar({ setIsNavOpen, setIsAgent }) {
                           <text className="font-medium">Map</text>
                         </div>
                       )}
-                    </Link>
+                    </Link> */}
                     {isOpen && (
                       <div className="bg-black w-full h-[1px] mt-8">
                         <text className="text-white">halo</text>

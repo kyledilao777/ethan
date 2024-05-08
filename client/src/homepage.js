@@ -9,6 +9,8 @@ import {
   Map,
   ArrowLeft,
   Send,
+  StickyNote,
+  Linkedin,
 } from "lucide-react";
 import { v4 as uuidv4 } from "uuid";
 import { Link, useLocation } from "react-router-dom";
@@ -37,7 +39,8 @@ export default function Home() {
     const fetchUserInfo = async () => {
       try {
         const { data } = await axios.get(
-          process.env.REACT_APP_USER_INFO /*|| "http://localhost:3001/user-info"*/,
+          process.env
+            .REACT_APP_USER_INFO /*|| "http://localhost:3001/user-info"*/,
           { withCredentials: true }
         );
         // Update userInfo state with fetched data
@@ -136,8 +139,8 @@ export default function Home() {
       <div className="w-full flex sxl:flex-row xsm:flex-col h-screen">
         <NavBar setIsNavOpen={setIsNavOpen} setIsAgent={setIsAgent} />
         {!isAgent && (
-          <div className="w-full flex xl:px-[200px] xsm:px-[10px] sxl:px-[100px] my-auto items-center ">
-            <div className="flex flex-col justify-center text-center w-full  h-fit">
+          <div className="w-full flex xl:px-[200px] flex-col xsm:px-[10px] sxl:px-[100px] justify-between my-auto items-center ">
+            <div className="flex flex-col justify-center text-center w-full h-fit">
               <div>
                 <text className="font-bold sxl:text-2xl xsm:text-lg">
                   Your very own digital secretary.
@@ -158,16 +161,30 @@ export default function Home() {
                   Enter
                 </button>
               </div>
-              <div className="flex sxl:space-x-20 xsm:space-x-8 flex-row justify-center w-full">
+              <div>
+                <text className="font-bold sxl:text-2xl xsm:text-lg">
+                  Ethan needs 50 seconds to load up.
+                </text>
+              </div>
+              {/* <div className="flex sxl:space-x-20 xsm:space-x-8 flex-row justify-center w-full">
                 <CalendarDays size="40" />
                 <LayoutList size="40" />
                 <Users size="40" />
                 <Map size="40" />
-              </div>
+              </div> */}
             </div>
-            <div className=" flex items-center">
+            <div className="flex flex-row justify-center space-x-5 mt-8">
+              <a href="https://untangled.carrd.co/">
+                <StickyNote color="black" size="35" />
+              </a>
+              <a href="https://www.linkedin.com/in/evan-darren-christanto-675b33251/">
+                <Linkedin color="black" size="35" />
+              </a>
+            </div>
+
+            {/* <div className=" flex items-center">
               <Mic className="mx-3" size="50" />
-            </div>
+            </div> */}
           </div>
         )}
 
