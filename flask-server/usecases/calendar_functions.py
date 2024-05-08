@@ -13,6 +13,7 @@ def get_access_token():
         "client_id": client_id,
         "client_secret": client_secret,
         "refresh_token": refresh_token,
+        # "scope": "https://www.googleapis.com/auth/calendar",
     }
     token_url = os.getenv("TOKEN_URI")
     response = requests.post(token_url, data=params)
@@ -32,6 +33,7 @@ def get_calendar_events(user_email, calendar_id, start_time, end_time, return_ev
         "timeMax": end_time,
     }
 
+    print(access_token)
     # Set the headers
     headers = {
         "Authorization": f"Bearer {access_token}",

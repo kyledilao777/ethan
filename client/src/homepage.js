@@ -1,6 +1,6 @@
 import NavBar from "./components/navbar";
 import { useState, useEffect } from "react";
-import axios from 'axios';
+import axios from "axios";
 import {
   Mic,
   CalendarDays,
@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { v4 as uuidv4 } from "uuid";
 import { Link, useLocation } from "react-router-dom";
-import Cookies from 'js-cookie';
+import Cookies from "js-cookie";
 import TypingEffect from "./components/typingeffect";
 
 export default function Home() {
@@ -26,19 +26,29 @@ export default function Home() {
   const [id, setId] = useState(0);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  const [userInfo, setUserInfo] = useState({ name: "", photo: "", email: "", calendarId: "" });
+  const [userInfo, setUserInfo] = useState({
+    name: "",
+    photo: "",
+    email: "",
+    calendarId: "",
+  });
 
   useEffect(() => {
     const fetchUserInfo = async () => {
       try {
         const { data } = await axios.get(
-         /*process.env.REACT_APP_USER_INFO ||*/ "http://localhost:3001/user-info",
-         { withCredentials: true }
+          /*process.env.REACT_APP_USER_INFO ||*/ "http://localhost:3001/user-info",
+          { withCredentials: true }
         );
         // Update userInfo state with fetched data
         console.log("email", data.email);
         console.log("calendar ID", data.calendarId);
-        setUserInfo({ name: data.name, photo: data.photo,  email: data.email, calendarId: data.calendarId });
+        setUserInfo({
+          name: data.name,
+          photo: data.photo,
+          email: data.email,
+          calendarId: data.calendarId,
+        });
       } catch (error) {
         console.error("Failed to fetch user info:", error);
       }
@@ -68,7 +78,11 @@ export default function Home() {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ user_input: userInput, user_email: userInfo.email, calendar_id: userInfo.calendarId }),
+      body: JSON.stringify({
+        user_input: userInput,
+        user_email: userInfo.email,
+        calendar_id: userInfo.calendarId,
+      }),
     })
       .then((res) => res.json())
       .then((agentData) => {
@@ -98,27 +112,29 @@ export default function Home() {
     );
   };
 
-
-
   useEffect(() => {
     const checkAuthStatus = async () => {
       try {
         // Note: Adjust the URL based on your server's configuration
-        const { data } = await axios.get(process.env.REACT_APP_AUTH_CHECK /*||'http://localhost:3001/auth-check'*/, { withCredentials: true });
+        const { data } = await axios.get(
+          process.env
+            .REACT_APP_AUTH_CHECK /*||'http://localhost:3001/auth-check'*/,
+          { withCredentials: true }
+        );
         setIsAuthenticated(data.isAuthenticated);
       } catch (error) {
-        console.error('Error checking authentication status:', error);
+        console.error("Error checking authentication status:", error);
         setIsAuthenticated(false);
       }
     };
 
     checkAuthStatus();
   }, []);
-    
+
   return (
     <div className=" w-full h-screen ">
       <div className="w-full flex sxl:flex-row xsm:flex-col h-screen">
-        <NavBar setIsNavOpen={setIsNavOpen} setIsAgent={setIsAgent}/>
+        <NavBar setIsNavOpen={setIsNavOpen} setIsAgent={setIsAgent} />
         {!isAgent && (
           <div className="w-full flex xl:px-[200px] xsm:px-[10px] sxl:px-[100px] my-auto items-center ">
             <div className="flex flex-col justify-center text-center w-full  h-fit">
@@ -142,16 +158,21 @@ export default function Home() {
                   Enter
                 </button>
               </div>
-              <div className="flex sxl:space-x-20 xsm:space-x-8 flex-row justify-center w-full">
+              <div>
+                <text className="font-bold sxl:text-2xl xsm:text-lg">
+                  Ethan needs 50 seconds to load.
+                </text>
+              </div>
+              {/* <div className="flex sxl:space-x-20 xsm:space-x-8 flex-row justify-center w-full">
                 <CalendarDays size="40" />
                 <LayoutList size="40" />
                 <Users size="40" />
                 <Map size="40" />
-              </div>
+              </div> */}
             </div>
-            <div className=" flex items-center">
+            {/* <div className=" flex items-center">
               <Mic className="mx-3" size="50" />
-            </div>
+            </div> */}
           </div>
         )}
 
