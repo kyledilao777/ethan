@@ -136,44 +136,53 @@ export default function Home() {
       <div className="w-full flex sxl:flex-row xsm:flex-col h-screen">
         <NavBar setIsNavOpen={setIsNavOpen} setIsAgent={setIsAgent} />
         {!isAgent && (
-          <div className="w-full flex xl:px-[200px] xsm:px-[10px] sxl:px-[100px] my-auto items-center ">
-            <div className="flex flex-col justify-center text-center w-full  h-fit">
-              <div>
-                <text className="font-bold sxl:text-2xl xsm:text-lg">
-                  Your very own digital secretary.
-                </text>
-              </div>
-              <div className="flex flex-row items-center xsm:my-3 sxl:my-10 space-x-3 ">
-                <input
-                  className="sxl:h-[60px] w-full border-gray-200 border-solid border-2 p-2 rounded-md"
-                  placeholder="Hi, how can I help you?"
-                  value={userInput}
-                  onChange={(e) => setUserInput(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && sendUserInput()} // Use onKeyDown to detect the Enter key press
-                />
-                <button
-                  onClick={sendUserInput} // Call sendUserInput when the button is clicked
-                  className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-                >
-                  Enter
-                </button>
-              </div>
-              <div>
-                <text className="font-bold sxl:text-2xl xsm:text-lg">
-                  Ethan needs 50 seconds to load.
-                </text>
-              </div>
-              {/* <div className="flex sxl:space-x-20 xsm:space-x-8 flex-row justify-center w-full">
-                <CalendarDays size="40" />
-                <LayoutList size="40" />
-                <Users size="40" />
-                <Map size="40" />
-              </div> */}
+          <div className="w-full flex xl:px-[200px] flex-col xsm:px-[10px] sxl:px-[100px] justify-between my-auto items-center ">
+          <div className="flex flex-col justify-center text-center w-full h-fit">
+            <div>
+              <text className="font-bold sxl:text-2xl xsm:text-lg">
+                Your very own digital secretary.
+              </text>
             </div>
-            {/* <div className=" flex items-center">
-              <Mic className="mx-3" size="50" />
+            <div className="flex flex-row items-center xsm:my-3 sxl:my-10 space-x-3 ">
+              <input
+                className="sxl:h-[60px] w-full border-gray-200 border-solid border-2 p-2 rounded-md"
+                placeholder="Hi, how can I help you?"
+                value={userInput}
+                onChange={(e) => setUserInput(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && sendUserInput()} // Use onKeyDown to detect the Enter key press
+              />
+              <button
+                onClick={sendUserInput} // Call sendUserInput when the button is clicked
+                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+              >
+                Enter
+              </button>
+            </div>
+            <div>
+              <text className="font-bold sxl:text-2xl xsm:text-lg">
+                Ethan needs 50 seconds to load up.
+              </text>
+            </div>
+            {/* <div className="flex sxl:space-x-20 xsm:space-x-8 flex-row justify-center w-full">
+              <CalendarDays size="40" />
+              <LayoutList size="40" />
+              <Users size="40" />
+              <Map size="40" />
             </div> */}
           </div>
+          <div className="flex flex-row justify-center space-x-5 mt-8">
+            <a href="https://untangled.carrd.co/">
+              <StickyNote color="black" size="35" />
+            </a>
+            <a href="https://www.linkedin.com/in/evan-darren-christanto-675b33251/">
+              <Linkedin color="black" size="35" />
+            </a>
+          </div>
+
+          {/* <div className=" flex items-center">
+            <Mic className="mx-3" size="50" />
+          </div> */}
+        </div>
         )}
 
         {isAgent && (
