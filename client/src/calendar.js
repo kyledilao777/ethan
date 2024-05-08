@@ -29,8 +29,8 @@ export default function Home() {
     const fetchEvents = async () => {
       try {
         const res = await axios.get(
-          process.env.REACT_APP_FETCH_CALENDAR_URL /*||
-          "http://localhost:3001/fetch-calendar-events"*/,
+          /*process.env.REACT_APP_FETCH_CALENDAR_URL ||*/
+          "http://localhost:3001/fetch-calendar-events",
           { withCredentials: true }
         );
         // Transform events to the format FullCalendar expects

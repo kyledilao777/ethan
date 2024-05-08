@@ -6,11 +6,11 @@ const session = require("express-session");
 const MongoStore = require("connect-mongo");
 const { google } = require("googleapis");
 const axios = require("axios");
-const port = process.env.PORT;
+const port = /*process.env.PORT ||*/ 3001;
 
 const clientId = process.env.GOOGLE_CLIENT_ID;
 const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
-const redirectUri = process.env.GOOGLE_REDIRECT_URI;
+const redirectUri = /*process.env.GOOGLE_REDIRECT_URI ||*/  "http://localhost:3001/oauth2callback";
 const oAuth2Client = new google.auth.OAuth2(
   clientId,
   clientSecret,
@@ -33,14 +33,7 @@ async function main() {
       resave: false,
       // saveUninitialized: true,
       saveUninitialized: false,
-      cookie: {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        path: "/",
-        domain: ".untangled-ai.com",
-        sameSite: process.env.NODE_ENV === "production" ? 'none' : 'lax',
-        maxAge: 1000 * 60 * 60 * 24 * 7,
-      },
+      cookie: { secure: false, sameSite: "lax" }
     })
   );
 
@@ -51,6 +44,7 @@ async function main() {
         "https://backend.untangled-ai.com",
         "https://untangled-ai.com",
         "https://www.untangled-ai.com",
+        'http://localhost:3000',
       ],
       credentials: true,
       methods: "GET,POST,OPTIONS,PUT,DELETE",
@@ -134,7 +128,7 @@ async function main() {
               return res.status(500).send("Failed to save session");
             }
 
-            const redirectUrl = `${process.env.REDIRECT_HOME}`;
+            const redirectUrl = /*`${process.env.REDIRECT_HOME}?auth=success` ||*/  "http://localhost:3000/home";
             res.redirect(redirectUrl);
           });
         } catch (error) {

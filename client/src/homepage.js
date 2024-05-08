@@ -38,7 +38,7 @@ export default function Home() {
     setData([...data, newData]); // Add the new input to the data array immediately
     setIsAgent(true);
     fetch(
-      process.env.REACT_APP_API_URL /*|| "http://localhost:5001/agent"*/,
+      /*process.env.REACT_APP_API_URL ||*/ "http://localhost:5001/agent",
       {
         method: "POST",
         headers: {
