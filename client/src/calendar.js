@@ -14,7 +14,7 @@ export default function Home() {
   const [isNavOpen, setIsNavOpen] = useState(false);
   const calendarRef = useRef(null);
   const [todayToDoList, setTodayToDoList] = useState([]);
-  const location = useLocation();
+  const location = useLocation(); 
   useEffect(() => {
     if (calendarRef.current) {
       let calendarApi = calendarRef.current.getApi();
@@ -125,15 +125,15 @@ export default function Home() {
   const calendarWidth = isNavOpen ? "w-5/6" : "w-4/5";
   return (
     <div>
-      <div className="flex flex-row ">
+      <div className="flex sxl:flex-row xsm:flex-col ">
         <NavBar setIsNavOpen={setIsNavOpen} />
 
-        <div className="w-full m-10 mt-11">
+        <div className="w-full m-10 sxl:mt-11 xsm:mt-20 ">
           <div className=" ">
             <text className="text-3xl font-bold">My Calendar</text>
           </div>
 
-          <div className="flex flex-row w-full space-x-5 justify-between mt-4">
+          <div className="flex xsm:flex-col bg-white sxl:flex-row w-full sxl:space-x-5 sxl:justify-between mt-4">
             <div
               className={`${calendarWidth} p-4 h-fit bg- rounded-lg shadow-lg`}
             >
@@ -177,7 +177,7 @@ export default function Home() {
                 className=""
               />
             </div>
-            <div className="w-1/4 flex-none bg-white shadow-xl rounded-lg p-4 flex flex-col justify-between">
+            <div className="sxl:w-1/4 xsm:w-4/5 xsm:mt-10 sxl:mt-0 bg-white shadow-xl rounded-lg p-4 flex flex-col justify-between">
               <div>
                 <text className="text-black text-2xl">To do List</text>
                 {todayToDoList.map((item, index) => (
@@ -195,10 +195,10 @@ export default function Home() {
                   </div>
                 ))}
               </div>
-              <div className=" flex items-center w-full justify-between">
-                <input className="border-gray-200 border-solid border-2 p-1 w-[250px] rounded-md" />
-                <Mic className="" size="30" />
-              </div>
+              <div className=" flex items-center w-full bg-slate-100 space-x-2">
+                  <input className="border-gray-200 border-solid border-2 p-1 w-full rounded-md"/>
+                  <Mic className="" size="30" />
+          </div>
             </div>
           </div>
         </div>
