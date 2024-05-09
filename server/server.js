@@ -105,10 +105,10 @@ async function main() {
     "/oauth2callback",
     async (req, res) => {
       let q = url.parse(req.url, true).query;
-      console.log("Callback state:", q.state); // Log state in callback
-      console.log("Session state:", req.session.state); // Log session state
-      console.log("Callback:", q);
-      console.log("Session state q:", req.session);
+      // console.log("Callback state:", q.state); // Log state in callback
+      // console.log("Session state:", req.session.state); // Log session state
+      // console.log("Callback:", q);
+      // console.log("Session state q:", req.session);
 
       if (q.error) {
         console.log("Error:" + q.error);
@@ -197,7 +197,7 @@ async function main() {
   });
 
   app.get("/user-info", async (req, res) => {
-    console.log("user-info Session:", req.session.tokens);
+    //console.log("user-info Session:", req.session.tokens);
     const tokens = req.session.tokens;
     if (!tokens || !tokens.access_token) {
       console.log("Token issue or not authenticated");
@@ -215,7 +215,7 @@ async function main() {
         personFields: "names,photos,emailAddresses",
       });
 
-      console.log("me: ", me.data)
+     // console.log("me: ", me.data)
 
       const userInfo = {
         name: me.data.names[0].displayName,

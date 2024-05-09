@@ -43,8 +43,7 @@ export default function Home() {
           { withCredentials: true }
         );
         // Update userInfo state with fetched data
-        console.log("email", data.email);
-        console.log("calendar ID", data.calendarId);
+
         setUserInfo({
           name: data.name,
           photo: data.photo,
@@ -60,7 +59,7 @@ export default function Home() {
     fetchUserInfo();
 
     // Dependency array is empty, so this effect runs only once when the component mounts
-  }, []);
+  }, [userInfo]);
   const sendUserInput = () => {
     const id = uuidv4();
     setDisplayInput(false);
@@ -139,55 +138,54 @@ export default function Home() {
         <NavBar setIsNavOpen={setIsNavOpen} setIsAgent={setIsAgent} />
         {!isAgent && (
           <div className="w-full flex xl:px-[200px] flex-col xsm:px-[30px] sxl:px-[100px] justify-between my-auto items-center ">
-          <div className="flex flex-col justify-center text-center w-full h-fit">
-            <div>
-              <text className="font-bold sxl:text-2xl xsm:text-lg">
-                Your very own digital secretary.
-              </text>
-            </div>
-            <div className="flex flex-row items-center xsm:my-3 sxl:my-10 space-x-3 ">
-              <input
-                className="sxl:h-[60px] w-full border-gray-200 border-2 border-solid p-2 rounded-md"
-                placeholder="Hi, how can I help you?"
-                value={userInput}
-                onChange={(e) => setUserInput(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && sendUserInput()} // Use onKeyDown to detect the Enter key press
-              />
-              <div className="border-2 border-slate-200 rounded-md sxl:h-[60px]">
-                <button
-                  onClick={sendUserInput} // Call sendUserInput when the button is clicked
-                  className=" hover:bg-lightPurple sxl:h-[60px] text-white font-bold py-2 px-4 rounded"
-                >
-                  <Send color="black"/>
-                </button>
+            <div className="flex flex-col justify-center text-center w-full h-fit">
+              <div>
+                <text className="font-bold sxl:text-2xl xsm:text-lg">
+                  Your very own digital secretary.
+                </text>
               </div>
-              
-            </div>
-            <div>
-              <text className="font-bold sxl:text-2xl xsm:text-lg">
-                Ethan needs 50 seconds to load up.
-              </text>
-            </div>
-            {/* <div className="flex sxl:space-x-20 xsm:space-x-8 flex-row justify-center w-full">
+              <div className="flex flex-row items-center xsm:my-3 sxl:my-10 space-x-3 ">
+                <input
+                  className="sxl:h-[60px] w-full border-gray-200 border-2 border-solid p-2 rounded-md"
+                  placeholder="Hi, how can I help you?"
+                  value={userInput}
+                  onChange={(e) => setUserInput(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && sendUserInput()} // Use onKeyDown to detect the Enter key press
+                />
+                <div className="border-2 border-slate-200 rounded-md sxl:h-[60px]">
+                  <button
+                    onClick={sendUserInput} // Call sendUserInput when the button is clicked
+                    className=" hover:bg-lightPurple sxl:h-[60px] text-white font-bold py-2 px-4 rounded"
+                  >
+                    <Send color="black" />
+                  </button>
+                </div>
+              </div>
+              <div>
+                <text className="font-bold sxl:text-2xl xsm:text-lg">
+                  Ethan needs 50 seconds to load up.
+                </text>
+              </div>
+              {/* <div className="flex sxl:space-x-20 xsm:space-x-8 flex-row justify-center w-full">
               <CalendarDays size="40" />
               <LayoutList size="40" />
               <Users size="40" />
               <Map size="40" />
             </div> */}
-          </div>
-          <div className="flex flex-row justify-center space-x-5 mt-8">
-            <a href="https://untangled.carrd.co/">
-              <StickyNote color="black" size="35" />
-            </a>
-            <a href="https://www.linkedin.com/in/evan-darren-christanto-675b33251/">
-              <Linkedin color="black" size="35" />
-            </a>
-          </div>
+            </div>
+            <div className="flex flex-row justify-center space-x-5 mt-8">
+              <a href="https://untangled.carrd.co/">
+                <StickyNote color="black" size="35" />
+              </a>
+              <a href="https://www.linkedin.com/in/evan-darren-christanto-675b33251/">
+                <Linkedin color="black" size="35" />
+              </a>
+            </div>
 
-          {/* <div className=" flex items-center">
+            {/* <div className=" flex items-center">
             <Mic className="mx-3" size="50" />
           </div> */}
-        </div>
+          </div>
         )}
 
         {isAgent && (
