@@ -39,7 +39,7 @@ export default function Home() {
     const fetchUserInfo = async () => {
       try {
         const { data } = await axios.get(
-          process.env.REACT_APP_USER_INFO /*|| "http://localhost:3001/user-info"*/,
+          process.env.REACT_APP_USER_INFO /*|| "http://localhost:3001/user-info*/,
           { withCredentials: true }
         );
         // Update userInfo state with fetched data
@@ -161,11 +161,7 @@ export default function Home() {
                   </button>
                 </div>
               </div>
-              <div>
-                <text className="font-bold sxl:text-2xl xsm:text-lg">
-                  Ethan needs 50 seconds to load up.
-                </text>
-              </div>
+              
               {/* <div className="flex sxl:space-x-20 xsm:space-x-8 flex-row justify-center w-full">
               <CalendarDays size="40" />
               <LayoutList size="40" />
@@ -173,7 +169,7 @@ export default function Home() {
               <Map size="40" />
             </div> */}
             </div>
-            <div className="flex flex-row justify-center space-x-5 mt-8">
+            <div className="flex flex-row justify-center space-x-5 mt-2">
               <a href="https://untangled.carrd.co/">
                 <StickyNote color="black" size="35" />
               </a>
@@ -195,7 +191,7 @@ export default function Home() {
             }`}
             lM
           >
-            <div className="w-full sxl:px-[150px] xsm:px-[30px] h-screen mt-10 flex-col overflow-auto">
+            <div className="w-full sxl:px-[150px] xsm:px-[30px] h-screen xsm:mt-20 sxl:mt-10 flex-col overflow-auto">
               <div>
                 <button
                   onClick={() => {
@@ -208,7 +204,7 @@ export default function Home() {
                 </button>
               </div>
               {data.map((item, index) => (
-                <div key={index} className="my-6 rounded-md">
+                <div key={index} className="my-3 rounded-md">
                   <div className="flex flex-col rounded-lg">
                     <text className="font-bold text-lg ">You</text>
                     <div className=" rounded-lg mb-1.5">{item.prompt}</div>
@@ -231,7 +227,7 @@ export default function Home() {
               ))}
 
               {displayInput && (
-                <div className="flex justify-between space-x-3 mt-10">
+                <div className="flex justify-between space-x-3 mt-5">
                   <input
                     placeholder="Type your follow up questions here"
                     className={`w-full border  border-solid px-1.5 py-2 h-fit rounded-md transition-opacity duration-1000 ${
@@ -245,7 +241,7 @@ export default function Home() {
                       agentResponse ? "opacity-100" : "opacity-0"
                     }`}
                   >
-                    <button className="">
+                    <button onClick={sendUserInput} className="hover:bg-lightPurple w-full rounded-md px-3">
                       <Send />
                     </button>
                   </div>

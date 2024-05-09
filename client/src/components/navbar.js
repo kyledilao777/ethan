@@ -48,7 +48,7 @@ export default function NavBar({ setIsNavOpen, setIsAgent }) {
   };
   return (
     <div className="">
-      <div className="w-full bg-white visible xsm:visible sxl:hidden xl:hidden  border h-[50px] flex justify-between px-[20px] py-[10px]">
+      <div className="w-full bg-white visible xsm:visible sxl:hidden xl:hidden xsm:fixed border h-[50px] flex justify-between px-[20px] py-[10px]">
         <div className="visible xsm:visible sxl:hidden xl:hidden  ">
           {" "}
           {/* Ensure the sidebar and button don't affect the main layout */}
