@@ -39,8 +39,7 @@ export default function Home() {
     const fetchUserInfo = async () => {
       try {
         const { data } = await axios.get(
-          process.env
-            .REACT_APP_USER_INFO /*|| "http://localhost:3001/user-info"*/,
+          process.env.REACT_APP_USER_INFO /*|| "http://localhost:3001/user-info"*/,
           { withCredentials: true }
         );
         // Update userInfo state with fetched data
