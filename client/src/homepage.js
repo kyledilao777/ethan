@@ -138,7 +138,7 @@ export default function Home() {
       <div className="w-full flex sxl:flex-row xsm:flex-col h-screen">
         <NavBar setIsNavOpen={setIsNavOpen} setIsAgent={setIsAgent} />
         {!isAgent && (
-          <div className="w-full flex xl:px-[200px] flex-col xsm:px-[10px] sxl:px-[100px] justify-between my-auto items-center ">
+          <div className="w-full flex xl:px-[200px] flex-col xsm:px-[30px] sxl:px-[100px] justify-between my-auto items-center ">
           <div className="flex flex-col justify-center text-center w-full h-fit">
             <div>
               <text className="font-bold sxl:text-2xl xsm:text-lg">
@@ -147,18 +147,21 @@ export default function Home() {
             </div>
             <div className="flex flex-row items-center xsm:my-3 sxl:my-10 space-x-3 ">
               <input
-                className="sxl:h-[60px] w-full border-gray-200 border-solid border-2 p-2 rounded-md"
+                className="sxl:h-[60px] w-full border-gray-200 border-2 border-solid p-2 rounded-md"
                 placeholder="Hi, how can I help you?"
                 value={userInput}
                 onChange={(e) => setUserInput(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && sendUserInput()} // Use onKeyDown to detect the Enter key press
               />
-              <button
-                onClick={sendUserInput} // Call sendUserInput when the button is clicked
-                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-              >
-                Enter
-              </button>
+              <div className="border-2 border-slate-200 rounded-md sxl:h-[60px]">
+                <button
+                  onClick={sendUserInput} // Call sendUserInput when the button is clicked
+                  className=" hover:bg-lightPurple sxl:h-[60px] text-white font-bold py-2 px-4 rounded"
+                >
+                  <Send color="black"/>
+                </button>
+              </div>
+              
             </div>
             <div>
               <text className="font-bold sxl:text-2xl xsm:text-lg">
@@ -194,7 +197,7 @@ export default function Home() {
             }`}
             lM
           >
-            <div className="xl:w-[800px] sxl:w-[600px] h-screen mt-10  flex-col overflow-auto">
+            <div className="w-full sxl:px-[150px] xsm:px-[30px] h-screen mt-10 flex-col overflow-auto">
               <div>
                 <button
                   onClick={() => {

@@ -9,6 +9,13 @@ module.exports = {
         sxl: "800px",
         xxl: "1400px"
       },
+
+      colors: {
+        lightPurple: '#b39ddb',
+        softGray: '#f8f8f8',
+        darkGray: '#333333',
+        customWhite: '#ffffff',
+      },
     },
   },
   plugins: [],
