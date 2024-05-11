@@ -9,6 +9,8 @@ import {
   ArrowLeft,
   Home,
   Menu,
+  StickyNote,
+  Linkedin,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
@@ -105,17 +107,6 @@ export default function NavBar({ setIsNavOpen, setIsAgent }) {
                 {/* Added padding and flex-column layout */}
                 {isOpen && (
                   <div>
-                    <div className="flex justify-between items-center mb-4">
-                      {" "}
-                      {/* Better control of spacing */}
-                      <span className="font-semibold">Assistant</span>
-                    </div>
-
-                    <button className="flex items-center space-x-5 my-8">
-                      <Bot size="31" color="black" />
-                      <span className="font-medium">Ethan</span>
-                    </button>
-
                     <div className="bg-black h-px my-2">
                       {" "}
                       {/* Use height for horizontal lines */}
@@ -150,15 +141,15 @@ export default function NavBar({ setIsNavOpen, setIsAgent }) {
                     </div>
 
                     <div className="my-8">
-                      <text className=" font-semibold">Settings</text>
+                      <text className=" font-semibold">Documentation</text>
                     </div>
                     <Link
-                      to={{ pathname: "/calendar" }}
+                      to={{ pathname: "/documentation" }}
                       className="flex flex-row space-x-5 items-center"
                     >
-                      <div className="flex flex-row items-center justify-between w-[118px] ">
+                      <div className="flex flex-row items-center justify-between w-[168px] ">
                         <Settings size="30" color="black" />{" "}
-                        <text className=" font-medium">Settings</text>
+                        <text className=" font-medium">Documentation</text>
                       </div>
                     </Link>
                   </div>
@@ -167,7 +158,15 @@ export default function NavBar({ setIsNavOpen, setIsAgent }) {
             </div>
           </div>
         </div>
-        <div>
+        <div className="flex flex-row items-center space-x-3">
+          <div className="flex flex-row justify-center space-x-3">
+            <a href="https://untangled.carrd.co/">
+              <StickyNote color="black" size="25" />
+            </a>
+            <a href="https://www.linkedin.com/in/evan-darren-christanto-675b33251/">
+            <img src="linkedin.png" className="h-[25px]" />
+            </a>
+          </div>
           <img src="logo.jpeg" className="h-[33px]" />
         </div>
       </div>
@@ -379,28 +378,6 @@ export default function NavBar({ setIsNavOpen, setIsAgent }) {
                     </div>
                   )}
                 </div>
-                <div className="w-[243px]">
-                  {isOpen && <text className="font-semibold">Assistant</text>}
-
-                  <button className="flex flex-row space-x-5 items-center my-8">
-                    <li>
-                      {" "}
-                      <Bot size="31" color="black" />{" "}
-                    </li>
-                    {isOpen && (
-                      <div className="">
-                        <text className=" font-medium">Ethan</text>
-                      </div>
-                    )}
-                  </button>
-
-                  {isOpen && (
-                    <div className="bg-black w-full h-[1px]">
-                      <text className="text-white">halo</text>
-                    </div>
-                  )}
-                </div>
-
                 <div className="space-y-8 ">
                   {isOpen && <text className=" font-semibold">Features</text>}
                   <Link
@@ -482,16 +459,23 @@ export default function NavBar({ setIsNavOpen, setIsAgent }) {
                     )}
                   </div>
                   <div>
-                    {isOpen && <text className=" font-semibold">Settings</text>}
+                    {isOpen && (
+                      <text className=" font-semibold">Documentation</text>
+                    )}
                     <button className="flex flex-row space-x-5 items-center my-8">
                       <li>
                         {" "}
                         <Settings size="30" color="black" />{" "}
                       </li>
                       {isOpen && (
-                        <div className=" ">
-                          <text className=" font-medium">Settings</text>
-                        </div>
+                        <Link
+                          to={{ pathname: "/documentation" }}
+                          className="flex flex-row space-x-5 items-center"
+                        >
+                          <div className="flex flex-row items-center justify-between w-[118px] ">
+                            <text className=" font-medium">Documentation</text>
+                          </div>
+                        </Link>
                       )}
                     </button>
                   </div>

@@ -169,12 +169,12 @@ export default function Home() {
               <Map size="40" />
             </div> */}
             </div>
-            <div className="flex flex-row justify-center space-x-5 mt-2">
+            <div className="flex flex-row justify-center space-x-5 mt-2 xsm:invisible sxl:visible ">
               <a href="https://untangled.carrd.co/">
-                <StickyNote color="black" size="35" />
+                <StickyNote color="black" size="40" />
               </a>
               <a href="https://www.linkedin.com/in/evan-darren-christanto-675b33251/">
-                <Linkedin color="black" size="35" />
+                <img src="linkedin.png" className="h-[40px]" />
               </a>
             </div>
 
