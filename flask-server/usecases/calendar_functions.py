@@ -16,15 +16,17 @@ def get_access_token():
     }
     token_url = os.getenv("TOKEN_URI")
     response = requests.post(token_url, data=params)
+    response.raise_for_status()  # Add this line to catch HTTP errors
     return response.json().get("access_token")
-    
-def get_calendar_events(user_email, calendar_id, start_time, end_time, return_event_ids=False):
+
+def get_calendar_events(start_time, end_time, return_event_ids=False):
     access_token = get_access_token()
 
+    # Use 'primary' as the calendar ID
+    calendar_id = 'primary'
+
     # Create the API endpoint
-    endpoint = (
-        f"https://www.googleapis.com/calendar/v3/calendars/{calendar_id}/events"
-    )
+    endpoint = f"https://www.googleapis.com/calendar/v3/calendars/{calendar_id}/events"
 
     # Set the parameters
     params = {
@@ -40,6 +42,7 @@ def get_calendar_events(user_email, calendar_id, start_time, end_time, return_ev
 
     # Make the request
     response = requests.get(endpoint, headers=headers, params=params)
+    response.raise_for_status()  # Add this line to catch HTTP errors
     events = response.json()
 
     # List the events
@@ -47,11 +50,9 @@ def get_calendar_events(user_email, calendar_id, start_time, end_time, return_ev
     for event in events.get("items", []):
         start = event.get("start")
         date_info = start.get("date", start.get("dateTime"))
-        
+
         if return_event_ids:
-            event_list.append(
-                f"{event.get('summary')}: {date_info} (event ID: {event.get('id')})"
-                )
+            event_list.append(f"{event.get('summary')}: {date_info} (event ID: {event.get('id')})")
         else:
             event_list.append(f"{event.get('summary')}: {date_info}")
 
@@ -60,6 +61,8 @@ def get_calendar_events(user_email, calendar_id, start_time, end_time, return_ev
 def get_calendar_timezone(user_email, calendar_id):
     access_token = get_access_token()
 
+    # Use 'primary' as the calendar ID
+    calendar_id = 'primary'
 
     # Google Calendar API endpoint to get calendar details
     endpoint = f"https://www.googleapis.com/calendar/v3/calendars/{calendar_id}"
@@ -83,6 +86,9 @@ def create_event(user_email, calendar_id, event_name, start_datetime, end_dateti
     # get_calendar_timezone(user_email, calendar_id)  # This could be used to dynamically set the timezone
     access_token = get_access_token()
 
+    # Use 'primary' as the calendar ID
+    calendar_id = 'primary'
+    
     endpoint = f"https://www.googleapis.com/calendar/v3/calendars/{calendar_id}/events"
 
     headers = {
@@ -120,6 +126,9 @@ def create_event(user_email, calendar_id, event_name, start_datetime, end_dateti
 def delete_event(user_email, calendar_id, event_id):
     access_token = get_access_token()
 
+    # Use 'primary' as the calendar ID
+    calendar_id = 'primary'
+    
     endpoint = f"https://www.googleapis.com/calendar/v3/calendars/{calendar_id}/events/{event_id}"
 
     headers = {
@@ -139,6 +148,9 @@ def delete_event(user_email, calendar_id, event_id):
 def update_event(calendar_id, event_id, event_name=None, start_datetime=None, end_datetime=None, attendee=None, location=None):
     access_token = get_access_token()
 
+    # Use 'primary' as the calendar ID
+    calendar_id = 'primary'
+    
     endpoint = f"https://www.googleapis.com/calendar/v3/calendars/{calendar_id}/events/{event_id}"
 
     headers = {
