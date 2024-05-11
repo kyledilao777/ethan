@@ -16,7 +16,7 @@ import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import axios from "axios";
 
-export default function NavBar({ setIsNavOpen, setIsAgent }) {
+export default function NavBar({ setIsNavOpen }) {
   const [isOpen, setIsOpen] = useState(false);
   const [userInfo, setUserInfo] = useState({ name: "", photo: "" });
 
