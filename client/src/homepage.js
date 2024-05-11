@@ -132,12 +132,14 @@ export default function Home() {
     checkAuthStatus();
   }, []);
 
+  const mainContentClass = isNavOpen ? "xsm:ml-[300px] sxl:ml-[0px]" : "px-[20px]";
+
   return (
     <div className=" w-full h-screen ">
       <div className="w-full flex sxl:flex-row xsm:flex-col h-screen">
-        <NavBar setIsNavOpen={setIsNavOpen} setIsAgent={setIsAgent} />
+        <NavBar setIsNavOpen={setIsNavOpen} />
         {!isAgent && (
-          <div className="w-full flex xl:px-[200px] flex-col xsm:px-[30px] sxl:px-[100px] justify-between my-auto items-center ">
+          <div className={`w-full flex xl:px-[200px] flex-col xsm:px-[30px] sxl:px-[100px] justify-between my-auto items-center transition-all duration-300  ${mainContentClass}`}>
             <div className="flex flex-col justify-center text-center w-full h-fit">
               <div>
                 <text className="font-bold sxl:text-2xl xsm:text-lg">
@@ -191,7 +193,7 @@ export default function Home() {
             }`}
             lM
           >
-            <div className="w-full sxl:px-[150px] xsm:px-[30px] h-screen xsm:mt-20 sxl:mt-10 flex-col overflow-auto">
+            <div className={`w-full sxl:px-[150px] xsm:px-[30px] h-screen xsm:mt-20 sxl:mt-10 flex-col overflow-auto transition-all duration-300  ${mainContentClass}`}>
               <div>
                 <button
                   onClick={() => {
