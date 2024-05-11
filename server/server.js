@@ -7,6 +7,7 @@ const MongoStore = require("connect-mongo");
 const { google } = require("googleapis");
 const axios = require("axios");
 const port = /*process.env.PORT ||*/ 3001;
+const mongoose = require("mongoose");
 
 const clientId = process.env.GOOGLE_CLIENT_ID;
 const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
