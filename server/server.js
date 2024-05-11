@@ -4,37 +4,76 @@ const url = require("url");
 const express = require("express");
 const session = require("express-session");
 const MongoStore = require("connect-mongo");
+const mongoose = require("mongoose");
 const { google } = require("googleapis");
 const axios = require("axios");
-const port = /*process.env.PORT ||*/ 3001;
-const mongoose = require("mongoose");
+const port = process.env.PORT || 3001;
 
 const clientId = process.env.GOOGLE_CLIENT_ID;
 const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
-const redirectUri = /*process.env.GOOGLE_REDIRECT_URI ||*/  "http://localhost:3001/oauth2callback";
+const redirectUri = process.env.GOOGLE_REDIRECT_URI || "http://localhost:3001/oauth2callback";
 const oAuth2Client = new google.auth.OAuth2(
   clientId,
   clientSecret,
   redirectUri
 );
 
+const tokenSchema = new mongoose.Schema({
+  email: { type: String, required: true, unique: true },
+  tokens: { type: Object, required: true },
+});
+
+const Token = mongoose.model("Token", tokenSchema);
+const { v4: uuidv4 } = require("uuid");
+
+async function connectToMongo() {
+  const MAX_RETRIES = 10;
+  const RETRY_DELAY = 5000; // milliseconds
+
+  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      await mongoose.connect(process.env.MONGODB_URI);
+      console.log("Connected to MongoDB successfully.");
+      return;
+    } catch (err) {
+      console.error(
+        `Attempt ${attempt} - Could not connect to MongoDB: ${err}`
+      );
+      if (attempt < MAX_RETRIES) {
+        console.log(`Retrying in ${RETRY_DELAY / 1000} seconds...`);
+        await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY));
+      } else {
+        throw new Error("Max retries reached. Could not connect to MongoDB.");
+      }
+    }
+  }
+}
+
 async function main() {
+  await connectToMongo();
+
   const app = express();
 
   const sessionStore = MongoStore.create({
     mongoUrl: process.env.MONGODB_URI,
-    collection: 'sessions',
+    collection: "sessions",
   });
-  app.set('trust proxy', 1)
-  
+  app.set("trust proxy", 1);
+
   app.use(
     session({
       secret: process.env.SESSION_SECRET,
       store: sessionStore,
       resave: false,
-      // saveUninitialized: true,
       saveUninitialized: false,
-      cookie: { secure: false, sameSite: "lax" }
+      cookie: {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        path: "/",
+        domain: ".untangled-ai.com",
+        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+        maxAge: 1000 * 60 * 60 * 24 * 7,
+      },
     })
   );
 
@@ -45,7 +84,9 @@ async function main() {
         "https://backend.untangled-ai.com",
         "https://untangled-ai.com",
         "https://www.untangled-ai.com",
-        'http://localhost:3000',
+        "http://localhost:3000",
+        "http://localhost:3001",
+        "http://localhost:3002",
       ],
       credentials: true,
       methods: "GET,POST,OPTIONS,PUT,DELETE",
@@ -60,28 +101,35 @@ async function main() {
     next();
   });
 
-  // app.use((req, res, next) => {
-  //   const allowedOrigins = [
-  //     "https://main.untangled-ai.com",
-  //     "https://backend.untangled-ai.com",
-  //     "https://untangled-ai.com",
-  //     "https://www.untangled-ai.com",
-  //   ];
-  //   const origin = req.headers.origin;
-  //   if (allowedOrigins.includes(origin)) {
-  //     res.header("Access-Control-Allow-Origin", origin);
-  //   }
+  app.get("/get-tokens", async (req, res) => {
+    try {
+      const email = req.query.email;
+      const tokenRecord = await Token.findOne({ email: email });
+      console.log("Token Record:", tokenRecord)
+      if (!tokenRecord) {
+        return res.status(404).send("Tokens not found");
+      }
+      res.json(tokenRecord.tokens);
+    } catch (error) {
+      console.error("Error fetching tokens:", error);
+      res.status(500).send("Internal Server Error");
+    }
+  });
 
-  //   res.header("Access-Control-Allow-Credentials", "true");
-  //   res.header(
-  //     "Access-Control-Allow-Headers",
-  //     "Origin, X-Requested-With, Content-Type, Accept, Authorization"
-  //   );
-  //   res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, DELETE");
-  //   next();
-  // });
-
-  const { v4: uuidv4 } = require("uuid");
+  app.post("/update-tokens", async (req, res) => {
+    try {
+      const { email, tokens } = req.body;
+      const tokenRecord = await Token.findOneAndUpdate(
+        { email: email },
+        { tokens: tokens },
+        { upsert: true, new: true }
+      );
+      res.json(tokenRecord);
+    } catch (error) {
+      console.error("Error updating tokens:", error);
+      res.status(500).send("Internal Server Error");
+    }
+  });
 
   app.get("/login", (req, res) => {
     const state = uuidv4(); // Generate a unique state value
@@ -102,96 +150,103 @@ async function main() {
     res.redirect(url);
   });
 
-  app.get(
-    "/oauth2callback",
-    async (req, res) => {
-      let q = url.parse(req.url, true).query;
-      // console.log("Callback state:", q.state); // Log state in callback
-      // console.log("Session state:", req.session.state); // Log session state
-      // console.log("Callback:", q);
-      // console.log("Session state q:", req.session);
+  app.get("/oauth2callback", async (req, res) => {
+    let q = url.parse(req.url, true).query;
+    console.log("Callback state:", q.state); // Log state in callback
+    console.log("Session state:", req.session.state); // Log session state
+    console.log("Callback:", q);
+    console.log("Session state q:", req.session);
 
-      if (q.error) {
-        console.log("Error:" + q.error);
-        return res.status(400).send("Authentication error");
-      } else if (q.state !== req.session.state) {
-        console.log("State mismatch. Possible CSRF attack");
-        return res.status(400).send("State mismatch. Possible CSRF attack");
-      } else {
-        try {
-          const { tokens } = await oAuth2Client.getToken(q.code);
-          oAuth2Client.setCredentials(tokens);
-          req.session.tokens = tokens;
-          delete req.session.state;
+    if (q.error) {
+      console.log("Error:" + q.error);
+      return res.status(400).send("Authentication error");
+    } else if (q.state !== req.session.state) {
+      console.log("State mismatch. Possible CSRF attack");
+      return res.status(400).send("State mismatch. Possible CSRF attack");
+    } else {
+      try {
+        const { tokens } = await oAuth2Client.getToken(q.code);
+        oAuth2Client.setCredentials(tokens);
+        req.session.tokens = tokens;
+        delete req.session.state;
 
-          req.session.save((err) => {
-            if (err) {
-              console.error("Session save error:", err);
-              return res.status(500).send("Failed to save session");
-            }
+        // Fetch user profile information
+        const peopleService = google.people({ version: 'v1', auth: oAuth2Client });
+        const me = await peopleService.people.get({
+          resourceName: 'people/me',
+          personFields: 'emailAddresses',
+        });
 
-            const redirectUrl = /*`${process.env.REDIRECT_HOME}?auth=success` ||*/  "http://localhost:3000/home";
-            res.redirect(redirectUrl);
-          });
-        } catch (error) {
-          console.error("Error during OAuth2 callback", error);
-          return res.status(500).send("Authentication error");
-        }
+        const email = me.data.emailAddresses[0].value
+
+        await Token.findOneAndUpdate(
+          { email: email },
+          { tokens: tokens },
+          { upsert: true, new: true }
+        );
+
+        req.session.save((err) => {
+          if (err) {
+            console.error("Session save error:", err);
+            return res.status(500).send("Failed to save session");
+          }
+
+          const redirectUrl =
+            // `${process.env.REDIRECT_HOME}` ||
+            "http://localhost:3000/home?auth=success";
+          res.redirect(redirectUrl);
+        });
+      } catch (error) {
+        console.error("Error during OAuth2 callback", error);
+        return res.status(500).send("Authentication error");
       }
     }
-
-    // try {
-    //   const { tokens } = await oAuth2Client.getToken(code);
-    //   if (!tokens) {
-    //     console.error("Failed to retrieve tokens");
-    //     return res.status(500).send("Failed to authenticate");
-    //   }
-
-    //   oAuth2Client.setCredentials(tokens);
-
-    //   // Store the tokens in the session
-    //   req.session.tokens = tokens; // Storing the entire tokens object
-
-    //   console.log("Tokens stored in session:", req.session.tokens);
-
-    //   // Save the session explicitly, if needed, then redirect
-    //   req.session.save((err) => {
-    //     if (err) {
-    //       console.error("Session save error:", err);
-    //       return res.status(500).send("Failed to save session");
-    //     }
-
-    //     console.log("Session saved successfully with tokens");
-    //     const redirectUrl = `${process.env.REDIRECT_HOME}` /*||  "http://localhost:3000/home?auth=success"*/;
-    //     res.redirect(redirectUrl);
-    //   });
-    // } catch (error) {
-    //   console.error("Error during OAuth2 callback", error);
-    //   res.status(500).send("Authentication error");
-    // }
-  );
+  });
 
   app.get("/auth-check", async (req, res) => {
     console.log("auth-check Session:", req.session.tokens);
     const tokens = req.session.tokens; // Corrected line
 
     if (!tokens || !tokens.access_token) {
-        console.log("Token issue or not authenticated");
-        return res.status(401).send("User not authenticated");
+      console.log("Token issue or not authenticated");
+      return res.status(401).send("User not authenticated");
     }
 
     try {
-        await oAuth2Client.getTokenInfo(tokens.access_token);
-        console.log("auth check", tokens.access_token);
-        return res.json({ isAuthenticated: true });
-    } catch (error) {
-        console.error("Invalid or expired token:", error);
-        return res
-            .status(401)
-            .json({ isAuthenticated: false, error: "Invalid or expired token" });
-    }
-});
+      // Set the credentials to ensure the oAuth2Client is using the correct tokens
+      oAuth2Client.setCredentials(tokens);
 
+      // Verify the access token
+      await oAuth2Client.getTokenInfo(tokens.access_token);
+      console.log("auth check", tokens.access_token);
+      return res.json({ isAuthenticated: true });
+    } catch (error) {
+      console.error("Invalid or expired token:", error);
+
+      // If the token is expired, attempt to refresh it
+      if (error.message.includes("invalid_token")) {
+        if (tokens.refresh_token) {
+          try {
+            const newTokens = await oAuth2Client.refreshAccessToken();
+            req.session.tokens = newTokens.credentials;
+            await req.session.save();
+            console.log("Token refreshed:", newTokens.credentials.access_token);
+            return res.json({ isAuthenticated: true });
+          } catch (refreshError) {
+            console.error("Error refreshing token:", refreshError);
+            return res
+              .status(401)
+              .json({ isAuthenticated: false, error: "Token refresh failed" });
+          }
+        } else {
+          console.error("No refresh token available");
+        }
+      }
+      return res
+        .status(401)
+        .json({ isAuthenticated: false, error: "Invalid or expired token" });
+    }
+  });
 
   app.options("/user-info", (req, res) => {
     res.sendStatus(204);
@@ -239,31 +294,30 @@ async function main() {
   app.get("/fetch-calendar-events", async (req, res) => {
     console.log("fetch-calendar-events Session:", req.session.tokens);
     const tokens = req.session.tokens; // Corrected line
-    
+
     if (!tokens || !tokens.access_token) {
-        console.log("Token issue or not authenticated");
-        return res.status(401).send("User not authenticated");
+      console.log("Token issue or not authenticated");
+      return res.status(401).send("User not authenticated");
     }
 
     oAuth2Client.setCredentials(tokens);
     console.log("fetch events", tokens.access_token);
 
     try {
-        const response = await axios.get(
-            "https://www.googleapis.com/calendar/v3/calendars/primary/events",
-            {
-                headers: {
-                    Authorization: `Bearer ${tokens.access_token}`,
-                },
-            }
-        );
-        res.json(response.data.items);
+      const response = await axios.get(
+        "https://www.googleapis.com/calendar/v3/calendars/primary/events",
+        {
+          headers: {
+            Authorization: `Bearer ${tokens.access_token}`,
+          },
+        }
+      );
+      res.json(response.data.items);
     } catch (error) {
-        console.error("Error fetching calendar events:", error);
-        res.status(500).send("Error fetching calendar events");
+      console.error("Error fetching calendar events:", error);
+      res.status(500).send("Error fetching calendar events");
     }
-});
-
+  });
 
   app.listen(port, "0.0.0.0", () => {
     console.log(`Server started at http://localhost:${port}`);

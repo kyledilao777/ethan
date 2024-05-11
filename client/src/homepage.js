@@ -43,7 +43,8 @@ export default function Home() {
           { withCredentials: true }
         );
         // Update userInfo state with fetched data
-
+        console.log(data.email)
+        console.log(data.calendarId)
         setUserInfo({
           name: data.name,
           photo: data.photo,
