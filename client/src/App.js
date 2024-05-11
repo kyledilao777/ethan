@@ -6,6 +6,7 @@ import Meeting from "./meeting";
 import Todo from "./todo";
 import RouteMap from "./routemap"
 import Login from "./login"
+import Documentation from "./documentation"
 
 
 export default function App() {
@@ -16,6 +17,7 @@ export default function App() {
           <Route path="/" element={<Login />}/>
           <Route path="/home" element={<Home />}/>
           <Route path="/calendar" element={<Calendar />}/>
+          <Route path="/documentation" element={<Documentation />}/>
           <Route path="/meeting" element={<Meeting />}/>
           <Route path="/todo" element={<Todo />}/>
           <Route path="/routemap" element={<RouteMap />}/>
