@@ -23,6 +23,7 @@
     "firebase": "^10.11.1",
     "firebase-admin": "^12.1.0",
     "googleapis": "^134.0.0",
-    "mongodb": "^6.5.0"
+    "mongodb": "^6.5.0",
+    "mongoose": "^8.3.4"
   }
 }
