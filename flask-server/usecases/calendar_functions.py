@@ -1,6 +1,5 @@
 import os
 import jwt
-from jwt import ExpiredSignatureError
 import time
 import requests
 from dotenv import load_dotenv
