@@ -1,5 +1,6 @@
 import os
 import jwt
+from jwt import ExpiredSignatureError
 import time
 import requests
 from dotenv import load_dotenv
@@ -46,7 +47,7 @@ def is_token_expired(token):
         if exp:
             return exp < time.time()
         return False
-    except jwt.ExpiredSignatureError:
+    except ExpiredSignatureError:
         return True
     except Exception as e:
         print(f"Error checking token expiry: {e}")
