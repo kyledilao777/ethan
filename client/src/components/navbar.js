@@ -24,7 +24,8 @@ export default function NavBar({ setIsNavOpen }) {
     const fetchUserInfo = async () => {
       try {
         const { data } = await axios.get(
-          process.env.REACT_APP_USER_INFO /*|| "http://localhost:3001/user-info"*/,
+          process.env
+            .REACT_APP_USER_INFO /*|| "http://localhost:3001/user-info"*/,
           { withCredentials: true }
         );
         // Update userInfo state with fetched data
@@ -141,15 +142,15 @@ export default function NavBar({ setIsNavOpen }) {
                     </div>
 
                     <div className="my-8">
-                      <text className=" font-semibold">Documentation</text>
+                      <text className=" font-semibold">Instructions</text>
                     </div>
                     <Link
                       to={{ pathname: "/documentation" }}
                       className="flex flex-row space-x-5 items-center"
                     >
                       <div className="flex flex-row items-center justify-between w-[168px] ">
-                        <Settings size="30" color="black" />{" "}
-                        <text className=" font-medium">Documentation</text>
+                        <StickyNote size="30" color="black" />{" "}
+                        <text className=" font-medium">Instructions</text>
                       </div>
                     </Link>
                   </div>
@@ -158,16 +159,16 @@ export default function NavBar({ setIsNavOpen }) {
             </div>
           </div>
         </div>
-        <div className="flex flex-row items-center space-x-3">
-          <div className="flex flex-row justify-center space-x-3">
+        <div className="flex flex-row  items-center space-x-3 ">
+          <div className="flex flex-row justify-center space-x-3 items-center">
             <a href="https://untangled.carrd.co/">
-              <StickyNote color="black" size="25" />
+              <img src="website.png" alt="website" className="h-[35px]" />
             </a>
             <a href="https://www.linkedin.com/in/evan-darren-christanto-675b33251/">
-            <img src="linkedin.png" className="h-[25px]" />
+              <img src="linkedin.png" alt="linkedin" className="h-[25px]" />
             </a>
           </div>
-          <img src="logo.jpeg" className="h-[33px]" />
+          <img src="logo.jpeg" alt="logo" className="h-[33px]" />
         </div>
       </div>
       <div
@@ -310,12 +311,12 @@ export default function NavBar({ setIsNavOpen }) {
                   </div>
                   <div>
                     {isOpen && (
-                      <text className=" font-semibold">Documentation</text>
+                      <text className=" font-semibold">Instructions</text>
                     )}
                     <button className="flex flex-row space-x-5 items-center my-8">
                       <li>
                         {" "}
-                        <Settings size="30" color="black" />{" "}
+                        <StickyNote size="30" color="black" />{" "}
                       </li>
                       {isOpen && (
                         <Link
@@ -323,7 +324,7 @@ export default function NavBar({ setIsNavOpen }) {
                           className="flex flex-row space-x-5 items-center"
                         >
                           <div className="flex flex-row items-center justify-between w-[118px] ">
-                            <text className=" font-medium">Documentation</text>
+                            <text className=" font-medium">Instructions</text>
                           </div>
                         </Link>
                       )}

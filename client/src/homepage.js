@@ -74,6 +74,7 @@ export default function Home() {
     setId(id);
     setData([...data, newData]); // Add the new input to the data array immediately
     setIsAgent(true);
+    setUserInput("");
     fetch(process.env.REACT_APP_API_URL /*|| "http://localhost:5001/agent"*/, {
       method: "POST",
       headers: {
@@ -171,12 +172,12 @@ export default function Home() {
               <Map size="40" />
             </div> */}
             </div>
-            <div className="flex flex-row justify-center space-x-5 mt-2 xsm:invisible sxl:visible ">
+            <div className="flex flex-row justify-center space-x-5 mt-2 xsm:invisible sxl:visible items-center">
               <a href="https://untangled.carrd.co/">
-                <StickyNote color="black" size="40" />
+                <img src="website.png" alt="website" className="h-[60px]" />
               </a>
               <a href="https://www.linkedin.com/in/evan-darren-christanto-675b33251/">
-                <img src="linkedin.png" className="h-[40px]" />
+                <img src="linkedin.png" alt="linkedin" className="h-[40px]" />
               </a>
             </div>
 
