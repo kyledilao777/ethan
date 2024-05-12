@@ -59,7 +59,7 @@ export default function Home() {
     fetchUserInfo();
 
     // Dependency array is empty, so this effect runs only once when the component mounts
-  }, [userInfo]);
+  }, []);
   const sendUserInput = () => {
     const id = uuidv4();
     setDisplayInput(false);
