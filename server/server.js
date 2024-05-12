@@ -279,6 +279,8 @@ async function main() {
         email: me.data.emailAddresses[0].value,
       };
 
+      console.log("User Info:", userInfo);
+
       const calendarList = await calendarService.calendarList.list();
       const primaryCalendar = calendarList.data.items.find(calendar => calendar.primary);
 
