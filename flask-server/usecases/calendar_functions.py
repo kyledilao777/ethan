@@ -6,10 +6,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-BACKEND_URL = "https://backend.untangled-ai.com"
-
 def get_tokens(email):
-    response = requests.get(f"{BACKEND_URL}/get-tokens?email={email}")
+    response = requests.get(f"{os.getenv('BACKEND_URI')}/get-tokens?email={email}")
     response.raise_for_status()
     return response.json()
 
@@ -55,7 +53,7 @@ def is_token_expired(token):
         return False
 
 def update_tokens_in_backend(email, tokens):
-    response = requests.post(f"{BACKEND_URL}/update-tokens", json={"email": email, "tokens": tokens})
+    response = requests.post(f"{os.getenv('BACKEND_URI')}/update-tokens", json={"email": email, "tokens": tokens})
     response.raise_for_status()
 
 def get_calendar_events(user_email, calendar_id, start_time, end_time, return_event_ids=False):
