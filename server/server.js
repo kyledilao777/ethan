@@ -160,7 +160,7 @@ async function main() {
       return res.status(400).send("Authentication error");
     } else if (q.state !== req.session.state) {
       console.log("State mismatch. Possible CSRF attack");
-      return res.status(400).send("State mismatch. Possible CSRF attack");
+      return res.status(400).send("An error has occurred. Please close and reopen the application. If the problem persists, please contact support.");
     } else {
       try {
         const { tokens } = await oAuth2Client.getToken(q.code);
