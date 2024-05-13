@@ -18,8 +18,7 @@ export default function Documentation() {
           </div>
           <div className="xsm:w-5/6 mt-7 text-xl font-semibold sxl:w-4/5">
             <text>
-              Ethan is an AI assistant that helps students, freelancers and
-              entrepreneurs plan their schedules and set up meetings through a
+              Ethan is an AI assistant that can help you plan your schedules and set up meetings through a
               chat-like interface.
             </text>
           </div>
