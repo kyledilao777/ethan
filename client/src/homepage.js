@@ -27,6 +27,8 @@ export default function Home() {
   const [displayInput, setDisplayInput] = useState(false);
   const [id, setId] = useState(0);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isFirstInput, setIsFirstInput] = useState(true);
+
 
   const [userInfo, setUserInfo] = useState({
     name: "",
@@ -64,17 +66,19 @@ export default function Home() {
     const id = uuidv4();
     setDisplayInput(false);
     setAgentResponse(null);
+
+    const initialResponse = isFirstInput ? "It takes around 1 minute to load" : "...";
+
     const newData = {
       id: id,
       prompt: userInput,
-      response: "...", // Placeholder response
+      response: initialResponse, // Placeholder response
       typingComplete: false, // Indicates typing has not started
       showTypingEffect: true, // Indicates whether to show typing effect
     };
     setId(id);
     setData([...data, newData]); // Add the new input to the data array immediately
     setIsAgent(true);
-    setUserInput("");
     fetch(process.env.REACT_APP_API_URL /*|| "http://localhost:5001/agent"*/, {
       method: "POST",
       headers: {
@@ -101,8 +105,11 @@ export default function Home() {
         );
 
         setAgentResponse(agentData.response + "hola"); // Update the response in the data array
+        setUserInput("");
       })
       .finally(() => setIsLoading(false), setDisplayInput(true));
+
+      setIsFirstInput(false); 
   };
 
   const handleTypingComplete = (interactionId) => {

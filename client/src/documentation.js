@@ -32,7 +32,10 @@ export default function Documentation() {
                 email] to be part of the meeting.”
               </li>
               <li>
-                Retrieve events - “Ethan, what do I have on today?” Edit events
+                Retrieve events - “Ethan, what do I have on today?”
+              </li>
+              <li>
+               Edit events
                 - “Ethan, postpone [event on date and time] to [new date and
                 time].”
               </li>

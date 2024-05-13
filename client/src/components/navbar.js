@@ -148,7 +148,7 @@ export default function NavBar({ setIsNavOpen }) {
                       to={{ pathname: "/documentation" }}
                       className="flex flex-row space-x-5 items-center"
                     >
-                      <div className="flex flex-row items-center justify-between w-[168px] ">
+                      <div className="flex flex-row items-center justify-between w-[147px] ">
                         <StickyNote size="30" color="black" />{" "}
                         <text className=" font-medium">Instructions</text>
                       </div>
