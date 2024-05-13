@@ -67,7 +67,7 @@ export default function Home() {
     setDisplayInput(false);
     setAgentResponse(null);
 
-    const initialResponse = isFirstInput ? "It takes around 1 minute to load" : "...";
+    const initialResponse = isFirstInput ? "Please be patient... Ethan needs approximately 1 minute to load" : "...";
     const currentInput = userInput; // Capture the current value of userInput
     setUserInput("");
     const newData = {
