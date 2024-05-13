@@ -68,10 +68,11 @@ export default function Home() {
     setAgentResponse(null);
 
     const initialResponse = isFirstInput ? "It takes around 1 minute to load" : "...";
-
+    const currentInput = userInput; // Capture the current value of userInput
+    setUserInput("");
     const newData = {
       id: id,
-      prompt: userInput,
+      prompt: currentInput,
       response: initialResponse, // Placeholder response
       typingComplete: false, // Indicates typing has not started
       showTypingEffect: true, // Indicates whether to show typing effect
@@ -243,6 +244,7 @@ export default function Home() {
                     className={`w-full border  border-solid px-1.5 py-2 h-fit rounded-md transition-opacity duration-1000 ${
                       agentResponse ? "opacity-100" : "opacity-0"
                     }`}
+                    value={userInput}
                     onChange={(e) => setUserInput(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && sendUserInput()}
                   />
