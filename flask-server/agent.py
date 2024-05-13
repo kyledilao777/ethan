@@ -38,13 +38,23 @@ persistent_memory = ConversationSummaryBufferMemory(llm=llm,memory_key="chat_his
 @app.route("/agent", methods=["POST"])
 
 ### Main interaction loop ###
-def run(): 
+def run():
     data = request.get_json()
-    user_input = data["user_input"]
-    user_email = data["user_email"]
-    calendar_id = data["calendar_id"]
-    output = start_agent(user_input, user_email, calendar_id, persistent_memory)
-    return jsonify(output)
+    user_input = data.get("user_input")
+    user_email = data.get("user_email")
+    calendar_id = data.get("calendar_id")
+
+    try:
+        output = start_agent(user_input, user_email, calendar_id, persistent_memory)
+        return jsonify(output)
+    except Exception as e:
+        print(f"Error occurred: {e}")
+        error_message = ("My apologies, I couldn't process your request at the moment. "
+                         "Please try again later or ask me something different. "
+                         "If you believe this is an error, feel free to contact support at "
+                         "kyle.untangled@gmail.com. Thank you for your understanding!")
+        return jsonify({"error": error_message}), 500
+
         
 def run_agent_executor(user_email: str, user_input: str, calendar_id: str, memory, response_container):
      # Options
