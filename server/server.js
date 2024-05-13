@@ -11,7 +11,8 @@ const port = process.env.PORT || 3001;
 
 const clientId = process.env.GOOGLE_CLIENT_ID;
 const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
-const redirectUri = process.env.GOOGLE_REDIRECT_URI /*|| "http://localhost:3001/oauth2callback"*/;
+const redirectUri =
+  process.env.GOOGLE_REDIRECT_URI; /*|| "http://localhost:3001/oauth2callback"*/
 const oAuth2Client = new google.auth.OAuth2(
   clientId,
   clientSecret,
@@ -99,11 +100,20 @@ async function main() {
     next();
   });
 
+  app.use((req, res, next) => {
+    if (!req.session.tokens) {
+      console.log("No tokens found in session");
+    } else {
+      oAuth2Client.setCredentials(req.session.tokens);
+    }
+    next();
+  });
+
   app.get("/get-tokens", async (req, res) => {
     try {
       const email = req.query.email;
       const tokenRecord = await Token.findOne({ email: email });
-      console.log("Token Record:", tokenRecord)
+      console.log("Token Record:", tokenRecord);
       if (!tokenRecord) {
         return res.status(404).send("Tokens not found");
       }
@@ -134,7 +144,7 @@ async function main() {
     req.session.state = state;
     console.log("Login - Generated state:", state);
     console.log("Login - Session state:", req.session.state);
-    
+
     const url = oAuth2Client.generateAuthUrl({
       access_type: "offline",
       scope: [
@@ -160,7 +170,11 @@ async function main() {
       return res.status(400).send("Authentication error");
     } else if (q.state !== req.session.state) {
       console.log("State mismatch. Possible CSRF attack");
-      return res.status(400).send("An error has occurred. Please close and reopen the application. If the problem persists, please contact support.");
+      return res
+        .status(400)
+        .send(
+          "An error has occurred. Please close and reopen the application. If the problem persists, please contact support."
+        );
     } else {
       try {
         const { tokens } = await oAuth2Client.getToken(q.code);
@@ -169,13 +183,16 @@ async function main() {
         delete req.session.state;
 
         // Fetch user profile information
-        const peopleService = google.people({ version: 'v1', auth: oAuth2Client });
+        const peopleService = google.people({
+          version: "v1",
+          auth: oAuth2Client,
+        });
         const me = await peopleService.people.get({
-          resourceName: 'people/me',
-          personFields: 'emailAddresses',
+          resourceName: "people/me",
+          personFields: "emailAddresses",
         });
 
-        const email = me.data.emailAddresses[0].value
+        const email = me.data.emailAddresses[0].value;
 
         await Token.findOneAndUpdate(
           { email: email },
@@ -189,9 +206,8 @@ async function main() {
             return res.status(500).send("Failed to save session");
           }
 
-          const redirectUrl =
-            `${process.env.REDIRECT_HOME}` /*||
-            "http://localhost:3000/home?auth=success"*/;
+          const redirectUrl = `${process.env.REDIRECT_HOME}`; /*||
+            "http://localhost:3000/home?auth=success"*/
           res.redirect(redirectUrl);
         });
       } catch (error) {
@@ -251,25 +267,24 @@ async function main() {
   });
 
   app.get("/user-info", async (req, res) => {
-    //console.log("user-info Session:", req.session.tokens);
     const tokens = req.session.tokens;
     if (!tokens || !tokens.access_token) {
       console.log("Token issue or not authenticated");
       return res.status(401).send("User not authenticated");
     }
-    // // Extract user info from the session
-    // const { tokens } = req.session;
-    // oAuth2Client.setCredentials(tokens);
+
+    oAuth2Client.setCredentials(tokens);
 
     const peopleService = google.people({ version: "v1", auth: oAuth2Client });
-    const calendarService = google.calendar({ version: 'v3', auth: oAuth2Client });
+    const calendarService = google.calendar({
+      version: "v3",
+      auth: oAuth2Client,
+    });
     try {
       const me = await peopleService.people.get({
         resourceName: "people/me",
         personFields: "names,photos,emailAddresses",
       });
-
-     // console.log("me: ", me.data)
 
       const userInfo = {
         name: me.data.names[0].displayName,
@@ -278,9 +293,13 @@ async function main() {
       };
 
       const calendarList = await calendarService.calendarList.list();
-      const primaryCalendar = calendarList.data.items.find(calendar => calendar.primary);
+      const primaryCalendar = calendarList.data.items.find(
+        (calendar) => calendar.primary
+      );
 
-      userInfo.calendarId = primaryCalendar ? primaryCalendar.id : 'No primary calendar found';
+      userInfo.calendarId = primaryCalendar
+        ? primaryCalendar.id
+        : "No primary calendar found";
 
       res.json(userInfo);
     } catch (error) {
