@@ -27,6 +27,7 @@ export default function Home() {
   const [displayInput, setDisplayInput] = useState(false);
   const [id, setId] = useState(0);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isFirstInput, setIsFirstInput] = useState(true);
 
   const [userInfo, setUserInfo] = useState({
     name: "",
@@ -43,8 +44,7 @@ export default function Home() {
           { withCredentials: true }
         );
         // Update userInfo state with fetched data
-        console.log(data.email)
-        console.log(data.calendarId)
+        console.log(data.email, data.calendarId);
         setUserInfo({
           name: data.name,
           photo: data.photo,
@@ -60,15 +60,22 @@ export default function Home() {
     fetchUserInfo();
 
     // Dependency array is empty, so this effect runs only once when the component mounts
-  }, [userInfo]);
+  }, []);
   const sendUserInput = () => {
     const id = uuidv4();
     setDisplayInput(false);
     setAgentResponse(null);
+
+    const currentInput = userInput; // Capture the current value of userInput
+    setUserInput(""); // Clear the input field immediately
+    const initialResponse = isFirstInput
+      ? "Ethan takes around 1 minute to load... Please wait"
+      : "...";
+    console.log("response", initialResponse);
     const newData = {
       id: id,
-      prompt: userInput,
-      response: "...", // Placeholder response
+      prompt: currentInput,
+      response: initialResponse, // Placeholder response
       typingComplete: false, // Indicates typing has not started
       showTypingEffect: true, // Indicates whether to show typing effect
     };
@@ -101,8 +108,12 @@ export default function Home() {
         );
 
         setAgentResponse(agentData.response + "hola"); // Update the response in the data array
+
+        console.log("User Input: ", userInput);
       })
       .finally(() => setIsLoading(false), setDisplayInput(true));
+    console.log("User Input: 2", userInput);
+    setIsFirstInput(false);
   };
 
   const handleTypingComplete = (interactionId) => {
@@ -133,14 +144,18 @@ export default function Home() {
     checkAuthStatus();
   }, []);
 
-  const mainContentClass = isNavOpen ? "xsm:ml-[300px] sxl:ml-[0px]" : "px-[20px]";
+  const mainContentClass = isNavOpen
+    ? "xsm:ml-[300px] sxl:ml-[0px]"
+    : "px-[20px]";
 
   return (
     <div className=" w-full h-screen ">
       <div className="w-full flex sxl:flex-row xsm:flex-col h-screen">
         <NavBar setIsNavOpen={setIsNavOpen} />
         {!isAgent && (
-          <div className={`w-full flex xl:px-[200px] flex-col xsm:px-[30px] sxl:px-[100px] justify-between my-auto items-center transition-all duration-300  ${mainContentClass}`}>
+          <div
+            className={`w-full flex xl:px-[200px] flex-col xsm:px-[30px] sxl:px-[100px] justify-between my-auto items-center transition-all duration-300  ${mainContentClass}`}
+          >
             <div className="flex flex-col justify-center text-center w-full h-fit">
               <div>
                 <text className="font-bold sxl:text-2xl xsm:text-lg">
@@ -164,7 +179,7 @@ export default function Home() {
                   </button>
                 </div>
               </div>
-              
+
               {/* <div className="flex sxl:space-x-20 xsm:space-x-8 flex-row justify-center w-full">
               <CalendarDays size="40" />
               <LayoutList size="40" />
@@ -172,12 +187,12 @@ export default function Home() {
               <Map size="40" />
             </div> */}
             </div>
-            <div className="flex flex-row justify-center space-x-5 mt-2 xsm:invisible sxl:visible ">
+            <div className="flex flex-row justify-center space-x-5 mt-2 xsm:invisible sxl:visible items-center">
               <a href="https://untangled.carrd.co/">
-                <StickyNote color="black" size="40" />
+                <img src="website.png" alt="website" className="h-[60px]" />
               </a>
               <a href="https://www.linkedin.com/in/evan-darren-christanto-675b33251/">
-                <img src="linkedin.png" className="h-[40px]" />
+                <img src="linkedin.png" alt="linkedin" className="h-[40px]" />
               </a>
             </div>
 
@@ -194,7 +209,9 @@ export default function Home() {
             }`}
             lM
           >
-            <div className={`w-full sxl:px-[150px] xsm:px-[30px] h-screen xsm:mt-20 sxl:mt-10 flex-col overflow-auto transition-all duration-300  ${mainContentClass}`}>
+            <div
+              className={`w-full sxl:px-[150px] xsm:px-[30px] h-screen xsm:mt-20 sxl:mt-10 flex-col overflow-auto transition-all duration-300  ${mainContentClass}`}
+            >
               <div>
                 <button
                   onClick={() => {
@@ -236,6 +253,7 @@ export default function Home() {
                     className={`w-full border  border-solid px-1.5 py-2 h-fit rounded-md transition-opacity duration-1000 ${
                       agentResponse ? "opacity-100" : "opacity-0"
                     }`}
+                    value={userInput}
                     onChange={(e) => setUserInput(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && sendUserInput()}
                   />
@@ -244,7 +262,10 @@ export default function Home() {
                       agentResponse ? "opacity-100" : "opacity-0"
                     }`}
                   >
-                    <button onClick={sendUserInput} className="hover:bg-lightPurple w-full rounded-md px-3">
+                    <button
+                      onClick={sendUserInput}
+                      className="hover:bg-lightPurple w-full rounded-md px-3"
+                    >
                       <Send />
                     </button>
                   </div>
