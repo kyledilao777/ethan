@@ -95,7 +95,7 @@ export default function Home() {
       .then((agentData) => {
         setData((currentData) =>
           currentData.map((item) =>
-            item.prompt === userInput
+            item.id === id
               ? {
                   ...item,
                   response: agentData.response,
