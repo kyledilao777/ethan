@@ -180,7 +180,7 @@ export default function Home() {
                 </div>
               ))}
             </div>
-             {/* <div className="flex items-center w-full bg-slate-100 space-x-2">
+            {/* <div className="flex items-center w-full bg-slate-100 space-x-2">
               <input className="border-gray-200 border-solid border-2 p-1 w-full rounded-md" />
               <Mic className="" size="30" />
             </div> */}

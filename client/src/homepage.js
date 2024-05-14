@@ -108,6 +108,9 @@ export default function Home() {
         setAgentResponse(agentData.response + "hola"); // Update the response in the data array
         setUserInput("");
       })
+      .catch((error) => {
+       
+      })
       .finally(() => setIsLoading(false), setDisplayInput(true));
 
       setIsFirstInput(false); 
