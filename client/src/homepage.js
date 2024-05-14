@@ -109,10 +109,20 @@ export default function Home() {
         setUserInput("");
       })
       .catch((error) => {
-        setAgentResponse(`My apologies, I couldn't process your request at the moment. 
-        Please try again later or ask me something different. 
-        If you believe this is an error, feel free to contact support at 
-        kyle.untangled@gmail.com. Thank you for your understanding!`);
+        setData((currentData) =>
+          currentData.map((item) =>
+            item.id === id
+              ? {
+                  ...item,
+                  response: `My apologies, I couldn't process your request at the moment. 
+Please try again later or ask me something different. 
+If you believe this is an error, feel free to contact support at 
+kyle.untangled@gmail.com or evan.untangled@gmail.com. Thank you for your understanding!`,
+                  showTypingEffect: false,
+                }
+              : item
+          )
+        );
       })
       .finally(() => setIsLoading(false), setDisplayInput(true));
 
