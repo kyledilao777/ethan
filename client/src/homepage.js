@@ -29,7 +29,6 @@ export default function Home() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isFirstInput, setIsFirstInput] = useState(true);
 
-
   const [userInfo, setUserInfo] = useState({
     name: "",
     photo: "",
@@ -41,11 +40,12 @@ export default function Home() {
     const fetchUserInfo = async () => {
       try {
         const { data } = await axios.get(
-          process.env.REACT_APP_USER_INFO /*|| "http://localhost:3001/user-info"*/,
+          process.env
+            .REACT_APP_USER_INFO /*|| "http://localhost:3001/user-info"*/,
           { withCredentials: true }
         );
         // Update userInfo state with fetched data
-          console.log(data.email, data.calendarId)
+        console.log(data.email, data.calendarId);
         setUserInfo({
           name: data.name,
           photo: data.photo,
@@ -105,15 +105,18 @@ export default function Home() {
           )
         );
 
-        setAgentResponse(agentData.response + "hola"); // Update the response in the data array
+        setAgentResponse(agentData.response); // Update the response in the data array
         setUserInput("");
       })
       .catch((error) => {
-       
+        setAgentResponse(`My apologies, I couldn't process your request at the moment. 
+        Please try again later or ask me something different. 
+        If you believe this is an error, feel free to contact support at 
+        kyle.untangled@gmail.com. Thank you for your understanding!`);
       })
       .finally(() => setIsLoading(false), setDisplayInput(true));
 
-      setIsFirstInput(false); 
+    setIsFirstInput(false);
   };
 
   const handleTypingComplete = (interactionId) => {
@@ -144,14 +147,18 @@ export default function Home() {
     checkAuthStatus();
   }, []);
 
-  const mainContentClass = isNavOpen ? "xsm:ml-[300px] sxl:ml-[0px]" : "px-[20px]";
+  const mainContentClass = isNavOpen
+    ? "xsm:ml-[300px] sxl:ml-[0px]"
+    : "px-[20px]";
 
   return (
     <div className=" w-full h-screen ">
       <div className="w-full flex sxl:flex-row xsm:flex-col h-screen">
         <NavBar setIsNavOpen={setIsNavOpen} />
         {!isAgent && (
-          <div className={`w-full flex xl:px-[200px] flex-col xsm:px-[30px] sxl:px-[100px] justify-between my-auto items-center transition-all duration-300  ${mainContentClass}`}>
+          <div
+            className={`w-full flex xl:px-[200px] flex-col xsm:px-[30px] sxl:px-[100px] justify-between my-auto items-center transition-all duration-300  ${mainContentClass}`}
+          >
             <div className="flex flex-col justify-center text-center w-full h-fit">
               <div>
                 <text className="font-bold sxl:text-2xl xsm:text-lg">
@@ -175,7 +182,7 @@ export default function Home() {
                   </button>
                 </div>
               </div>
-              
+
               {/* <div className="flex sxl:space-x-20 xsm:space-x-8 flex-row justify-center w-full">
               <CalendarDays size="40" />
               <LayoutList size="40" />
@@ -205,7 +212,9 @@ export default function Home() {
             }`}
             lM
           >
-            <div className={`w-full sxl:px-[150px] xsm:px-[30px] h-screen xsm:mt-20 sxl:mt-10 flex-col overflow-auto transition-all duration-300  ${mainContentClass}`}>
+            <div
+              className={`w-full sxl:px-[150px] xsm:px-[30px] h-screen xsm:mt-20 sxl:mt-10 flex-col overflow-auto transition-all duration-300  ${mainContentClass}`}
+            >
               <div>
                 <button
                   onClick={() => {
@@ -256,7 +265,10 @@ export default function Home() {
                       agentResponse ? "opacity-100" : "opacity-0"
                     }`}
                   >
-                    <button onClick={sendUserInput} className="hover:bg-lightPurple w-full rounded-md px-3">
+                    <button
+                      onClick={sendUserInput}
+                      className="hover:bg-lightPurple w-full rounded-md px-3"
+                    >
                       <Send />
                     </button>
                   </div>
