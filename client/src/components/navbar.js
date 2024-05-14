@@ -164,7 +164,7 @@ export default function NavBar({ setIsNavOpen }) {
             <a href="https://untangled.carrd.co/">
               <img src="website.png" alt="website" className="h-[35px]" />
             </a>
-            <a href="https://www.linkedin.com/in/evan-darren-christanto-675b33251/">
+            <a href="https://www.linkedin.com/company/untangled-ai">
               <img src="linkedin.png" alt="linkedin" className="h-[25px]" />
             </a>
           </div>

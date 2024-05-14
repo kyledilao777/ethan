@@ -204,7 +204,7 @@ kyle.untangled@gmail.com or evan.untangled@gmail.com. Thank you for your underst
               <a href="https://untangled.carrd.co/">
                 <img src="website.png" alt="website" className="h-[60px]" />
               </a>
-              <a href="https://www.linkedin.com/in/evan-darren-christanto-675b33251/">
+              <a href="https://www.linkedin.com/company/untangled-ai">
                 <img src="linkedin.png" alt="linkedin" className="h-[40px]" />
               </a>
             </div>
