@@ -246,7 +246,7 @@ kyle.untangled@gmail.com or evan.untangled@gmail.com. Thank you for your underst
                       {" "}
                       {item.showTypingEffect ? (
                         <TypingEffect
-                          message={item.response}
+                          message={item.response ? item.response : "I'm sorry, I am still learning to understand you better. Could you rephrase your question?"}
                           onComplete={() => handleTypingComplete(item.id)}
                         />
                       ) : (
