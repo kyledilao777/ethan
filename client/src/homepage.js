@@ -93,17 +93,26 @@ export default function Home() {
     })
       .then((res) => res.json())
       .then((agentData) => {
-        setData((currentData) =>
-          currentData.map((item) =>
-            item.id === id
-              ? {
-                  ...item,
-                  response: agentData.response,
-                  showTypingEffect: true,
-                }
-              : item
-          )
-        );
+        let itemResponse;
+
+        if (!agentData.response) {
+          itemResponse =
+            "I'm sorry, I am still learning to understand you better. Could you rephrase your question?";
+        } else {
+          itemResponse = agentData.response;
+
+          setData((currentData) =>
+            currentData.map((item) =>
+              item.id === id
+                ? {
+                    ...item,
+                    response: itemResponse,
+                    showTypingEffect: true,
+                  }
+                : item
+            )
+          );
+        }
 
         setAgentResponse(agentData.response); // Update the response in the data array
         setUserInput("");
@@ -246,7 +255,9 @@ kyle.untangled@gmail.com or evan.untangled@gmail.com. Thank you for your underst
                       {" "}
                       {item.showTypingEffect ? (
                         <TypingEffect
-                          message={item.response ? item.response : "I'm sorry, I am still learning to understand you better. Could you rephrase your question?"}
+                          message={
+                            item.response
+                          }
                           onComplete={() => handleTypingComplete(item.id)}
                         />
                       ) : (
