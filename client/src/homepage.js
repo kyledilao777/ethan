@@ -100,19 +100,19 @@ export default function Home() {
             "I'm sorry, I am still learning to understand you better. Could you rephrase your question?";
         } else {
           itemResponse = agentData.response;
-
-          setData((currentData) =>
-            currentData.map((item) =>
-              item.id === id
-                ? {
-                    ...item,
-                    response: itemResponse,
-                    showTypingEffect: true,
-                  }
-                : item
-            )
-          );
         }
+
+        setData((currentData) =>
+          currentData.map((item) =>
+            item.id === id
+              ? {
+                  ...item,
+                  response: itemResponse,
+                  showTypingEffect: true,
+                }
+              : item
+          )
+        );
 
         setAgentResponse(agentData.response); // Update the response in the data array
         setUserInput("");
