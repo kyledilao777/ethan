@@ -115,6 +115,8 @@ export default function Home() {
           );
           setAgentResponse(agentData.response); // Update the response in the data array
           setUserInput("");
+          setIsLoading(false) 
+          setDisplayInput(true)
         } catch (error) {
           console.error('Error processing data:', error);
           throw error; // Rethrow to ensure it's caught by .catch()
