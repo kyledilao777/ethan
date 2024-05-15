@@ -81,7 +81,6 @@ export default function NavBar({ setIsNavOpen }) {
 
                 {isOpen && (
                   <div className=" w-[164px] flex flex-col h-fit">
-                    <span className="text-md font-semibold">Student</span>
                     <span className="text-sm font-medium">{userInfo.name}</span>
                   </div>
                 )}
@@ -190,7 +189,6 @@ export default function NavBar({ setIsNavOpen }) {
 
             {isOpen && (
               <div className=" w-[164px] flex flex-col h-fit">
-                <span className="text-md font-semibold">Student</span>
                 <span className="text-sm font-medium">{userInfo.name}</span>
               </div>
             )}
