@@ -95,43 +95,33 @@ export default function Home() {
       .then((agentData) => {
         let itemResponse;
 
-        if (!agentData.response) {
-          itemResponse =
-            "I'm sorry, I am still learning to understand you better. Could you rephrase your question?";
-        } else {
-          itemResponse = agentData.response;
+        try {
+          if (!agentData.response) {
+            itemResponse = "I'm sorry, I am still learning to understand you better. Could you rephrase your question?";
+          } else {
+            itemResponse = agentData.response;
+          }
+    
+          setData((currentData) =>
+            currentData.map((item) =>
+              item.id === id
+                ? {
+                    ...item,
+                    response: itemResponse,
+                    showTypingEffect: true,
+                  }
+                : item
+            )
+          );
+          setAgentResponse(agentData.response); // Update the response in the data array
+          setUserInput("");
+        } catch (error) {
+          console.error('Error processing data:', error);
+          throw error; // Rethrow to ensure it's caught by .catch()
         }
-
-        setData((currentData) =>
-          currentData.map((item) =>
-            item.id === id
-              ? {
-                  ...item,
-                  response: itemResponse,
-                  showTypingEffect: true,
-                }
-              : item
-          )
-        );
-
-        setAgentResponse(agentData.response); // Update the response in the data array
-        setUserInput("");
       })
       .catch((error) => {
-        setData((currentData) =>
-          currentData.map((item) =>
-            item.id === id
-              ? {
-                  ...item,
-                  response: `My apologies, I couldn't process your request at the moment. 
-Please try again later or ask me something different. 
-If you believe this is an error, feel free to contact support at 
-kyle.untangled@gmail.com or evan.untangled@gmail.com. Thank you for your understanding!`,
-                  showTypingEffect: false,
-                }
-              : item
-          )
-        );
+        console.error('Error caught:', error);
       })
       .finally(() => setIsLoading(false), setDisplayInput(true));
 
