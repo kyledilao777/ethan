@@ -95,21 +95,46 @@ export default function Home() {
     })
       .then((res) => res.json())
       .then((agentData) => {
-        setData((currentData) =>
-          currentData.map((item) =>
-            item.prompt === userInput
-              ? {
-                  ...item,
-                  response: agentData.response,
-                  showTypingEffect: true,
-                }
-              : item
-          )
-        );
+        let itemResponse;
+
+        if (!agentData.response) {
+          itemResponse =
+            "I'm sorry, I am still learning to understand you better. Could you rephrase your question?";
+        } else {
+          itemResponse = agentData.response;
+
+          setData((currentData) =>
+            currentData.map((item) =>
+              item.id === id
+                ? {
+                    ...item,
+                    response: itemResponse,
+                    showTypingEffect: true,
+                  }
+                : item
+            )
+          );
+        }
 
         setAgentResponse(agentData.response + "hola"); // Update the response in the data array
 
         console.log("User Input: ", userInput);
+      })
+      .catch((error) => {
+        setData((currentData) =>
+          currentData.map((item) =>
+            item.id === id
+              ? {
+                  ...item,
+                  response: `My apologies, I couldn't process your request at the moment. 
+Please try again later or ask me something different. 
+If you believe this is an error, feel free to contact support at 
+kyle.untangled@gmail.com or evan.untangled@gmail.com. Thank you for your understanding!`,
+                  showTypingEffect: false,
+                }
+              : item
+          )
+        );
       })
       .finally(() => setIsLoading(false), setDisplayInput(true));
     console.log("User Input: 2", userInput);
