@@ -40,7 +40,8 @@ export default function Home() {
     const fetchUserInfo = async () => {
       try {
         const { data } = await axios.get(
-          /*process.env.REACT_APP_USER_INFO ||*/ "http://localhost:3001/user-info",
+          /*process.env
+            .REACT_APP_USER_INFO || */ "http://localhost:3001/user-info",
           { withCredentials: true }
         );
         // Update userInfo state with fetched data
@@ -66,12 +67,9 @@ export default function Home() {
     setDisplayInput(false);
     setAgentResponse(null);
 
+    const initialResponse = isFirstInput ? "Booting up..." : "Loading...";
     const currentInput = userInput; // Capture the current value of userInput
-    setUserInput(""); // Clear the input field immediately
-    const initialResponse = isFirstInput
-      ? "Ethan takes around 1 minute to load... Please wait"
-      : "...";
-    console.log("response", initialResponse);
+    setUserInput("");
     const newData = {
       id: id,
       prompt: currentInput,
@@ -97,11 +95,13 @@ export default function Home() {
       .then((agentData) => {
         let itemResponse;
 
-        if (!agentData.response) {
-          itemResponse =
-            "I'm sorry, I am still learning to understand you better. Could you rephrase your question?";
-        } else {
-          itemResponse = agentData.response;
+        try {
+          if (!agentData.response) {
+            itemResponse =
+              "I'm sorry, I am still learning to understand you better. Could you rephrase your question?";
+          } else {
+            itemResponse = agentData.response;
+          }
 
           setData((currentData) =>
             currentData.map((item) =>
@@ -114,30 +114,18 @@ export default function Home() {
                 : item
             )
           );
+          setAgentResponse(itemResponse); // Update the response in the data array
+          setUserInput("");
+        } catch (error) {
+          console.error("Error processing data:", error);
+          throw error; // Rethrow to ensure it's caught by .catch()
         }
-
-        setAgentResponse(agentData.response + "hola"); // Update the response in the data array
-
-        console.log("User Input: ", userInput);
       })
       .catch((error) => {
-        setData((currentData) =>
-          currentData.map((item) =>
-            item.id === id
-              ? {
-                  ...item,
-                  response: `My apologies, I couldn't process your request at the moment. 
-Please try again later or ask me something different. 
-If you believe this is an error, feel free to contact support at 
-kyle.untangled@gmail.com or evan.untangled@gmail.com. Thank you for your understanding!`,
-                  showTypingEffect: false,
-                }
-              : item
-          )
-        );
+        console.error("Error caught:", error);
       })
       .finally(() => setIsLoading(false), setDisplayInput(true));
-    console.log("User Input: 2", userInput);
+
     setIsFirstInput(false);
   };
 
@@ -174,131 +162,139 @@ kyle.untangled@gmail.com or evan.untangled@gmail.com. Thank you for your underst
     : "px-[20px]";
 
   return (
-    <div className=" w-full h-screen ">
-      <div className="w-full flex sxl:flex-row xsm:flex-col h-screen">
+    <div className=" w-full min-h-screen ">
+      <div className="w-full flex sxl:flex-row xsm:flex-col min-h-screen">
         <NavBar setIsNavOpen={setIsNavOpen} />
-        {!isAgent && (
-          <div
-            className={`w-full flex xl:px-[200px] flex-col xsm:px-[30px] sxl:px-[100px] justify-between my-auto items-center transition-all duration-300  ${mainContentClass}`}
-          >
-            <div className="flex flex-col justify-center text-center w-full h-fit">
-              <div>
-                <text className="font-bold sxl:text-2xl xsm:text-lg">
-                  Your very own digital secretary.
-                </text>
-              </div>
-              <div className="flex flex-row items-center xsm:my-3 sxl:my-10 space-x-3 ">
-                <input
-                  className="sxl:h-[60px] w-full border-gray-200 border-2 border-solid p-2 rounded-md"
-                  placeholder="Hi, how can I help you?"
-                  value={userInput}
-                  onChange={(e) => setUserInput(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && sendUserInput()} // Use onKeyDown to detect the Enter key press
-                />
-                <div className="border-2 border-slate-200 rounded-md sxl:h-[60px]">
-                  <button
-                    onClick={sendUserInput} // Call sendUserInput when the button is clicked
-                    className=" hover:bg-lightPurple sxl:h-[60px] text-white font-bold py-2 px-4 rounded"
-                  >
-                    <Send color="black" />
-                  </button>
+        <div
+          className={`flex flex-col w-full h-screen transition-all duration-300  ${mainContentClass}`}
+        >
+          {!isAgent && (
+            <div
+              className={`w-full flex xl:px-[200px] flex-col xsm:px-[30px] sxl:px-[100px] justify-between my-auto items-center`}
+            >
+              <div className="flex flex-col justify-center text-center w-full h-fit ">
+                <div>
+                  <text className="font-bold sxl:text-2xl xsm:text-lg">
+                    Your very own digital secretary.
+                  </text>
                 </div>
-              </div>
+                <div className="flex flex-row items-center xsm:my-3 sxl:my-10 space-x-3 ">
+                  <input
+                    className="sxl:h-[60px] w-full border-gray-200 border-2 border-solid p-2 rounded-md"
+                    placeholder="Hi, how can I help you?"
+                    value={userInput}
+                    onChange={(e) => setUserInput(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && sendUserInput()} // Use onKeyDown to detect the Enter key press
+                  />
+                  <div className="border-2 border-slate-200 rounded-md sxl:h-[60px]">
+                    <button
+                      onClick={sendUserInput} // Call sendUserInput when the button is clicked
+                      className=" hover:bg-lightPurple sxl:h-[60px] text-white font-bold py-2 px-4 rounded"
+                    >
+                      <Send color="black" />
+                    </button>
+                  </div>
+                </div>
 
-              {/* <div className="flex sxl:space-x-20 xsm:space-x-8 flex-row justify-center w-full">
+                {/* <div className="flex sxl:space-x-20 xsm:space-x-8 flex-row justify-center w-full">
               <CalendarDays size="40" />
               <LayoutList size="40" />
               <Users size="40" />
               <Map size="40" />
             </div> */}
-            </div>
-            <div className="flex flex-row justify-center space-x-5 mt-2 xsm:invisible sxl:visible items-center">
-              <a href="https://untangled.carrd.co/">
-                <img src="website.png" alt="website" className="h-[60px]" />
-              </a>
-              <a href="https://www.linkedin.com/in/evan-darren-christanto-675b33251/">
-                <img src="linkedin.png" alt="linkedin" className="h-[40px]" />
-              </a>
-            </div>
+              </div>
+              <div className="flex flex-row justify-center space-x-5 xsm:invisible sxl:visible items-center">
+                <a href="https://untangled.carrd.co/">
+                  <img src="website.png" alt="website" className="h-[60px]" />
+                </a>
+                <a href="https://www.linkedin.com/company/untangled-ai">
+                  <img src="linkedin.png" alt="linkedin" className="h-[40px]" />
+                </a>
+              </div>
 
-            {/* <div className=" flex items-center">
+              {/* <div className=" flex items-center">
             <Mic className="mx-3" size="50" />
           </div> */}
-          </div>
-        )}
+            </div>
+          )}
 
-        {isAgent && (
-          <div
-            className={`w-full h-screen flex justify-center transition-opacity duration-1000 ${
-              isAgent ? "opacity-100" : "opacity-0"
-            }`}
-            lM
-          >
+          {isAgent && (
             <div
-              className={`w-full sxl:px-[150px] xsm:px-[30px] h-screen xsm:mt-20 sxl:mt-10 flex-col overflow-auto transition-all duration-300  ${mainContentClass}`}
+              className={`w-full h-screen flex justify-center transition-opacity duration-1000 ${
+                isAgent ? "opacity-100" : "opacity-0"
+              }`}
+              lM
             >
-              <div>
-                <button
-                  onClick={() => {
-                    setIsAgent(false);
-                    setAgentResponse(null);
-                    setData([]);
-                  }}
-                >
-                  <ArrowLeft color="black" size="20" />
-                </button>
-              </div>
-              {data.map((item, index) => (
-                <div key={index} className="my-3 rounded-md">
-                  <div className="flex flex-col rounded-lg">
-                    <text className="font-bold text-lg ">You</text>
-                    <div className=" rounded-lg mb-1.5">{item.prompt}</div>
-                    <text className="pt-3 font-bold text-lg">Ethan</text>
-                    <div className="rounded-lg  ">
-                      {" "}
-                      {item.showTypingEffect ? (
-                        <TypingEffect
-                          message={item.response}
-                          onComplete={() => handleTypingComplete(item.id)}
-                        />
-                      ) : (
-                        <div className="" style={{ wordBreak: "break-word" }}>
-                          {item.response}
-                        </div>
-                      )}
+              <div
+                className={`w-full sxl:px-[150px] xsm:px-[30px] h-screen xsm:mt-20 sxl:mt-10 flex-col overflow-auto transition-all duration-300  ${mainContentClass}`}
+              >
+                <div>
+                  <button
+                    onClick={() => {
+                      setIsAgent(false);
+                      setAgentResponse(null);
+                      setData([]);
+                    }}
+                  >
+                    <ArrowLeft color="black" size="20" />
+                  </button>
+                </div>
+                {data.map((item, index) => (
+                  <div key={index} className="my-3 rounded-md">
+                    <div className="flex flex-col rounded-lg">
+                      <text className="font-bold text-lg ">You</text>
+                      <div className=" rounded-lg mb-1.5">{item.prompt}</div>
+                      <text className="pt-3 font-bold text-lg">Ethan</text>
+                      <div className="rounded-lg  ">
+                        {" "}
+                        {item.showTypingEffect ? (
+                          <TypingEffect
+                            message={item.response}
+                            onComplete={() => handleTypingComplete(item.id)}
+                          />
+                        ) : (
+                          <div className="" style={{ wordBreak: "break-word" }}>
+                            {item.response}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))}
 
-              {displayInput && (
-                <div className="flex justify-between space-x-3 mt-5">
-                  <input
-                    placeholder="Type your follow up questions here"
-                    className={`w-full border  border-solid px-1.5 py-2 h-fit rounded-md transition-opacity duration-1000 ${
-                      agentResponse ? "opacity-100" : "opacity-0"
-                    }`}
-                    value={userInput}
-                    onChange={(e) => setUserInput(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && sendUserInput()}
-                  />
-                  <div
-                    className={`w-[50px] rounded-md flex justify-center border border-slate-200 transition-opacity duration-1000 ${
-                      agentResponse ? "opacity-100" : "opacity-0"
-                    }`}
-                  >
-                    <button
-                      onClick={sendUserInput}
-                      className="hover:bg-lightPurple w-full rounded-md px-3"
+                {displayInput && (
+                  <div className="flex justify-between space-x-3 mt-5">
+                    <input
+                      placeholder="Type your follow up questions here"
+                      className={`w-full border  border-solid px-1.5 py-2 h-fit rounded-md transition-opacity duration-1000 ${
+                        agentResponse ? "opacity-100" : "opacity-0"
+                      }`}
+                      value={userInput}
+                      onChange={(e) => setUserInput(e.target.value)}
+                      onKeyDown={(e) => e.key === "Enter" && sendUserInput()}
+                    />
+                    <div
+                      className={`w-[50px] rounded-md flex justify-center border border-slate-200 transition-opacity duration-1000 ${
+                        agentResponse ? "opacity-100" : "opacity-0"
+                      }`}
                     >
-                      <Send />
-                    </button>
+                      <button
+                        onClick={sendUserInput}
+                        className="hover:bg-lightPurple w-full rounded-md px-3"
+                      >
+                        <Send />
+                      </button>
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
+              </div>
             </div>
+          )}
+          <div className="flex justify-center h-[30px] space-x-3 items-center text-gray-500">
+            <text>Privacy</text>
+            <text className="">© 2024 Untangled AI. All rights reserved.</text>
           </div>
-        )}
+        </div>
       </div>
     </div>
   );

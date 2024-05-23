@@ -10,7 +10,8 @@ export default function Documentation() {
     <div className=" w-full h-screen ">
       <div className="w-full flex sxl:flex-row xsm:flex-col h-screen">
         <NavBar setIsNavOpen={setIsNavOpen} />
-        <div className={`w-full m-10 sxl:mt-11 xsm:mt-20 transition-all duration-300 ${mainContentClass}`}>
+        <div className={`flex flex-col w-full justify-between h-screen transition-all duration-300 ${mainContentClass}`}>
+        <div className={`w-full m-10 sxl:mt-11 xsm:mt-20 `}>
           <div className=" ">
             <text className="xsm:text-2xl sxl:text-3xl font-bold">
               How does Ethan work?
@@ -18,8 +19,7 @@ export default function Documentation() {
           </div>
           <div className="xsm:w-5/6 mt-7 text-xl font-semibold sxl:w-4/5">
             <text>
-              Ethan is an AI assistant that helps students, freelancers and
-              entrepreneurs plan their schedules and set up meetings through a
+              Ethan is an AI assistant that can help you plan your schedules and set up meetings through a
               chat-like interface.
             </text>
           </div>
@@ -32,7 +32,10 @@ export default function Documentation() {
                 email] to be part of the meeting.”
               </li>
               <li>
-                Retrieve events - “Ethan, what do I have on today?” Edit events
+                Retrieve events - “Ethan, what do I have on today?”
+              </li>
+              <li>
+               Edit events
                 - “Ethan, postpone [event on date and time] to [new date and
                 time].”
               </li>
@@ -41,6 +44,11 @@ export default function Documentation() {
                 [date and time].”
               </li>
             </ul>
+          </div>
+        </div>
+          <div className="flex xsm:flex-col sxl:flex-row w-full justify-center h-[30px] mt-10 space-x-3 items-center text-gray-500">
+            <text>Privacy</text>
+            <text className="">© 2024 Untangled AI. All rights reserved.</text>
           </div>
         </div>
       </div>

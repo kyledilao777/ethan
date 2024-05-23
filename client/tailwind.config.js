@@ -10,6 +10,10 @@ module.exports = {
         xxl: "1400px"
       },
 
+      spacing: {
+        '25vh': '25vh',
+      },
+
       colors: {
         lightPurple: '#b39ddb',
         softGray: '#f8f8f8',
