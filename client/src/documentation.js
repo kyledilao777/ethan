@@ -10,7 +10,8 @@ export default function Documentation() {
     <div className=" w-full h-screen ">
       <div className="w-full flex sxl:flex-row xsm:flex-col h-screen">
         <NavBar setIsNavOpen={setIsNavOpen} />
-        <div className={`w-full m-10 sxl:mt-11 xsm:mt-20 transition-all duration-300 ${mainContentClass}`}>
+        <div className={`flex flex-col w-full justify-between h-screen transition-all duration-300 ${mainContentClass}`}>
+        <div className={`w-full m-10 sxl:mt-11 xsm:mt-20 `}>
           <div className=" ">
             <text className="xsm:text-2xl sxl:text-3xl font-bold">
               How does Ethan work?
@@ -45,6 +46,12 @@ export default function Documentation() {
             </ul>
           </div>
         </div>
+          <div className="flex xsm:flex-col sxl:flex-row w-full justify-center h-[30px] mt-10 space-x-3 items-center text-gray-500">
+            <text>Privacy</text>
+            <text className="">© 2024 Untangled AI. All rights reserved.</text>
+          </div>
+        </div>
+        
       </div>
     </div>
   );

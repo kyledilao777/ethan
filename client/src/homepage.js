@@ -161,14 +161,15 @@ export default function Home() {
     : "px-[20px]";
 
   return (
-    <div className=" w-full h-screen ">
-      <div className="w-full flex sxl:flex-row xsm:flex-col h-screen">
+    <div className=" w-full min-h-screen ">
+      <div className="w-full flex sxl:flex-row xsm:flex-col min-h-screen">
         <NavBar setIsNavOpen={setIsNavOpen} />
+        <div className={`flex flex-col w-full h-screen transition-all duration-300  ${mainContentClass}`}>
         {!isAgent && (
           <div
-            className={`w-full flex xl:px-[200px] flex-col xsm:px-[30px] sxl:px-[100px] justify-between my-auto items-center transition-all duration-300  ${mainContentClass}`}
+            className={`w-full flex xl:px-[200px] flex-col xsm:px-[30px] sxl:px-[100px] justify-between my-auto items-center`}
           >
-            <div className="flex flex-col justify-center text-center w-full h-fit">
+            <div className="flex flex-col justify-center text-center w-full h-fit ">
               <div>
                 <text className="font-bold sxl:text-2xl xsm:text-lg">
                   Your very own digital secretary.
@@ -199,7 +200,7 @@ export default function Home() {
               <Map size="40" />
             </div> */}
             </div>
-            <div className="flex flex-row justify-center space-x-5 mt-2 xsm:invisible sxl:visible items-center">
+            <div className="flex flex-row justify-center space-x-5 xsm:invisible sxl:visible items-center">
               <a href="https://untangled.carrd.co/">
                 <img src="website.png" alt="website" className="h-[60px]" />
               </a>
@@ -207,6 +208,7 @@ export default function Home() {
                 <img src="linkedin.png" alt="linkedin" className="h-[40px]" />
               </a>
             </div>
+            
 
             {/* <div className=" flex items-center">
             <Mic className="mx-3" size="50" />
@@ -288,7 +290,15 @@ export default function Home() {
             </div>
           </div>
         )}
+         <div className="flex justify-center h-[30px] space-x-3 items-center text-gray-500">
+          <text>Privacy</text>
+          <text className="">© 2024 Untangled AI. All rights reserved.</text>
       </div>
+        </div>
+        
+       
+      </div>
+      
     </div>
   );
 }
