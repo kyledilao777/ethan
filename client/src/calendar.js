@@ -117,88 +117,92 @@ export default function Home() {
   const calendarWidth = isNavOpen ? "w-5/6" : "w-4/5";
 
   return (
-    <div className="flex sxl:flex-row xsm:flex-col">
-      <NavBar setIsNavOpen={setIsNavOpen} />
-      <div className={`flex flex-col w-full justify-between m-10 h-screen transition-all duration-300 ${mainContentClass}`}>
+    <div className="w-full h-full">
+      <div className="flex sxl:flex-row xsm:flex-col w-full h-screen">
+        <NavBar setIsNavOpen={setIsNavOpen} />
         <div
-          className={`w-full sxl:mt-11 xsm:mt-20`}
+          className={`flex flex-col w-full justify-between m-10 h-full transition-all duration-300 ${mainContentClass}`}
         >
-          <div className="">
-            <span className="text-3xl font-bold">My Calendar</span>
-          </div>
-
-          <div className="flex xsm:flex-col bg-white sxl:flex-row w-full sxl:space-x-5 sxl:justify-between mt-4">
-            <div
-              className={`${calendarWidth} p-4 h-fit bg- rounded-lg shadow-lg`}
-            >
-              <FullCalendar
-                ref={calendarRef}
-                plugins={[dayGridPlugin, interactionPlugin]}
-                initialView="dayGridMonth"
-                events={calendar}
-                eventContent={renderEventContent}
-                eventClick={(clickInfo) => {
-                  alert(clickInfo.event.title);
-                }}
-                headerToolbar={{
-                  start: "title",
-                  center: "",
-                  end: "prev,today,next",
-                }}
-                customButtons={{
-                  prev: {
-                    text: "<",
-                    click: () => {
-                      calendarRef.current.getApi().prev();
-                    },
-                    classNames: buttonClasses,
-                  },
-                  next: {
-                    text: ">",
-                    click: () => {
-                      calendarRef.current.getApi().next();
-                    },
-                    classNames: buttonClasses,
-                  },
-                  today: {
-                    text: "Today",
-                    click: () => {
-                      calendarRef.current.getApi().today();
-                    },
-                    classNames: buttonClasses,
-                  },
-                }}
-                className=""
-              />
+          <div className={`w-full sxl:mt-11 xsm:mt-20 h-full`}>
+            <div className="">
+              <span className="text-3xl font-bold">My Calendar</span>
             </div>
-            <div className="sxl:w-1/4 xsm:w-4/5 xsm:mt-10 sxl:mt-0 bg-white shadow-xl rounded-lg p-4 flex flex-col justify-between">
-              <div>
-                <span className="text-black text-2xl">To do List</span>
-                {todayToDoList.map((item, index) => (
-                  <div
-                    key={index}
-                    className="bg-slate-300 my-4 px-3 rounded-md"
-                  >
-                    <div className="flex justify-between h-20 items-center">
-                      <span>{item.summary}</span>
-                      <span>
-                        {item.start.split("T")[1].split("+")[0]} -{" "}
-                        {item.end.split("T")[1].split("+")[0]}
-                      </span>
-                    </div>
-                  </div>
-                ))}
+
+            <div className="flex xsm:flex-col h-full sxl:flex-row w-full sxl:space-x-5 sxl:justify-between mt-4">
+              <div
+                className={`${calendarWidth} p-4 h-fit bg- rounded-lg shadow-lg`}
+              >
+                <FullCalendar
+                  ref={calendarRef}
+                  plugins={[dayGridPlugin, interactionPlugin]}
+                  initialView="dayGridMonth"
+                  events={calendar}
+                  eventContent={renderEventContent}
+                  eventClick={(clickInfo) => {
+                    alert(clickInfo.event.title);
+                  }}
+                  headerToolbar={{
+                    start: "title",
+                    center: "",
+                    end: "prev,today,next",
+                  }}
+                  customButtons={{
+                    prev: {
+                      text: "<",
+                      click: () => {
+                        calendarRef.current.getApi().prev();
+                      },
+                      classNames: buttonClasses,
+                    },
+                    next: {
+                      text: ">",
+                      click: () => {
+                        calendarRef.current.getApi().next();
+                      },
+                      classNames: buttonClasses,
+                    },
+                    today: {
+                      text: "Today",
+                      click: () => {
+                        calendarRef.current.getApi().today();
+                      },
+                      classNames: buttonClasses,
+                    },
+                  }}
+                  className=""
+                />
               </div>
-              {/* <div className="flex items-center w-full bg-slate-100 space-x-2">
+              <div className="sxl:w-1/4 xsm:w-4/5 xsm:mt-10 sxl:mt-0 bg-white shadow-xl rounded-lg p-4 flex flex-col justify-between">
+                <div>
+                  <span className="text-black text-2xl">To do List</span>
+                  {todayToDoList.map((item, index) => (
+                    <div
+                      key={index}
+                      className="bg-slate-300 my-4 px-3 rounded-md"
+                    >
+                      <div className="flex justify-between h-20 items-center">
+                        <span>{item.summary}</span>
+                        <span>
+                          {item.start.split("T")[1].split("+")[0]} -{" "}
+                          {item.end.split("T")[1].split("+")[0]}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                {/* <div className="flex items-center w-full bg-slate-100 space-x-2">
               <input className="border-gray-200 border-solid border-2 p-1 w-full rounded-md" />
               <Mic className="" size="30" />
             </div> */}
+              </div>
             </div>
           </div>
-        </div>
-        <div className="flex xsm:flex-col sxl:flex-row xsm:w-4/5 sxl:w-full justify-center h-[30px] mt-10 space-x-3 items-center text-gray-500">
-          <text>Privacy</text>
-          <text className="  ">© 2024 Untangled AI. All rights reserved.</text>
+          <div className="flex xsm:flex-col sxl:flex-row xsm:w-4/5 sxl:w-full justify-center h-[30px] mt-10 space-x-3 items-center  text-gray-500">
+            <text>Privacy</text>
+            <text className="  ">
+              © 2024 Untangled AI. All rights reserved.
+            </text>
+          </div>
         </div>
       </div>
     </div>

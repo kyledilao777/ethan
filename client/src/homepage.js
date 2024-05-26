@@ -161,10 +161,10 @@ export default function Home() {
     : "px-[20px]";
 
   return (
-    <div className=" w-full min-h-screen ">
-      <div className="w-full flex sxl:flex-row xsm:flex-col min-h-screen">
+    <div className=" w-full h-full ">
+      <div className="w-full flex sxl:flex-row xsm:flex-col h-screen">
         <NavBar setIsNavOpen={setIsNavOpen} />
-        <div className={`flex flex-col w-full h-screen transition-all duration-300  ${mainContentClass}`}>
+        <div className={`flex flex-col w-full h-full transition-all duration-300 ${mainContentClass}`}>
         {!isAgent && (
           <div
             className={`w-full flex xl:px-[200px] flex-col xsm:px-[30px] sxl:px-[100px] justify-between my-auto items-center`}

@@ -19,6 +19,7 @@ import axios from "axios";
 export default function NavBar({ setIsNavOpen }) {
   const [isOpen, setIsOpen] = useState(false);
   const [userInfo, setUserInfo] = useState({ name: "", photo: "" });
+  
 
   useEffect(() => {
     const fetchUserInfo = async () => {
@@ -171,7 +172,7 @@ export default function NavBar({ setIsNavOpen }) {
         </div>
       </div>
       <div
-        className={`duration-300 visible xsm:hidden xl:block sxl:block  h-screen text-black bg-slate-50 ${
+        className={`duration-300 visible xsm:hidden xl:block sxl:block h-full text-black bg-slate-50 ${
           isOpen ? "w-[285px]" : "w-[70px]"
         } transition-width border rounded-lg`}
       >
