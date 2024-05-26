@@ -41,7 +41,7 @@ export default function Home() {
       try {
         const { data } = await axios.get(
           /*process.env
-            .REACT_APP_USER_INFO || */ "http://localhost:3001/user-info",
+            .REACT_APP_USER_INFO ||*/ "http://localhost:3001/user-info",
           { withCredentials: true }
         );
         // Update userInfo state with fetched data
@@ -162,11 +162,11 @@ export default function Home() {
     : "px-[20px]";
 
   return (
-    <div className=" w-full min-h-screen ">
-      <div className="w-full flex sxl:flex-row xsm:flex-col min-h-screen">
+    <div className=" w-full h-full ">
+      <div className="w-full flex sxl:flex-row xsm:flex-col h-screen">
         <NavBar setIsNavOpen={setIsNavOpen} />
         <div
-          className={`flex flex-col w-full h-screen transition-all duration-300  ${mainContentClass}`}
+          className={`flex flex-col w-full h-full transition-all duration-300 ${mainContentClass}`}
         >
           {!isAgent && (
             <div
