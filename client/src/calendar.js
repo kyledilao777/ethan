@@ -4,8 +4,8 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import axios from "axios";
 import { useEffect, useState, useRef } from "react";
-import { Mic } from "lucide-react";
-import { useLocation } from "react-router-dom";
+import { Link } from "react-router-dom";
+
 
 export default function Home() {
   const [events, setEvents] = useState([]);
@@ -13,7 +13,6 @@ export default function Home() {
   const [isNavOpen, setIsNavOpen] = useState(false);
   const calendarRef = useRef(null);
   const [todayToDoList, setTodayToDoList] = useState([]);
-  const location = useLocation();
 
   useEffect(() => {
     if (calendarRef.current) {
@@ -117,18 +116,18 @@ export default function Home() {
   const calendarWidth = isNavOpen ? "w-5/6" : "w-4/5";
 
   return (
-    <div className="w-full h-full">
-      <div className="flex sxl:flex-row xsm:flex-col w-full h-screen">
-        <NavBar setIsNavOpen={setIsNavOpen} />
+    <div className="w-full h-screen">
+      <div className="flex sxl:flex-row xsm:flex-col w-full h-full">
+        <NavBar setIsNavOpen={setIsNavOpen} isCalendar={true}/>
         <div
-          className={`flex flex-col w-full justify-between m-10 h-full transition-all duration-300 ${mainContentClass}`}
+          className={`flex flex-col w-full justify-between m-10 transition-all duration-300 ${mainContentClass}`}
         >
           <div className={`w-full sxl:mt-11 xsm:mt-20 h-full`}>
             <div className="">
               <span className="text-3xl font-bold">My Calendar</span>
             </div>
 
-            <div className="flex xsm:flex-col h-full sxl:flex-row w-full sxl:space-x-5 sxl:justify-between mt-4">
+            <div className="flex xsm:flex-col sxl:flex-row w-full sxl:space-x-5 sxl:justify-between mt-4">
               <div
                 className={`${calendarWidth} p-4 h-fit bg- rounded-lg shadow-lg`}
               >
@@ -196,12 +195,6 @@ export default function Home() {
             </div> */}
               </div>
             </div>
-          </div>
-          <div className="flex xsm:flex-col sxl:flex-row xsm:w-4/5 sxl:w-full justify-center h-[30px] mt-10 space-x-3 items-center  text-gray-500">
-            <text>Privacy</text>
-            <text className="  ">
-              © 2024 Untangled AI. All rights reserved.
-            </text>
           </div>
         </div>
       </div>

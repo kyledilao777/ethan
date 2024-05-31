@@ -6,7 +6,7 @@ export default function Privacy() {
   const mainContentClass = isNavOpen ? "xsm:ml-[300px] sxl:ml-0" : "px-10";
 
   return (
-    <div className="w-full h-full bg-slate-200">
+    <div className="w-full h-full">
       <div className="w-full flex sxl:flex-row xsm:flex-col h-full ">
         <NavBar setIsNavOpen={setIsNavOpen} />
         <div

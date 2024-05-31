@@ -67,11 +67,8 @@ async function main() {
       resave: false,
       saveUninitialized: false,
       cookie: {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        path: "/",
-        domain: ".untangled-ai.com",
-        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+        secure: false,
+        sameSite: "lax",
         maxAge: 1000 * 60 * 60 * 24 * 7,
       },
     })
