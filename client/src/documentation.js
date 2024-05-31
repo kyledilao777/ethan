@@ -1,6 +1,5 @@
 import NavBar from "./components/navbar";
 import { useState } from "react";
-import { Link } from "react-router-dom";
 
 export default function Documentation() {
   const [isNavOpen, setIsNavOpen] = useState(false);
@@ -12,7 +11,7 @@ export default function Documentation() {
   return (
     <div className=" w-full h-full">
       <div className="w-full flex sxl:flex-row xsm:flex-col h-screen">
-        <NavBar setIsNavOpen={setIsNavOpen} isInstruction={true}/>
+        <NavBar setIsNavOpen={setIsNavOpen} />
         <div
           className={`flex flex-col w-full justify-between h-full transition-all duration-300 ${mainContentClass}`}
         >
@@ -50,9 +49,12 @@ export default function Documentation() {
               </ul>
             </div>
           </div>
+          <div className="flex xsm:flex-col sxl:flex-row w-full justify-center h-[30px] mt-10 space-x-3 items-center text-gray-500">
+            <text>Privacy</text>
+            <text className="">© 2024 Untangled AI. All rights reserved.</text>
+          </div>
         </div>
       </div>
     </div>
   );
 }
-

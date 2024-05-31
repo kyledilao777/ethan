@@ -16,14 +16,10 @@ import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import axios from "axios";
 
-export default function NavBar({
-  setIsNavOpen,
-  isHome,
-  isCalendar,
-  isInstruction,
-}) {
+export default function NavBar({ setIsNavOpen }) {
   const [isOpen, setIsOpen] = useState(false);
   const [userInfo, setUserInfo] = useState({ name: "", photo: "" });
+  
 
   useEffect(() => {
     const fetchUserInfo = async () => {
@@ -48,21 +44,14 @@ export default function NavBar({
   const handleButton = () => {
     setIsOpen(true);
     setIsNavOpen(true);
-    console.log(userInfo.photo);
   };
 
   const handleButton2 = () => {
     setIsOpen(false);
     setIsNavOpen(false);
   };
-
-  const bgContentClass = isOpen ? "mt-5" : "bg-white";
-
-  const bgMargin = isOpen ? "mt-5" : "mt-0";
-
-  const bgMargin2 = isOpen ? "mt-2" : "mt-0";
   return (
-    <div className=" font-poppins">
+    <div className="">
       <div className="w-full bg-white visible xsm:visible sxl:hidden xl:hidden xsm:fixed border h-[50px] flex justify-between px-[20px] py-[10px]">
         <div className="visible xsm:visible sxl:hidden xl:hidden  ">
           {" "}
@@ -78,7 +67,7 @@ export default function NavBar({
             }`} // Use Tailwind's width utilities for animation
           >
             <div className="flex justify-center ">
-              <div className="flex items-center space-x-3 mx-5 h-20 mt-5">
+              <div className="flex items-center space-x-3 mx-5 h-20  mt-5">
                 {isOpen && (
                   <div className="">
                     <div className="flex justify-center items-center rounded-full bg-white h-[45px] w-[45px]">
@@ -92,13 +81,8 @@ export default function NavBar({
                 )}
 
                 {isOpen && (
-                  <div className=" w-[168px] flex flex-col h-fit">
-                    <span className="text-sm font-semibold text-gray-400">
-                      {userInfo.name}
-                    </span>
-                    <span className="text-sm font-semibold text-blueNav">
-                      Personal
-                    </span>
+                  <div className=" w-[164px] flex flex-col h-fit">
+                    <span className="text-sm font-medium">{userInfo.name}</span>
                   </div>
                 )}
 
@@ -124,208 +108,51 @@ export default function NavBar({
                 {/* Added padding and flex-column layout */}
                 {isOpen && (
                   <div>
-                    <div className="bg-black h-px my-2 opacity-40">
+                    <div className="bg-black h-px my-2">
                       {" "}
                       {/* Use height for horizontal lines */}
                       <span className="text-white">halo</span>{" "}
                       {/* This might not be visible */}
                     </div>
-                    <div className="mb-2 mt-5">
-                      <text className="text-md text-blackNav opacity-70">
-                        FEATURES
-                      </text>
+                    <div className="my-8">
+                      <text className=" font-semibold">Features</text>
                     </div>
-                    <div className="">
-                      <div
-                        className={`p-3 flex items-center ${
-                          isHome ? "bg-slate-100" : "bg-white"
-                        } rounded-lg`}
+                    <div className="space-y-8">
+                      <Link
+                        to={{ pathname: "/home" }}
+                        className="flex flex-row space-x-5 items-center"
                       >
-                        <Link
-                          to={{ pathname: "/home" }}
-                          className="flex flex-row  items-center"
-                        >
-                          <div className="flex flex-row items-center justify-between w-full space-x-5">
-                            <img
-                              src="ethan.svg"
-                              className={`h-[30px] w-[30px] ${
-                                isHome ? "opacity-100" : "opacity-80"
-                              } `}
-                            />
-                            <text
-                              className={`${
-                                isHome ? "font-bold text-blueNav" : " font-medium text-blackNav opacity-70"
-                              } `}
-                            >
-                              Ethan
-                            </text>
-                          </div>
-                        </Link>
-                      </div>
-                      <div
-                        className={`p-3 flex items-center ${
-                          isCalendar ? "bg-slate-100" : "bg-white"
-                        } rounded-lg`}
+                        <div className="flex flex-row items-center justify-between w-[100px] ">
+                          <Home size="30" color="black" />{" "}
+                          <text className=" font-medium">Home</text>
+                        </div>
+                      </Link>
+                      <Link
+                        to={{ pathname: "/calendar" }}
+                        className="flex flex-row space-x-5 items-center"
                       >
-                        <Link
-                          to={{ pathname: "/calendar" }}
-                          className="flex flex-row space-x-5 items-center"
-                        >
-                          <div className="flex flex-row items-center justify-between w-full space-x-5">
-                            <img
-                              src="calendar.svg"
-                              className={`h-[30px] w-[30px] ${
-                                isCalendar ? "opacity-100" : "opacity-80"
-                              } `}
-                            />
-                            {/* <CalendarDays size="30" color="#1A5967" />{" "} */}
-                            <text
-                              className={`${
-                                isCalendar ? "font-bold text-blueNav" : " font-medium text-blackNav opacity-70"
-                              } `}
-                            >
-                              Calendar
-                            </text>
-                          </div>
-                        </Link>
-                      </div>
-                      <div
-                        className={`p-3 flex items-center ${
-                          isCalendar ? "bg-slate-100" : "bg-white"
-                        } rounded-lg`}
-                      >
-                        <Link
-                          to={{ pathname: "/calendar" }}
-                          className="flex flex-row space-x-5 items-center"
-                        >
-                          <div className="flex flex-row items-center justify-between w-full space-x-5">
-                            <img
-                              src="professional.svg"
-                              className={`h-[30px] w-[30px] ${
-                                isCalendar ? "opacity-100" : "opacity-80"
-                              } `}
-                            />
-                            {/* <CalendarDays size="30" color="#1A5967" />{" "} */}
-                            <text
-                              className={`${
-                                isCalendar ? "font-bold text-blueNav" : " font-medium text-blackNav opacity-70"
-                              } `}
-                            >
-                              For professionals
-                            </text>
-                          </div>
-                        </Link>
-                      </div>
-                      <div className="bg-black opacity-30 w-full h-[1px] mt-8">
+                        <div className="flex flex-row items-center justify-between w-[123px] ">
+                          <CalendarDays size="30" color="black" />{" "}
+                          <text className=" font-medium">Calendar</text>
+                        </div>
+                      </Link>
+                      <div className="bg-black w-full h-[1px]">
                         <text className="text-white">halo</text>
                       </div>
                     </div>
-                    <div>
-                      <div className="mt-5">
-                        <text className="text-md text-blackNav opacity-70">
-                          OTHERS
-                        </text>
-                      </div>
-                      <div
-                        className={`p-3 flex items-center mt-2 ${
-                          isInstruction ? "bg-slate-100" : "bg-white"
-                        }`}
-                      >
-                        <Link
-                          to={{ pathname: "/documentation" }}
-                          className="flex flex-row space-x-5 items-center"
-                        >
-                          <div className="flex flex-row items-center justify-between w-full space-x-5 ">
-                            <StickyNote size="30" color="#1A5967" />{" "}
-                            <text
-                              className={`${
-                                isInstruction ? "font-bold text-blueNav" : " font-medium text-blackNav opacity-70"
-                              } `}
-                            >
-                              Instructions
-                            </text>
-                          </div>
-                        </Link>
-                      </div>
-                      <div
-                        className={`p-3 flex items-center mt-2 ${
-                          isInstruction ? "bg-slate-100" : "bg-white"
-                        }`}
-                      >
-                        <Link
-                          to={{ pathname: "/documentation" }}
-                          className="flex flex-row space-x-5 items-center"
-                        >
-                          <div className="flex flex-row items-center justify-between w-full space-x-5 ">
-                          <img
-                              src="setting.svg"
-                              className={`h-[30px] w-[30px] ${
-                                isInstruction ? "opacity-100" : "opacity-80"
-                              } `}
-                            />
-                            <text
-                              className={`${
-                                isInstruction ? "font-bold text-blueNav" : " font-medium text-blackNav opacity-70"
-                              } `}
-                            >
-                              Settings
-                            </text>
-                          </div>
-                        </Link>
-                      </div>
-                      <div
-                        className={`p-3 flex items-center mt-2 ${
-                          isInstruction ? "bg-slate-100" : "bg-white"
-                        }`}
-                      >
-                        <Link
-                          to={{ pathname: "/documentation" }}
-                          className="flex flex-row space-x-5 items-center"
-                        >
-                          <div className="flex flex-row items-center justify-between w-full space-x-5 ">
-                          <img
-                              src="chat.svg"
-                              className={`h-[30px] w-[30px] ${
-                                isInstruction ? "opacity-100" : "opacity-80"
-                              } `}
-                            />
-                            <text
-                              className={`${
-                                isInstruction ? "font-bold text-blueNav" : " font-medium text-blackNav opacity-70"
-                              } `}
-                            >
-                              Feedback
-                            </text>
-                          </div>
-                        </Link>
-                      </div>
-                      <div
-                        className={`p-3 flex items-center mt-2 ${
-                          isInstruction ? "bg-slate-100" : "bg-white"
-                        }`}
-                      >
-                        <Link
-                          to={{ pathname: "/documentation" }}
-                          className="flex flex-row space-x-5 items-center"
-                        >
-                          <div className="flex flex-row items-center justify-between w-full space-x-5 ">
-                          <img
-                              src="square.svg"
-                              className={`h-[30px] w-[30px] ${
-                                isInstruction ? "opacity-100" : "opacity-80"
-                              } `}
-                            />
-                            <text
-                              className={`${
-                                isInstruction ? "font-bold text-blueNav" : " font-medium text-blackNav opacity-70"
-                              } `}
-                            >
-                              Help
-                            </text>
-                          </div>
-                        </Link>
-                      </div>
+
+                    <div className="my-8">
+                      <text className=" font-semibold">Instructions</text>
                     </div>
+                    <Link
+                      to={{ pathname: "/documentation" }}
+                      className="flex flex-row space-x-5 items-center"
+                    >
+                      <div className="flex flex-row items-center justify-between w-[147px] ">
+                        <StickyNote size="30" color="black" />{" "}
+                        <text className=" font-medium">Instructions</text>
+                      </div>
+                    </Link>
                   </div>
                 )}
               </div>
@@ -345,16 +172,14 @@ export default function NavBar({
         </div>
       </div>
       <div
-        className={`duration-300  visible  xsm:hidden xl:block sxl:block h-full text-black ${
+        className={`duration-300 visible xsm:hidden xl:block sxl:block h-full text-black bg-slate-50 ${
           isOpen ? "w-[285px]" : "w-[70px]"
         } transition-width border rounded-lg`}
-        onMouseEnter={handleButton}
-        onMouseLeave={handleButton2}
       >
-        <div className="flex justify-center">
-          <div className="flex items-center space-x-5 h-20 mt-5">
+        <div className="flex justify-center ">
+          <div className="flex items-center space-x-3 mx-5 h-20  mt-5">
             <div className="">
-              <div className="flex justify-center items-center rounded-full  h-[45px] w-[45px]">
+              <div className="flex justify-center items-center rounded-full bg-slate-100 h-[45px] w-[45px]">
                 <img
                   src={userInfo.photo}
                   alt="User"
@@ -364,13 +189,21 @@ export default function NavBar({
             </div>
 
             {isOpen && (
-              <div className=" w-[168px] flex flex-col h-fit">
-                <span className="text-sm font-semibold text-gray-400">
-                  {userInfo.name}
-                </span>
-                <span className="text-sm font-semibold text-blueNav">
-                  Personal
-                </span>
+              <div className=" w-[164px] flex flex-col h-fit">
+                <span className="text-sm font-medium">{userInfo.name}</span>
+              </div>
+            )}
+
+            {isOpen && (
+              <div>
+                <button
+                  onClick={() => {
+                    setIsOpen(false);
+                    setIsNavOpen(false);
+                  }}
+                >
+                  <ArrowLeft color="black" />
+                </button>
               </div>
             )}
           </div>
@@ -378,112 +211,53 @@ export default function NavBar({
         {isOpen && (
           <div className="px-[20px]">
             {" "}
-            <div className="bg-black opacity-40 w-full h-[1px] mt-5 "></div>
+            <div className="bg-black w-full h-[1px] mt-5 "></div>
           </div>
         )}
 
-        <div className="flex justify-center">
-          <div className=" w-[250px] flex justify-center items-center">
-            <nav className=" flex w-fit justify-center">
-              <ul className="">
-                <div className="mt-5">
-                  {isOpen && (
+        <div className="flex p-[20px]">
+          <div className=" w-[250px]">
+            <nav className=" flex w-fit">
+              <ul className="space-y-8">
+                <div>
+                  {!isOpen && (
                     <div>
-                      <text className="text-md text-blackNav opacity-70">
-                        FEATURES
-                      </text>
+                      <button onClick={handleButton}>
+                        <ArrowRight color="black" size="30" />
+                      </button>
                     </div>
                   )}
-                  <div
-                    className={`mt-2 ${
-                      isHome ? "bg-slate-100" : "bg-white"
-                    }  p-3 items-center rounded-lg bg-black`}
+                </div>
+                <div className="space-y-8 ">
+                  {isOpen && <text className=" font-semibold">Features</text>}
+                  <Link
+                    to={{ pathname: "/home" }}
+                    className="flex flex-row space-x-5 items-center"
                   >
-                    <Link
-                      to={{ pathname: "/home" }}
-                      className="flex flex-row space-x-5 items-center"
-                    >
-                      <li>
-                        {" "}
-                        <img src="ethan.svg" className={`h-[30px] w-[30px] ${
-                              isHome ? "opacity-100" : "opacity-80"
-                            } `} />
-                      </li>
-                      {isOpen && (
-                        <div className=" ">
-                          <text
-                            className={`${
-                              isHome ? "font-bold text-blueNav" : " font-medium text-blackNav opacity-70"
-                            }`}
-                          >
-                            Ethan
-                          </text>
-                        </div>
-                      )}
-                    </Link>
-                  </div>
-                  <div
-                    className={`p-3 ${
-                      isCalendar ? "bg-slate-100" : "bg-white"
-                    } flex items-center rounded-lg`}
+                    <li>
+                      {" "}
+                      <Home size="30" color="black" />{" "}
+                    </li>
+                    {isOpen && (
+                      <div className=" ">
+                        <text className=" font-medium">Home</text>
+                      </div>
+                    )}
+                  </Link>
+                  <Link
+                    to={{ pathname: "/calendar" }}
+                    className="flex flex-row space-x-5 items-center"
                   >
-                    {" "}
-                    <Link
-                      to={{ pathname: "/calendar" }}
-                      className="flex flex-row space-x-5 items-center"
-                    >
-                      <li>
-                        {" "}
-                        <img src="calendar.svg" className={`h-[30px] w-[30px] ${
-                              isCalendar ? "opacity-100" : "opacity-80"
-                            } `} />
-                      </li>
-                      {isOpen && (
-                        <div className=" ">
-                          <text
-                            className={`${
-                              isCalendar ? "font-bold text-blueNav" : " font-medium text-blackNav opacity-70"
-                            } `}
-                          >
-                            Calendar
-                          </text>
-                        </div>
-                      )}
-                    </Link>
-                  </div>
-                  <div
-                    className={`p-3 ${
-                      isCalendar ? "bg-slate-100" : "bg-white"
-                    } flex items-center rounded-lg`}
-                  >
-                    {" "}
-                    <Link
-                      to={{ pathname: "/" }}
-                      className="flex flex-row space-x-5 items-center"
-                    >
-                      <li>
-                        {" "}
-                        <img
-                          src="professional.svg"
-                          className={`h-[30px] w-[30px] ${
-                            isCalendar ? "opacity-100" : "opacity-80"
-                          } `}
-                        />
-                      </li>
-                      {isOpen && (
-                        <div className=" ">
-                          <text
-                            className={`${
-                              isCalendar ? "font-bold text-blueNav" : " font-medium text-blackNav opacity-70"
-                            } `}
-                          >
-                            For professionals
-                          </text>
-                        </div>
-                      )}
-                    </Link>
-                  </div>
-
+                    <li>
+                      {" "}
+                      <CalendarDays size="30" color="black" />{" "}
+                    </li>
+                    {isOpen && (
+                      <div className=" ">
+                        <text className=" font-medium">Calendar</text>
+                      </div>
+                    )}
+                  </Link>
                   {/* <Link
                     to={{ pathname: "/todo" }}
                     className="flex flex-row space-x-5 items-center"
@@ -529,132 +303,31 @@ export default function NavBar({
                       )}
                     </Link> */}
                     {isOpen && (
-                      <div className="bg-black opacity-40 w-[238px] h-[1px] mt-8">
+                      <div className="bg-black w-full h-[1px] mt-8">
                         <text className="text-white">halo</text>
                       </div>
                     )}
                   </div>
                   <div>
                     {isOpen && (
-                      <div className={`text-titleNav ${bgMargin} `}>
-                        <text className="text-md  text-blackNav opacity-70">
-                          OTHERS
-                        </text>
-                      </div>
+                      <text className=" font-semibold">Instructions</text>
                     )}
-                    <div
-                      className={`${bgMargin2} ${
-                        isInstruction ? "bg-slate-100" : "bg-white"
-                      } p-3 flex items-center rounded-lg `}
-                    >
-                      <Link
-                        to={{ pathname: "/documentation" }}
-                        className="flex flex-row space-x-5 items-center"
-                      >
-                        <li>
-                          {" "}
-                          <StickyNote size="30" color="#1A5967" />{" "}
-                        </li>
-                        {isOpen && (
-                          <div className="flex flex-row items-center justify-between  w-[118px] ">
-                            <text
-                              className={`${
-                                isInstruction ? "font-bold text-blueNav" : " font-medium text-blackNav opacity-70"
-                              }`}
-                            >
-                              Instructions
-                            </text>
+                    <button className="flex flex-row space-x-5 items-center my-8">
+                      <li>
+                        {" "}
+                        <StickyNote size="30" color="black" />{" "}
+                      </li>
+                      {isOpen && (
+                        <Link
+                          to={{ pathname: "/documentation" }}
+                          className="flex flex-row space-x-5 items-center"
+                        >
+                          <div className="flex flex-row items-center justify-between w-[118px] ">
+                            <text className=" font-medium">Instructions</text>
                           </div>
-                        )}
-                      </Link>
-                    </div>
-                    <div
-                      className={`${bgMargin2} ${
-                        isInstruction ? "bg-slate-100" : "bg-white"
-                      } p-3 flex items-center rounded-lg `}
-                    >
-                      <Link
-                        to={{ pathname: "/" }}
-                        className="flex flex-row space-x-5 items-center"
-                      >
-                        <li>
-                          {" "}
-                          <img
-                            src="setting.svg"
-                            className={`h-[30px] w-[30px] ${
-                              isInstruction ? "opacity-100" : "opacity-80"
-                            } `}
-                          />
-                        </li>
-                        {isOpen && (
-                          <div className="flex flex-row items-center justify-between  w-[118px] ">
-                            <text
-                              className={`${
-                                isInstruction ? "font-bold text-blueNav" : " font-medium text-blackNav opacity-70"
-                              } `}
-                            >
-                              Settings
-                            </text>
-                          </div>
-                        )}
-                      </Link>
-                    </div>
-                    <div
-                      className={`${bgMargin2} ${
-                        isInstruction ? "bg-slate-100" : "bg-white"
-                      } p-3 flex items-center rounded-lg `}
-                    >
-                      <Link
-                        to={{ pathname: "/" }}
-                        className="flex flex-row space-x-5 items-center"
-                      >
-                        <li>
-                          {" "}
-                          <img src="chat.svg" className={`h-[30px] w-[30px] ${
-                              isInstruction ? "opacity-100" : "opacity-80"
-                            } `} />
-                        </li>
-                        {isOpen && (
-                          <div className="flex flex-row items-center justify-between  w-[118px] ">
-                            <text
-                              className={`${
-                                isInstruction ? "font-bold text-blueNav" : " font-medium text-blackNav opacity-70"
-                              } text-blueNav`}
-                            >
-                              Feedback
-                            </text>
-                          </div>
-                        )}
-                      </Link>
-                    </div>
-                    <div
-                      className={`${bgMargin2} ${
-                        isInstruction ? "bg-slate-100" : "bg-white"
-                      } p-3 flex items-center rounded-lg `}
-                    >
-                      <Link
-                        to={{ pathname: "/" }}
-                        className="flex flex-row space-x-5 items-center"
-                      >
-                        <li>
-                          {" "}
-                          <img src="square.svg" className={`h-[30px] w-[30px] ${
-                              isInstruction ? "opacity-100" : "opacity-80"
-                            } `} />
-                        </li>
-                        {isOpen && (
-                          <div className="flex flex-row items-center justify-between  w-[118px] ">
-                            <text
-                              className={`${
-                                isInstruction ? "font-bold text-blueNav" : " font-medium text-blackNav opacity-70"
-                              } text-blueNav`}
-                            >
-                              Help
-                            </text>
-                          </div>
-                        )}
-                      </Link>
-                    </div>
+                        </Link>
+                      )}
+                    </button>
                   </div>
                 </div>
               </ul>
@@ -665,4 +338,3 @@ export default function NavBar({
     </div>
   );
 }
-
