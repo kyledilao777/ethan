@@ -67,10 +67,8 @@ export default function Home() {
             .REACT_APP_USER_INFO ||*/ "http://localhost:3001/user-info",
           { withCredentials: true }
         );
-        // Update userInfo state with fetched data
-        console.log(data.email, data.calendarId);
         setUserInfo({
-          name: data.name,
+          name: data.naem,
           photo: data.photo,
           email: data.email,
           calendarId: data.calendarId,

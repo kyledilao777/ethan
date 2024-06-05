@@ -34,7 +34,31 @@ export default function NavBar({
           { withCredentials: true }
         );
         // Update userInfo state with fetched data
-        setUserInfo({ name: data.name, photo: data.photo });
+        let finalName;
+        let finalPhoto;
+
+        if (data.name === data.newName) {
+            finalName = data.name;
+        } else {
+            finalName = data.newName;
+        }
+
+        if (data.photo === data.newPhoto) {
+            finalPhoto = data.photo
+        } else {
+          finalPhoto = data.newPhoto
+        }
+
+        console.log(finalName)
+        console.log(finalPhoto)
+
+
+        setUserInfo({
+          name: finalName,
+          photo: finalPhoto,
+          email: data.email,
+          calendarId: data.calendarId,
+        });
       } catch (error) {
         console.error("Failed to fetch user info:", error);
       }
@@ -73,7 +97,7 @@ export default function NavBar({
             </button>
           )}
           <div
-            className={`fixed z-20 duration-300 left-0 top-0 h-screen bg-white transition-all border rounded-lg ${
+            className={`fixed z-20 duration-500 left-0 top-0 h-screen bg-white transition-all border rounded-lg ${
               isOpen ? "w-[285px]" : "w-0"
             }`} // Use Tailwind's width utilities for animation
           >
@@ -151,6 +175,7 @@ export default function NavBar({
                               className={`h-[30px] w-[30px] ${
                                 isHome ? "opacity-100" : "opacity-80"
                               } `}
+                              alt="ethan"
                             />
                             <text
                               className={`${
@@ -204,6 +229,7 @@ export default function NavBar({
                               className={`h-[30px] w-[30px] ${
                                 isCalendar ? "opacity-100" : "opacity-80"
                               } `}
+                              alt="calendar"
                             />
                             {/* <CalendarDays size="30" color="#1A5967" />{" "} */}
                             <text
@@ -262,6 +288,7 @@ export default function NavBar({
                               className={`h-[30px] w-[30px] ${
                                 isInstruction ? "opacity-100" : "opacity-80"
                               } `}
+                              alt="settings"
                             />
                             <text
                               className={`${
@@ -345,7 +372,7 @@ export default function NavBar({
         </div>
       </div>
       <div
-        className={`duration-300  visible  xsm:hidden xl:block sxl:block h-full text-black ${
+        className={`duration-500  visible  xsm:hidden xl:block sxl:block h-full text-black ${
           isOpen ? "w-[285px]" : "w-[70px]"
         } transition-width border rounded-lg`}
         onMouseEnter={handleButton}

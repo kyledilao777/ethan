@@ -8,6 +8,7 @@ import RouteMap from "./routemap"
 import Login from "./login"
 import Documentation from "./documentation"
 import Privacy from "./privacy";
+import UserInfo from "./userinfo";
 
 
 export default function App() {
@@ -23,6 +24,7 @@ export default function App() {
           <Route path="/meeting" element={<Meeting />}/>
           <Route path="/todo" element={<Todo />}/>
           <Route path="/routemap" element={<RouteMap />}/>
+          <Route path="/userinfo" element={<UserInfo />}/>
         </Routes>
       </Router>
     </div>

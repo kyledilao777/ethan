@@ -11,7 +11,8 @@ const port = process.env.PORT || 3001;
 
 const clientId = process.env.GOOGLE_CLIENT_ID;
 const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
-const redirectUri = process.env.GOOGLE_REDIRECT_URI || "http://localhost:3001/oauth2callback";
+const redirectUri =
+  process.env.GOOGLE_REDIRECT_URI || "http://localhost:3001/oauth2callback";
 const oAuth2Client = new google.auth.OAuth2(
   clientId,
   clientSecret,
@@ -23,7 +24,17 @@ const tokenSchema = new mongoose.Schema({
   tokens: { type: Object, required: true },
 });
 
+const userSchema = new mongoose.Schema({
+  email: { type: String, required: true, unique: true },
+  name: { type: String, required: true },
+  photo: { type: Object, required: true },
+  newName: { type: String, required: true },
+  newPhoto: { type: String, required: true },
+  calendarId: { type: String, required: true },
+});
+
 const Token = mongoose.model("Token", tokenSchema);
+const User = mongoose.model("User", userSchema);
 const { v4: uuidv4 } = require("uuid");
 
 async function connectToMongo() {
@@ -98,11 +109,13 @@ async function main() {
     next();
   });
 
+  app.use(express.json({ limit: "50mb" }));
+
   app.get("/get-tokens", async (req, res) => {
     try {
       const email = req.query.email;
       const tokenRecord = await Token.findOne({ email: email });
-      console.log("Token Record:", tokenRecord)
+      console.log("Token Record:", tokenRecord);
       if (!tokenRecord) {
         return res.status(404).send("Tokens not found");
       }
@@ -133,7 +146,7 @@ async function main() {
     req.session.state = state;
     console.log("Login - Generated state:", state);
     console.log("Login - Session state:", req.session.state);
-    
+
     const url = oAuth2Client.generateAuthUrl({
       access_type: "offline",
       scope: [
@@ -149,11 +162,12 @@ async function main() {
 
   app.get("/oauth2callback", async (req, res) => {
     let q = url.parse(req.url, true).query;
-    console.log("Callback state:", q.state); // Log state in callback
-    console.log("Session state:", req.session.state); // Log session state
-    console.log("Callback:", q);
-    console.log("Session state q:", req.session);
+    // console.log("Callback state:", q.state); // Log state in callback
+    // console.log("Session state:", req.session.state); // Log session state
+    // console.log("Callback:", q);
+    // console.log("Session state q:", req.session);
 
+    console.log("oauth2callback");
     if (q.error) {
       console.log("Error:" + q.error);
       return res.status(400).send("Authentication error");
@@ -168,13 +182,21 @@ async function main() {
         delete req.session.state;
 
         // Fetch user profile information
-        const peopleService = google.people({ version: 'v1', auth: oAuth2Client });
+        const peopleService = google.people({
+          version: "v1",
+          auth: oAuth2Client,
+        });
         const me = await peopleService.people.get({
-          resourceName: 'people/me',
-          personFields: 'emailAddresses',
+          resourceName: "people/me",
+          personFields: "names,photos,emailAddresses",
         });
 
-        const email = me.data.emailAddresses[0].value
+        const calendarService = google.calendar({
+          version: "v3",
+          auth: oAuth2Client,
+        });
+
+        const email = me.data.emailAddresses[0].value;
 
         await Token.findOneAndUpdate(
           { email: email },
@@ -182,15 +204,40 @@ async function main() {
           { upsert: true, new: true }
         );
 
+        const existingUser = await User.findOne({ email: email });
+        let redirectUrl;
+
+        if (!existingUser) {
+          const calendarList = await calendarService.calendarList.list();
+          const primaryCalendar = calendarList.data.items.find(
+            (calendar) => calendar.primary
+          );
+          await User.create({
+            email: email,
+            name: me.data.names[0].displayName,
+            photo: me.data.photos[0].url,
+            newName: me.data.names[0].displayName,
+            newPhoto: me.data.photos[0].url,
+            calendarId: primaryCalendar.id, // Assuming you set this later or modify it
+          });
+
+          redirectUrl = "http://localhost:3000/userinfo";
+        } else {
+          redirectUrl = "http://localhost:3000/home?auth=success";
+        }
+
+        req.session.email = email;
+
+        console.log("Email here: ", req.session.email);
+
+        console.log("Set up: ", req.session.setup);
+
         req.session.save((err) => {
           if (err) {
             console.error("Session save error:", err);
             return res.status(500).send("Failed to save session");
           }
 
-          const redirectUrl =
-            // `${process.env.REDIRECT_HOME}` ||
-            "http://localhost:3000/home?auth=success";
           res.redirect(redirectUrl);
         });
       } catch (error) {
@@ -201,7 +248,6 @@ async function main() {
   });
 
   app.get("/auth-check", async (req, res) => {
-    console.log("auth-check Session:", req.session.tokens);
     const tokens = req.session.tokens; // Corrected line
 
     if (!tokens || !tokens.access_token) {
@@ -261,27 +307,41 @@ async function main() {
     // oAuth2Client.setCredentials(tokens);
 
     const peopleService = google.people({ version: "v1", auth: oAuth2Client });
-    const calendarService = google.calendar({ version: 'v3', auth: oAuth2Client });
+    const calendarService = google.calendar({
+      version: "v3",
+      auth: oAuth2Client,
+    });
     try {
       const me = await peopleService.people.get({
         resourceName: "people/me",
         personFields: "names,photos,emailAddresses",
       });
 
-     // console.log("me: ", me.data)
+      const email = req.session.email;
 
+      console.log("User info: ", email);
+
+      // console.log("me: ", me.data)
+      const user = await User.findOne({ email: email });
       const userInfo = {
-        name: me.data.names[0].displayName,
-        photo: me.data.photos[0].url,
-        email: me.data.emailAddresses[0].value,
+        name: user.name,
+        photo: user.photo,
+        newName: user.newName,
+        newPhoto: user.newPhoto,
+        email: user.email,
+        calendarId: user.calendarId,
       };
 
       console.log("User Info:", userInfo);
 
-      const calendarList = await calendarService.calendarList.list();
-      const primaryCalendar = calendarList.data.items.find(calendar => calendar.primary);
+      // const calendarList = await calendarService.calendarList.list();
+      // const primaryCalendar = calendarList.data.items.find(
+      //   (calendar) => calendar.primary
+      // );
 
-      userInfo.calendarId = primaryCalendar ? primaryCalendar.id : 'No primary calendar found';
+      // userInfo.calendarId = primaryCalendar
+      //   ? primaryCalendar.id
+      //   : "No primary calendar found";
 
       res.json(userInfo);
     } catch (error) {
@@ -290,8 +350,75 @@ async function main() {
     }
   });
 
+  app.post("/update-profile", async (req, res) => {
+    const data = req.body;
+    const email = req.session.email;
+    console.log("Email update profile: ", email);
+
+    console.log("New name update-profile: ", data.name);
+    console.log("New photo update-photo: ", data.imageSrc);
+
+    if (!email) {
+      return res.status(400).json({ message: "No email found in session." });
+    }
+
+    try {
+      if (data.name !== "" && data.imageSrc !== "logo.jpeg") {
+        console.log("not here 1")
+        await User.findOneAndUpdate(
+          { email: email }, // Query to find the document to update
+          {
+            newName: data.name, // Update the name
+            newPhoto: data.imageSrc, // Update the photo
+          },
+          {
+            new: true, // Return the updated document
+            runValidators: true, // Ensure validation is run on update
+          }
+        );
+      } else {
+        if (data.name !== "" && data.imageSrc === "logo.jpeg") {
+          console.log("not here 2")
+          await User.findOneAndUpdate(
+            { email: email }, // Query to find the document to update
+            {
+              newName: data.name, // Update the name
+              // Update the photo
+            },
+            {
+              new: true, // Return the updated document
+              runValidators: true, // Ensure validation is run on update
+            }
+          );
+        } else if (data.name === "" && data.imageSrc !== "logo.jpeg") {
+          console.log("should be here")
+          await User.findOneAndUpdate(
+            { email: email }, // Query to find the document to update
+            {
+              // Update the name
+              newPhoto: data.imageSrc, // Update the photo
+            },
+            {
+              new: true, // Return the updated document
+              runValidators: true, // Ensure validation is run on update
+            }
+          );
+        }
+      }
+
+      res
+        .status(200)
+        .json({ message: "Profile updated successfully" });
+    } catch (error) {
+      console.error("Error updating user profile:", error);
+      res.status(500).json({
+        message: "Failed to update profile.",
+        error: error.toString(),
+      });
+    }
+  });
+
   app.get("/fetch-calendar-events", async (req, res) => {
-    console.log("fetch-calendar-events Session:", req.session.tokens);
     const tokens = req.session.tokens; // Corrected line
 
     if (!tokens || !tokens.access_token) {
@@ -300,7 +427,6 @@ async function main() {
     }
 
     oAuth2Client.setCredentials(tokens);
-    console.log("fetch events", tokens.access_token);
 
     try {
       const response = await axios.get(
