@@ -31,7 +31,8 @@ module.exports = {
         customWhite: '#ffffff',
         blueNav: '#1A5967',
         blackNav: '#273240',
-        titleNav: '#082431'
+        titleNav: '#082431',
+        eventDiv: '#1A73E8',
       },
 
       fontFamily: {

@@ -1,20 +1,9 @@
-import {
-  CalendarDays,
-  LayoutList,
-  Users,
-  Map,
-  Bot,
-  Settings,
-  ArrowRight,
-  ArrowLeft,
-  Home,
-  Menu,
-  StickyNote,
-  Linkedin,
-} from "lucide-react";
+import { ArrowLeft, Menu, StickyNote } from "lucide-react";
 import { useState, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link } from "react-router-dom";
 import axios from "axios";
+import { useSelector, useDispatch } from "react-redux";
+import { setUserInfo } from "../redux/reducers/userReducer";
 
 export default function NavBar({
   setIsNavOpen,
@@ -23,56 +12,57 @@ export default function NavBar({
   isInstruction,
 }) {
   const [isOpen, setIsOpen] = useState(false);
-  const [userInfo, setUserInfo] = useState({ name: "", photo: "" });
 
-  useEffect(() => {
-    const fetchUserInfo = async () => {
-      try {
-        const { data } = await axios.get(
-          /*process.env
-            .REACT_APP_USER_INFO ||*/ "http://localhost:3001/user-info",
-          { withCredentials: true }
-        );
-        // Update userInfo state with fetched data
-        let finalName;
-        let finalPhoto;
+  const name = useSelector((state) => state.user.name);
+  const photo = useSelector((state) => state.user.photo);
+  const email = useSelector((state) => state.user.email);
+  const calendarId = useSelector((state) => state.user.calendarId);
+  const dispatch = useDispatch();
 
-        if (data.name === data.newName) {
-            finalName = data.name;
-        } else {
-            finalName = data.newName;
-        }
+  // useEffect(() => {
+  //   const fetchUserInfo = async () => {
+  //     try {
+  //       const { data } = await axios.get(
+  //         /*process.env
+  //           .REACT_APP_USER_INFO ||*/ "http://localhost:3001/user-info",
+  //         { withCredentials: true }
+  //       );
+  //       // Update userInfo state with fetched data
+  //       let finalName;
+  //       let finalPhoto;
 
-        if (data.photo === data.newPhoto) {
-            finalPhoto = data.photo
-        } else {
-          finalPhoto = data.newPhoto
-        }
+  //       if (data.name === data.newName) {
+  //           finalName = data.name;
+  //       } else {
+  //           finalName = data.newName;
+  //       }
 
-        console.log(finalName)
-        console.log(finalPhoto)
+  //       if (data.photo === data.newPhoto) {
+  //           finalPhoto = data.photo
+  //       } else {
+  //         finalPhoto = data.newPhoto
+  //       }
 
+  //       dispatch(setUserInfo({
+  //         name: finalName,
+  //         photo: finalPhoto,
+  //         email: data.email,
+  //         calendarId: data.calendarId,
+  //       }));
+  //     } catch (error) {
+  //       console.error("Failed to fetch user info:", error);
+  //     }
+  //   };
 
-        setUserInfo({
-          name: finalName,
-          photo: finalPhoto,
-          email: data.email,
-          calendarId: data.calendarId,
-        });
-      } catch (error) {
-        console.error("Failed to fetch user info:", error);
-      }
-    };
+  //   // Call fetchUserInfo function when component mounts
+  //   fetchUserInfo();
 
-    // Call fetchUserInfo function when component mounts
-    fetchUserInfo();
+  //   // Dependency array is empty, so this effect runs only once when the component mounts
+  // }, []);
 
-    // Dependency array is empty, so this effect runs only once when the component mounts
-  }, []);
   const handleButton = () => {
     setIsOpen(true);
     setIsNavOpen(true);
-    console.log(userInfo.photo);
   };
 
   const handleButton2 = () => {
@@ -107,7 +97,7 @@ export default function NavBar({
                   <div className="">
                     <div className="flex justify-center items-center rounded-full bg-white h-[45px] w-[45px]">
                       <img
-                        src={userInfo.photo}
+                        src={photo}
                         alt="User"
                         className="rounded-full h-[45px] w-[45px]"
                       />
@@ -118,7 +108,7 @@ export default function NavBar({
                 {isOpen && (
                   <div className=" w-[168px] flex flex-col h-fit">
                     <span className="text-sm font-semibold text-gray-400">
-                      {userInfo.name}
+                      {name}
                     </span>
                     <span className="text-sm font-semibold text-blueNav">
                       Personal
@@ -179,7 +169,9 @@ export default function NavBar({
                             />
                             <text
                               className={`${
-                                isHome ? "font-bold text-blueNav" : " font-medium text-blackNav opacity-70"
+                                isHome
+                                  ? "font-bold text-blueNav"
+                                  : " font-medium text-blackNav opacity-70"
                               } `}
                             >
                               Ethan
@@ -206,7 +198,9 @@ export default function NavBar({
                             {/* <CalendarDays size="30" color="#1A5967" />{" "} */}
                             <text
                               className={`${
-                                isCalendar ? "font-bold text-blueNav" : " font-medium text-blackNav opacity-70"
+                                isCalendar
+                                  ? "font-bold text-blueNav"
+                                  : " font-medium text-blackNav opacity-70"
                               } `}
                             >
                               Calendar
@@ -234,7 +228,9 @@ export default function NavBar({
                             {/* <CalendarDays size="30" color="#1A5967" />{" "} */}
                             <text
                               className={`${
-                                isCalendar ? "font-bold text-blueNav" : " font-medium text-blackNav opacity-70"
+                                isCalendar
+                                  ? "font-bold text-blueNav"
+                                  : " font-medium text-blackNav opacity-70"
                               } `}
                             >
                               For professionals
@@ -252,6 +248,7 @@ export default function NavBar({
                           OTHERS
                         </text>
                       </div>
+                      
                       <div
                         className={`p-3 flex items-center mt-2 ${
                           isInstruction ? "bg-slate-100" : "bg-white"
@@ -262,28 +259,7 @@ export default function NavBar({
                           className="flex flex-row space-x-5 items-center"
                         >
                           <div className="flex flex-row items-center justify-between w-full space-x-5 ">
-                            <StickyNote size="30" color="#1A5967" />{" "}
-                            <text
-                              className={`${
-                                isInstruction ? "font-bold text-blueNav" : " font-medium text-blackNav opacity-70"
-                              } `}
-                            >
-                              Instructions
-                            </text>
-                          </div>
-                        </Link>
-                      </div>
-                      <div
-                        className={`p-3 flex items-center mt-2 ${
-                          isInstruction ? "bg-slate-100" : "bg-white"
-                        }`}
-                      >
-                        <Link
-                          to={{ pathname: "/documentation" }}
-                          className="flex flex-row space-x-5 items-center"
-                        >
-                          <div className="flex flex-row items-center justify-between w-full space-x-5 ">
-                          <img
+                            <img
                               src="setting.svg"
                               className={`h-[30px] w-[30px] ${
                                 isInstruction ? "opacity-100" : "opacity-80"
@@ -292,7 +268,9 @@ export default function NavBar({
                             />
                             <text
                               className={`${
-                                isInstruction ? "font-bold text-blueNav" : " font-medium text-blackNav opacity-70"
+                                isInstruction
+                                  ? "font-bold text-blueNav"
+                                  : " font-medium text-blackNav opacity-70"
                               } `}
                             >
                               Settings
@@ -310,7 +288,7 @@ export default function NavBar({
                           className="flex flex-row space-x-5 items-center"
                         >
                           <div className="flex flex-row items-center justify-between w-full space-x-5 ">
-                          <img
+                            <img
                               src="chat.svg"
                               className={`h-[30px] w-[30px] ${
                                 isInstruction ? "opacity-100" : "opacity-80"
@@ -318,7 +296,9 @@ export default function NavBar({
                             />
                             <text
                               className={`${
-                                isInstruction ? "font-bold text-blueNav" : " font-medium text-blackNav opacity-70"
+                                isInstruction
+                                  ? "font-bold text-blueNav"
+                                  : " font-medium text-blackNav opacity-70"
                               } `}
                             >
                               Feedback
@@ -336,7 +316,7 @@ export default function NavBar({
                           className="flex flex-row space-x-5 items-center"
                         >
                           <div className="flex flex-row items-center justify-between w-full space-x-5 ">
-                          <img
+                            <img
                               src="square.svg"
                               className={`h-[30px] w-[30px] ${
                                 isInstruction ? "opacity-100" : "opacity-80"
@@ -344,7 +324,9 @@ export default function NavBar({
                             />
                             <text
                               className={`${
-                                isInstruction ? "font-bold text-blueNav" : " font-medium text-blackNav opacity-70"
+                                isInstruction
+                                  ? "font-bold text-blueNav"
+                                  : " font-medium text-blackNav opacity-70"
                               } `}
                             >
                               Help
@@ -383,7 +365,7 @@ export default function NavBar({
             <div className="">
               <div className="flex justify-center items-center rounded-full  h-[45px] w-[45px]">
                 <img
-                  src={userInfo.photo}
+                  src={photo}
                   alt="User"
                   className="rounded-full h-[45px] w-[45px]"
                 />
@@ -393,7 +375,7 @@ export default function NavBar({
             {isOpen && (
               <div className=" w-[168px] flex flex-col h-fit">
                 <span className="text-sm font-semibold text-gray-400">
-                  {userInfo.name}
+                  {name}
                 </span>
                 <span className="text-sm font-semibold text-blueNav">
                   Personal
@@ -432,15 +414,20 @@ export default function NavBar({
                     >
                       <li>
                         {" "}
-                        <img src="ethan.svg" className={`h-[30px] w-[30px] ${
-                              isHome ? "opacity-100" : "opacity-80"
-                            } `} />
+                        <img
+                          src="ethan.svg"
+                          className={`h-[30px] w-[30px] ${
+                            isHome ? "opacity-100" : "opacity-80"
+                          } `}
+                        />
                       </li>
                       {isOpen && (
                         <div className=" ">
                           <text
                             className={`${
-                              isHome ? "font-bold text-blueNav" : " font-medium text-blackNav opacity-70"
+                              isHome
+                                ? "font-bold text-blueNav"
+                                : " font-medium text-blackNav opacity-70"
                             }`}
                           >
                             Ethan
@@ -461,15 +448,20 @@ export default function NavBar({
                     >
                       <li>
                         {" "}
-                        <img src="calendar.svg" className={`h-[30px] w-[30px] ${
-                              isCalendar ? "opacity-100" : "opacity-80"
-                            } `} />
+                        <img
+                          src="calendar.svg"
+                          className={`h-[30px] w-[30px] ${
+                            isCalendar ? "opacity-100" : "opacity-80"
+                          } `}
+                        />
                       </li>
                       {isOpen && (
                         <div className=" ">
                           <text
                             className={`${
-                              isCalendar ? "font-bold text-blueNav" : " font-medium text-blackNav opacity-70"
+                              isCalendar
+                                ? "font-bold text-blueNav"
+                                : " font-medium text-blackNav opacity-70"
                             } `}
                           >
                             Calendar
@@ -501,7 +493,9 @@ export default function NavBar({
                         <div className=" ">
                           <text
                             className={`${
-                              isCalendar ? "font-bold text-blueNav" : " font-medium text-blackNav opacity-70"
+                              isCalendar
+                                ? "font-bold text-blueNav"
+                                : " font-medium text-blackNav opacity-70"
                             } `}
                           >
                             For professionals
@@ -569,32 +563,7 @@ export default function NavBar({
                         </text>
                       </div>
                     )}
-                    <div
-                      className={`${bgMargin2} ${
-                        isInstruction ? "bg-slate-100" : "bg-white"
-                      } p-3 flex items-center rounded-lg `}
-                    >
-                      <Link
-                        to={{ pathname: "/documentation" }}
-                        className="flex flex-row space-x-5 items-center"
-                      >
-                        <li>
-                          {" "}
-                          <StickyNote size="30" color="#1A5967" />{" "}
-                        </li>
-                        {isOpen && (
-                          <div className="flex flex-row items-center justify-between  w-[118px] ">
-                            <text
-                              className={`${
-                                isInstruction ? "font-bold text-blueNav" : " font-medium text-blackNav opacity-70"
-                              }`}
-                            >
-                              Instructions
-                            </text>
-                          </div>
-                        )}
-                      </Link>
-                    </div>
+                    
                     <div
                       className={`${bgMargin2} ${
                         isInstruction ? "bg-slate-100" : "bg-white"
@@ -617,7 +586,9 @@ export default function NavBar({
                           <div className="flex flex-row items-center justify-between  w-[118px] ">
                             <text
                               className={`${
-                                isInstruction ? "font-bold text-blueNav" : " font-medium text-blackNav opacity-70"
+                                isInstruction
+                                  ? "font-bold text-blueNav"
+                                  : " font-medium text-blackNav opacity-70"
                               } `}
                             >
                               Settings
@@ -637,16 +608,21 @@ export default function NavBar({
                       >
                         <li>
                           {" "}
-                          <img src="chat.svg" className={`h-[30px] w-[30px] ${
+                          <img
+                            src="chat.svg"
+                            className={`h-[30px] w-[30px] ${
                               isInstruction ? "opacity-100" : "opacity-80"
-                            } `} />
+                            } `}
+                          />
                         </li>
                         {isOpen && (
                           <div className="flex flex-row items-center justify-between  w-[118px] ">
                             <text
                               className={`${
-                                isInstruction ? "font-bold text-blueNav" : " font-medium text-blackNav opacity-70"
-                              } text-blueNav`}
+                                isInstruction
+                                  ? "font-bold text-blueNav"
+                                  : " font-medium text-blackNav opacity-70"
+                              }`}
                             >
                               Feedback
                             </text>
@@ -660,21 +636,26 @@ export default function NavBar({
                       } p-3 flex items-center rounded-lg `}
                     >
                       <Link
-                        to={{ pathname: "/" }}
+                        to={{ pathname: "/documentation" }}
                         className="flex flex-row space-x-5 items-center"
                       >
                         <li>
                           {" "}
-                          <img src="square.svg" className={`h-[30px] w-[30px] ${
+                          <img
+                            src="square.svg"
+                            className={`h-[30px] w-[30px] ${
                               isInstruction ? "opacity-100" : "opacity-80"
-                            } `} />
+                            } `}
+                          />
                         </li>
                         {isOpen && (
                           <div className="flex flex-row items-center justify-between  w-[118px] ">
                             <text
                               className={`${
-                                isInstruction ? "font-bold text-blueNav" : " font-medium text-blackNav opacity-70"
-                              } text-blueNav`}
+                                isInstruction
+                                  ? "font-bold text-blueNav"
+                                  : " font-medium text-blackNav opacity-70"
+                              }`}
                             >
                               Help
                             </text>
