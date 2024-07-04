@@ -244,56 +244,6 @@ export default function Home() {
           }
         }
 
-        // } else {
-        //   console.log("this is whatsOnMyDay");
-        //   if (
-        //     agentData.response.includes("Here's what's on your") ||
-        //     agentData.response.includes("you have")
-        //   ) {
-        //     console.log("this is whatsOnMyDay 2");
-        //     whatsOnMyDayResponse = true;
-        //     parsedDetails = extractToday(temporaryResponse);
-        //     console.log(parsedDetails, "from agent data");
-        //     staticMessage = "Sure! You have the following events on your day: ";
-        //   }
-        // }
-
-        // parsedDetails = agentData.parsedDetails;
-        // staticMessage = agentData.staticMessage;
-
-        // if (agentData.parsedDetails && agentData.staticMessage) {
-
-        //   parsedDetails = agentData.parsedDetails;
-        //   staticMessage = agentData.staticMessage;
-
-        //   if (staticMessage.includes("created")) {
-        //     isScheduled = true;
-        //     console.log("isScheduled")
-        //   } else if (staticMessage.includes("deleted")) {
-        //     isDeleteSchedule = true;
-        //     console.log("isDeleteSchedule")
-        //   } else if (staticMessage.includes("originally")) {
-        //     isUpdateSchedule = true;
-        //     console.log("isUpdateSchedule")
-        //   }
-
-        //   console.log(isScheduled, isDeleteSchedule, isUpdateSchedule)
-        // } else {
-        //   if (
-        //     agentData.response.includes("Here's what's on your") ||
-        //     agentData.response.includes("You have")
-        //   ) {
-        //     whatsOnMyDayResponse = true;
-        //     parsedDetails = extractToday(temporaryResponse);
-        //     console.log(parsedDetails, "from agent data");
-        //     staticMessage = "Sure! You have the following events on your day: ";
-        //   }
-        // }
-
-        // console.log(parsedDetails);
-        // console.log(staticMessage);
-        // "I have created an event with Zirui for you on June 4th at 6:00 PM. Here are the details:\n\n- Event Name: Event with Zirui\n- Start Time: 6:00 PM\n- End Time: 6:30 PM\n- Date: 25 June 2024 (Thursday)\n- Attendee: zirui@example.com\nYou can view the event [here](https://www.google.com/calendar/event?eid=r6mk9qhck52k8dchbr90ggn6dk).\n\nIs there anything else I can assist you with?";
-
         let itemResponse;
 
         try {
@@ -301,7 +251,20 @@ export default function Home() {
             itemResponse =
               "I'm sorry, I am still learning to understand you better. Could you rephrase your question?";
           } else {
-            itemResponse = temporaryResponse;
+            if (agentData.isEvent === true) {
+              console.log(agentData.intent, "this is from temporary response")
+              if (agentData.intent === "create") {
+                itemResponse = "The event has not been sucesfully created, please try again at a later time or change your prompt."
+              } else if (agentData.intent === "delete") {
+                itemResponse = "The event has not been sucesfully deleted, please try again at a later time or change your prompt."
+              } else if (agentData.intent === "update") {
+               itemResponse = "The event has not been sucesfully updated, please try again at a later time or change your prompt."
+              } else if (agentData.intent === "today") {
+               itemResponse = "You have no events scheduled for you today, would you want to schedule an event?"
+              }
+            } else {
+              itemResponse = temporaryResponse;
+            }
           }
 
           //           if (isSpecificResponse) {
@@ -395,10 +358,9 @@ export default function Home() {
       let [start_time, end_time] = times.split(" to ");
       let real_end_time;
       let event_id;
-      
-        const matches = end_time.split(" ");
-        real_end_time = matches[0];
-      
+
+      const matches = end_time.split(" ");
+      real_end_time = matches[0];
 
       console.log(real_end_time, "this is real end time");
 
@@ -512,7 +474,7 @@ export default function Home() {
       <div className="w-full flex sxl:flex-row xsm:flex-col h-screen">
         <NavBar setIsNavOpen={setIsNavOpen} isHome={true} />
         <div
-          className={`flex flex-col w-full h-full transition-all duration-300 ${mainContentClass}`}
+          className={`flex flex-col w-full h-full transition-all duration-300 ${mainContentClass} `}
         >
           {!isAgent && (
             <div

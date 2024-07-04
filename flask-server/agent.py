@@ -56,14 +56,16 @@ def determine_intent(user_input, response_container):
    
     if "schedule" in user_input.lower():
             return "create"
-    elif "delete" in user_input.lower() or "remove" in user_input.lower():            return "delete"
-        
+    elif "delete" in user_input.lower() or "remove" in user_input.lower():            
+        return "delete"
     elif "update" in user_input.lower() or "postpone" in user_input.lower():
             return "update"
-    else:
+    elif "today" in  user_input.lower():
         return "today"
+    else:
+         "none"
 
-def run_agent_executor(user_email, user_input, calendar_id, user_timezone, memory, response_container):
+def run_agent_executor(user_email, user_input, calendar_id, user_timezone, memory, response_container, intent):
     tools = [
         TimeDeltaTool(),
         GetCalendarEventsTool(),
@@ -111,6 +113,12 @@ def run_agent_executor(user_email, user_input, calendar_id, user_timezone, memor
     if (result):
         session = get_from_session(user_email)
         print(session, "Session from agent.py")
+
+        if (intent != "none"):
+             response_container["isEvent"] = True
+        else:
+             response_container["isEvent"] = False
+
         response_container['eventDetails'] = session
        
 
@@ -120,13 +128,15 @@ def run_agent_executor(user_email, user_input, calendar_id, user_timezone, memor
             print(step["output"], "This is step output")
 
     clear_session(user_email)
+
     response_container['response'] = result.get("output")
     
 
 def agent_task(input_data, user_email, calendar_id, timezone, memory, response_container):
-    run_agent_executor(user_email, input_data, calendar_id, timezone, memory, response_container)
-
     intent = determine_intent(input_data, response_container)
+    run_agent_executor(user_email, input_data, calendar_id, timezone, memory, response_container, intent)
+
+    
     
     # if intent == "create":
     #     parsed_details, static_message = parse_create_event(input_data)
