@@ -377,12 +377,14 @@ class UpdateCalendarEventInput(BaseModel):
     attendees: Optional[List[str]] = Field(default=None, description="additional attendees of the event in addition to existing attendees")
     location: Optional[str] = Field(default=None, description="new location of the event")
     description: Optional[str] = Field(default=None, description="Description of the event.")
+
+
     
 
 class UpdateCalendarEventTool(BaseTool):
     name = "update_calendar_event"
     description = """
-    Trigger whenever the user wants to update an existing event, the number of changes DOES NOT matter
+    Useful when you want to update a calendar event given new event details. Trigger whenever the user wants to update an event, the number of changes DOES NOT matter
     """
     # given a calendar id, event id, and new event details.
     args_schema: Type[BaseModel] = UpdateCalendarEventInput
@@ -413,3 +415,42 @@ class UpdateCalendarEventTool(BaseTool):
 
     def _arun(self):
         raise NotImplementedError("update_calendar_event does not support async")
+
+# class UpdateCalendarEventInput(BaseModel):
+#     """Inputs for update_calendar_event"""
+#     user_email: str = Field(description="email of the user")
+#     calendar_id: str = Field(description="calendar id of the calendar")
+#     event_id: str = Field(description="id of the event to update")
+#     event_name: Optional[str] = Field(description="new name of the event")
+#     start_datetime: Optional[str] = Field(description="new start datetime of the event in RFC3339 format")
+#     end_datetime: Optional[str] = Field(description="new end datetime of the event in RFC3339 format")
+#     attendee: Optional[str] = Field(description="new attendee of the event")
+#     location: Optional[str] = Field(description="new location of the event")
+    
+
+# class UpdateCalendarEventTool(BaseTool):
+#     name = "update_calendar_event"
+#     description = """
+#     Useful when you want to update a calendar event given a calendar id, event id, and new event details.
+#     """
+#     args_schema: Type[BaseModel] = UpdateCalendarEventInput
+
+#     def _run(
+#         self,
+#         user_email: str,
+#         calendar_id: str,
+#         event_id: str,
+#         event_name: Optional[str] = None,
+#         start_datetime: Optional[str] = None,
+#         end_datetime: Optional[str] = None,
+#         attendee: Optional[str] = None,
+#         location: Optional[str] = None
+#     ):
+#         # Call the update_event function with the provided parameters
+#         update_response = update_event(
+#             user_email, calendar_id, event_id, event_name, start_datetime, end_datetime, attendee, location
+#         )
+#         return update_response
+
+#     def _arun(self):
+#         raise NotImplementedError("update_calendar_event does not support async")

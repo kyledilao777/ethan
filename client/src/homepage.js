@@ -192,40 +192,52 @@ export default function Home() {
         if (agentData.eventDetails) {
           console.log(agentData.intent, "this is intent");
           if (agentData.intent === "today" || agentData.intent === "delete") {
-            parsedDetails = transformToday(
-              agentData.eventDetails,
-              agentData.intent
-            );
+            if (agentData.eventDetails.length > 0) {
+              parsedDetails = transformToday(
+                agentData.eventDetails,
+                agentData.intent
+              );
 
-            if (agentData.intent === "delete") {
-              parsedDetails = parsedDetails[0];
+              if (agentData.intent === "delete") {
+                parsedDetails = parsedDetails[0];
+              }
             }
           } else {
-            parsedDetails = agentData.eventDetails;
-            if (agentData.intent === "update") {
-              parsedDetails["current_start_time"] = extractTime(
-                parsedDetails["original_start"]
-              );
-              parsedDetails["current_end_time"] = extractTime(
-                parsedDetails["original_end"]
-              );
-              parsedDetails["updated_start_time"] = extractTime(
-                parsedDetails["updated_start"]
-              );
-              parsedDetails["updated_end_time"] = extractTime(
-                parsedDetails["updated_end"]
-              );
-              parsedDetails["date"] = extractDate(
-                parsedDetails["original_start"]
-              );
-            } else {
-              parsedDetails["start_time"] = extractTime(
-                parsedDetails.start_datetime
-              );
-              parsedDetails["end_time"] = extractTime(
-                parsedDetails.end_datetime
-              );
-              parsedDetails["date"] = extractDate(parsedDetails.start_datetime);
+            if (
+              agentData.eventDetails.event_name ||
+              agentData.eventDetails.title
+            ) {
+              parsedDetails = agentData.eventDetails;
+              if (agentData.intent === "update") {
+                parsedDetails["current_start_time"] = extractTime(
+                  parsedDetails["original_start"]
+                );
+                parsedDetails["current_end_time"] = extractTime(
+                  parsedDetails["original_end"]
+                );
+                parsedDetails["updated_start_time"] = extractTime(
+                  parsedDetails["updated_start"]
+                );
+                parsedDetails["updated_end_time"] = extractTime(
+                  parsedDetails["updated_end"]
+                );
+                parsedDetails["start_date"] = extractDate(
+                  parsedDetails["original_start"]
+                );
+                parsedDetails["end_date"] = extractDate(
+                  parsedDetails["updated_end"]
+                );
+              } else {
+                parsedDetails["start_time"] = extractTime(
+                  parsedDetails.start_datetime
+                );
+                parsedDetails["end_time"] = extractTime(
+                  parsedDetails.end_datetime
+                );
+                parsedDetails["date"] = extractDate(
+                  parsedDetails.start_datetime
+                );
+              }
             }
           }
 
@@ -237,7 +249,7 @@ export default function Home() {
             isDeleteSchedule = true;
           } else if (agentData.intent === "update") {
             isUpdateSchedule = true;
-            staticMessage = `Got it! The event ${parsedDetails.title} scheduled on ${parsedDetails.date} at ${parsedDetails.current_start_time} - ${parsedDetails.current_end_time} has been updated to ${parsedDetails.date} ${parsedDetails.updated_start_time} - ${parsedDetails.updated_end_time}`;
+            staticMessage = `Got it! The event ${parsedDetails.title} scheduled on ${parsedDetails.start_date} at ${parsedDetails.current_start_time} - ${parsedDetails.current_end_time} has been updated to ${parsedDetails.end_date} ${parsedDetails.updated_start_time} - ${parsedDetails.updated_end_time}`;
           } else if (agentData.intent === "today") {
             whatsOnMyDayResponse = true;
             staticMessage = "Here are your schedules for today:";
@@ -252,16 +264,21 @@ export default function Home() {
               "I'm sorry, I am still learning to understand you better. Could you rephrase your question?";
           } else {
             if (agentData.isEvent === true) {
-              console.log(agentData.intent, "this is from temporary response")
-              if (agentData.intent === "create") {
-                itemResponse = "The event has not been sucesfully created, please try again at a later time or change your prompt."
-              } else if (agentData.intent === "delete") {
-                itemResponse = "The event has not been sucesfully deleted, please try again at a later time or change your prompt."
-              } else if (agentData.intent === "update") {
-               itemResponse = "The event has not been sucesfully updated, please try again at a later time or change your prompt."
-              } else if (agentData.intent === "today") {
-               itemResponse = "You have no events scheduled for you today, would you want to schedule an event?"
-              }
+              console.log(agentData.intent, "this is from temporary response");
+              // if (agentData.intent === "create") {
+              //   itemResponse =
+              //     "The event has not been sucesfully created, please try again at a later time or change your prompt.";
+              // } else if (agentData.intent === "delete") {
+              //   itemResponse =
+              //     "The event has not been sucesfully deleted, please try again at a later time or change your prompt.";
+              // } else if (agentData.intent === "update") {
+              //   itemResponse =
+              //     "The event has not been sucesfully updated, please try again at a later time or change your prompt.";
+              // } else if (agentData.intent === "today") {
+              //   itemResponse =
+              //     "You have no events scheduled for you today, would you want to schedule an event?";
+              // }
+              itemResponse = temporaryResponse;
             } else {
               itemResponse = temporaryResponse;
             }
