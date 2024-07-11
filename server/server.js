@@ -31,6 +31,10 @@ const userSchema = new mongoose.Schema({
   newName: { type: String, required: true },
   newPhoto: { type: String, required: true },
   calendarId: { type: String, required: true },
+  occupation: { type: String },
+  comment: { type: String },
+  reason: { type: [String] }
+
 });
 
 const Token = mongoose.model("Token", tokenSchema);
@@ -330,6 +334,7 @@ async function main() {
         newPhoto: user.newPhoto,
         email: user.email,
         calendarId: user.calendarId,
+        occupation: user.occupation,
       };
 
       console.log("User Info:", userInfo);
@@ -355,8 +360,9 @@ async function main() {
     const email = req.session.email;
     console.log("Email update profile: ", email);
 
-    console.log("New name update-profile: ", data.name);
-    console.log("New photo update-photo: ", data.imageSrc);
+    console.log("Comment: ", data.comment);
+    console.log("Reason: ", data.reason);
+    console.log("Occupation: ", data.occupation);
 
     if (!email) {
       return res.status(400).json({ message: "No email found in session." });
@@ -370,6 +376,9 @@ async function main() {
           {
             newName: data.name, // Update the name
             newPhoto: data.imageSrc, // Update the photo
+            comment: data.comment,
+            reason: data.reason,
+            occupation: data.occupation,
           },
           {
             new: true, // Return the updated document
@@ -383,7 +392,9 @@ async function main() {
             { email: email }, // Query to find the document to update
             {
               newName: data.name, // Update the name
-              // Update the photo
+              comment: data.comment,
+              reason: data.reason,
+              occupation: data.occupation,
             },
             {
               new: true, // Return the updated document
@@ -397,6 +408,9 @@ async function main() {
             {
               // Update the name
               newPhoto: data.imageSrc, // Update the photo
+              comment: data.comment,
+              reason: data.reason,
+              occupation: data.occupation,
             },
             {
               new: true, // Return the updated document

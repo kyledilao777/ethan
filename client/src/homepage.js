@@ -31,6 +31,7 @@ export default function Home() {
   const photo = useSelector((state) => state.user.photo);
   const email = useSelector((state) => state.user.email);
   const calendarId = useSelector((state) => state.user.calendarId);
+  const occupation = useSelector((state) => state.user.occupation);
   const isAgent = useSelector((state) => state.agent.isAgent);
   const isAuthenticated = useSelector((state) => state.user.isAuthenticated);
   const [firstTypingComplete, setFirstTypingComplete] = useState(false);
@@ -87,6 +88,7 @@ export default function Home() {
             photo: finalPhoto,
             email: data.email,
             calendarId: data.calendarId,
+            occupation: data.occupation,
           })
         );
       } catch (error) {

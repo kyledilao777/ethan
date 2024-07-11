@@ -17,6 +17,7 @@ export default function NavBar({
   const photo = useSelector((state) => state.user.photo);
   const email = useSelector((state) => state.user.email);
   const calendarId = useSelector((state) => state.user.calendarId);
+  const occupation = useSelector((state) => state.user.occupation);
   const dispatch = useDispatch();
 
   // useEffect(() => {
@@ -111,7 +112,7 @@ export default function NavBar({
                       {name}
                     </span>
                     <span className="text-sm font-semibold text-blueNav">
-                      Personal
+                      {occupation}
                     </span>
                   </div>
                 )}
@@ -378,7 +379,7 @@ export default function NavBar({
                   {name}
                 </span>
                 <span className="text-sm font-semibold text-blueNav">
-                  Personal
+                  {occupation}
                 </span>
               </div>
             )}

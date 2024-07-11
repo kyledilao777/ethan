@@ -12,14 +12,16 @@ const userSlice = createSlice({
     calendarId: "",
     data: [],
     input: "",
+    occupation: "",
   },
   reducers: {
     setUserInfo: (state, action) => {
-      const { name, photo, email, calendarId } = action.payload;
+      const { name, photo, email, calendarId, occupation } = action.payload;
       state.name = name;
       state.photo = photo;
       state.email = email;
       state.calendarId = calendarId;
+      state.occupation = occupation;
     },
 
     setData: (state, action) => {
