@@ -8,7 +8,14 @@ module.exports = {
         fadeInOut: {
           '0%, 100%': { opacity: 0 },
           '50%': { opacity: 1 },
-        }
+        },
+        fadeIn: {
+          '0%': { opacity: 0 },
+          '100%': { opacity: 1 },
+        },
+        animation: {
+          fadeIn: 'fadeIn 0.5s ease-in-out forwards',
+      },
       },
       animation: {
         fadeInOut: 'fadeInOut 5s ease-in-out infinite',
@@ -22,6 +29,7 @@ module.exports = {
 
       spacing: {
         '25vh': '25vh',
+        '50vh': '50vh',
       },
 
       colors: {

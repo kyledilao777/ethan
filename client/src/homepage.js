@@ -1,5 +1,5 @@
 import NavBar from "./components/navbar";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { ArrowLeft, Send } from "lucide-react";
 import { v4 as uuidv4 } from "uuid";
@@ -37,6 +37,30 @@ export default function Home() {
   const [firstTypingComplete, setFirstTypingComplete] = useState(false);
 
   const dispatch = useDispatch();
+  const messagesEndRef = useRef(null);
+  const [isScrollable, setIsScrollable] = useState(false);
+
+  useEffect(() => {
+    const checkIfScrollable = () => {
+      setIsScrollable(document.documentElement.scrollHeight > document.documentElement.clientHeight);
+    };
+
+    checkIfScrollable();
+    window.addEventListener("resize", checkIfScrollable);
+    console.log(isScrollable, "isScrollable")
+    return () => {
+      window.removeEventListener("resize", checkIfScrollable);
+    };
+  }, []);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [data]);
+
 
   const rotatingMessages = [
     "To start, say “Hi Ethan”.",
@@ -66,7 +90,7 @@ export default function Home() {
           { withCredentials: true }
         );
 
-        // Update userInfo state with fetched data
+        // Update userInfo state with fetched dxata
         let finalName;
         let finalPhoto;
 
@@ -100,7 +124,7 @@ export default function Home() {
     fetchUserInfo();
 
     // Dependency array is empty, so this effect runs only once when the component mounts
-  }, []);
+  }, [dispatch]);
 
   const parseResponse = (response) => {
     // Custom parsing logic based on your response format
@@ -485,13 +509,15 @@ export default function Home() {
   }, []);
 
   const mainContentClass = isNavOpen
-    ? "xsm:ml-[300px] sxl:ml-[0px]"
+    ? isAgent ? "xsm:ml-[170px] sxl:ml-[0px]" : "xsm:ml-[300px] sxl:ml-[0px]"
     : "px-[20px]";
 
+
+
   return (
-    <div className=" w-full h-full ">
+    <div className={`w-full ${isScrollable ? "h-fit" : "h-screen"}`}>
       <div className="w-full flex sxl:flex-row xsm:flex-col h-screen">
-        <NavBar setIsNavOpen={setIsNavOpen} isHome={true} />
+        <NavBar setIsNavOpen={setIsNavOpen} isHome={true} setIsAgent={setIsAgent} setAgentResponse={setAgentResponse} setData={setData} />
         <div
           className={`flex flex-col w-full h-full transition-all duration-300 ${mainContentClass} `}
         >
@@ -523,14 +549,7 @@ export default function Home() {
                   </div>
                 </div>
               </div>
-              <div className="flex flex-row justify-center space-x-5 xsm:invisible sxl:visible items-center">
-                <a href="https://untangled.carrd.co/">
-                  <img src="website.png" alt="website" className="h-[60px]" />
-                </a>
-                <a href="https://www.linkedin.com/company/untangled-ai">
-                  <img src="linkedin.png" alt="linkedin" className="h-[40px]" />
-                </a>
-              </div>
+              
             </div>
           )}
 
@@ -564,6 +583,8 @@ export default function Home() {
                       dispatch(setAgentResponse(null));
                       dispatch(setData([]));
                     }}
+
+                    className="visible sxl:hidden xsm:hidden"
                   >
                     <ArrowLeft color="black" size="20" />
                   </button>
@@ -829,6 +850,7 @@ export default function Home() {
                   </div>
                 ))}
 
+
                 {displayInput && (
                   <div className="flex justify-between space-x-3 mt-10">
                     <input
@@ -856,16 +878,22 @@ export default function Home() {
                     </div>
                   </div>
                 )}
+                <div ref={messagesEndRef} />
               </div>
             </div>
           )}
-          <div className="flex justify-center h-[30px] space-x-3 items-center text-gray-500">
-            <Link to={{ pathname: "/privacy" }}>
-              <text>Privacy</text>
-            </Link>
-
-            <text className="">© 2024 Untangled AI. All rights reserved.</text>
-          </div>
+          {
+            !isAgent && (
+              <div className="flex justify-center h-[30px] space-x-3 items-center text-gray-500">
+              <Link to={{ pathname: "/privacy" }}>
+                <text>Privacy</text>
+              </Link>
+  
+              <text className="">© 2024 Untangled AI. All rights reserved.</text>
+            </div>
+            )
+          }
+          
         </div>
       </div>
     </div>

@@ -99,6 +99,7 @@ async function main() {
         "http://localhost:3000",
         "http://localhost:3001",
         "http://localhost:3002",
+        "http://localhost:5001",
       ],
       credentials: true,
       methods: "GET,POST,OPTIONS,PUT,DELETE",
@@ -430,6 +431,35 @@ async function main() {
         error: error.toString(),
       });
     }
+  });
+
+  app.get("/logout", async (req, res) => {
+    const tokens = req.session.tokens;
+  
+    if (tokens && tokens.access_token) {
+      try {
+        // Revoke the token
+        await axios.post(
+          `https://oauth2.googleapis.com/revoke?token=${tokens.access_token}`,
+          {},
+          {
+            headers: {
+              "Content-Type": "application/x-www-form-urlencoded",
+            }
+          }
+        );
+      } catch (error) {
+        console.error("Error revoking token:", error);
+      }
+    }
+  
+    req.session.destroy((err) => {
+      if (err) {
+        console.error("Error destroying session:", err);
+        return res.status(500).send("Failed to clear session");
+      }
+      res.clearCookie('connect.sid'); // Clear the session cookie
+    });
   });
 
   app.get("/fetch-calendar-events", async (req, res) => {

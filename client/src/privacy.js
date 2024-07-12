@@ -56,7 +56,7 @@ export default function Privacy() {
             </div>
             <div>For the purposes of this Privacy Policy:</div>
             <div className="pl-5">
-              <ul className=" list-disc">
+              <ul className="list-disc">
                 <li>
                   Account means a unique account created for You to access our
                   Service or parts of our Service.
