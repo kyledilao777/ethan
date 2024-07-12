@@ -9,7 +9,7 @@ const TypingEffect = ({ message, onComplete }) => {
             const timer = setTimeout(() => {
                 setDisplayedMessage(displayedMessage + message.charAt(index));
                 setIndex(index + 1);
-            }, 50); // Adjust typing speed here
+            }, 5); // Adjust typing speed here
             return () => clearTimeout(timer);
         } else if (index === message.length && message.length > 0) {
             onComplete(); // Ensure onComplete is called only after the full message is typed

@@ -12,7 +12,7 @@ const port = process.env.PORT || 3001;
 const clientId = process.env.GOOGLE_CLIENT_ID;
 const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
 const redirectUri =
-  process.env.GOOGLE_REDIRECT_URI || "http://localhost:3001/oauth2callback";
+  /*process.env.GOOGLE_REDIRECT_URI || */"http://localhost:3001/oauth2callback";
 const oAuth2Client = new google.auth.OAuth2(
   clientId,
   clientSecret,
@@ -88,10 +88,10 @@ async function main() {
   app.use(
     cors({
       origin: [
-        "https://main.untangled-ai.com",
-        "https://backend.untangled-ai.com",
-        "https://untangled-ai.com",
-        "https://www.untangled-ai.com",
+        // "https://main.untangled-ai.com",
+        // "https://backend.untangled-ai.com",
+        // "https://untangled-ai.com",
+        // "https://www.untangled-ai.com",
         "http://localhost:3000",
         "http://localhost:3001",
         "http://localhost:3002",
@@ -115,11 +115,13 @@ async function main() {
     try {
       const email = req.query.email;
       const tokenRecord = await Token.findOne({ email: email });
-      console.log("Token Record:", tokenRecord);
+      
       if (!tokenRecord) {
         return res.status(404).send("Tokens not found");
       }
       res.json(tokenRecord.tokens);
+      console.error("Tokens retrieved successfully");
+
     } catch (error) {
       console.error("Error fetching tokens:", error);
       res.status(500).send("Internal Server Error");
@@ -135,6 +137,8 @@ async function main() {
         { upsert: true, new: true }
       );
       res.json(tokenRecord);
+      console.error("Tokens updated successfully");
+
     } catch (error) {
       console.error("Error updating tokens:", error);
       res.status(500).send("Internal Server Error");
@@ -162,12 +166,7 @@ async function main() {
 
   app.get("/oauth2callback", async (req, res) => {
     let q = url.parse(req.url, true).query;
-    // console.log("Callback state:", q.state); // Log state in callback
-    // console.log("Session state:", req.session.state); // Log session state
-    // console.log("Callback:", q);
-    // console.log("Session state q:", req.session);
 
-    console.log("oauth2callback");
     if (q.error) {
       console.log("Error:" + q.error);
       return res.status(400).send("Authentication error");
@@ -178,6 +177,9 @@ async function main() {
       try {
         const { tokens } = await oAuth2Client.getToken(q.code);
         oAuth2Client.setCredentials(tokens);
+        // Log the tokens to verify their structure
+        console.log("Tokens received:", tokens);
+        
         req.session.tokens = tokens;
         delete req.session.state;
 

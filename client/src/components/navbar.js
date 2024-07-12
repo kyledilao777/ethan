@@ -12,6 +12,7 @@ export default function NavBar({
   isInstruction,
 }) {
   const [isOpen, setIsOpen] = useState(false);
+  const [isFreePlan, setIsFreePlan] = useState(true); // Boolean to track plan type
 
   const name = useSelector((state) => state.user.name);
   const photo = useSelector((state) => state.user.photo);
@@ -111,7 +112,7 @@ export default function NavBar({
                       {name}
                     </span>
                     <span className="text-sm font-semibold text-blueNav">
-                      Personal
+                      Ethan
                     </span>
                   </div>
                 )}
@@ -248,7 +249,7 @@ export default function NavBar({
                           OTHERS
                         </text>
                       </div>
-                      
+
                       <div
                         className={`p-3 flex items-center mt-2 ${
                           isInstruction ? "bg-slate-100" : "bg-white"
@@ -373,13 +374,30 @@ export default function NavBar({
             </div>
 
             {isOpen && (
-              <div className=" w-[168px] flex flex-col h-fit">
-                <span className="text-sm font-semibold text-gray-400">
-                  {name}
-                </span>
-                <span className="text-sm font-semibold text-blueNav">
-                  Personal
-                </span>
+              <div>
+                {isOpen && (
+                  <div className="w-[150px] flex flex-col h-fit">
+                    <span className="text-sm font-semibold text-gray-400">
+                      {name}
+                    </span>
+                    <span className="text-sm font-semibold text-blueNav">
+                      Free Plan
+                    </span>
+                    {isFreePlan && (
+                      <button
+                        onClick={() =>
+                          window.open(
+                            "https://untangled-ai.carrd.co/#ethanplus",
+                            "_blank"
+                          )
+                        }
+                        className="text-xs font-semibold bg-blueNav text-white py-1 mt-1 max-w-[130px] rounded"
+                      >
+                        Upgrade to Ethan+
+                      </button>
+                    )}
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -563,7 +581,7 @@ export default function NavBar({
                         </text>
                       </div>
                     )}
-                    
+
                     <div
                       className={`${bgMargin2} ${
                         isInstruction ? "bg-slate-100" : "bg-white"
@@ -673,3 +691,12 @@ export default function NavBar({
     </div>
   );
 }
+
+// <div className="flex flex-row justify-center space-x-5 xsm:invisible sxl:visible items-center">
+//                 <a href="https://untangled.carrd.co/">
+//                   <img src="website.png" alt="website" className="h-[60px]" />
+//                 </a>
+//                 <a href="https://www.linkedin.com/company/untangled-ai">
+//                   <img src="linkedin.png" alt="linkedin" className="h-[40px]" />
+//                 </a>
+//               </div>

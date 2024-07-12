@@ -1,4 +1,5 @@
 """Configuration for Pydantic models."""
+
 from __future__ import annotations as _annotations
 
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Type, TypeVar, Union
@@ -7,9 +8,11 @@ from typing_extensions import Literal, TypeAlias, TypedDict
 
 from ._migration import getattr_migration
 from .aliases import AliasGenerator
+from .errors import PydanticUserError
 
 if TYPE_CHECKING:
     from ._internal._generate_schema import GenerateSchema as _GenerateSchema
+    from .fields import ComputedFieldInfo, FieldInfo
 
 __all__ = ('ConfigDict', 'with_config')
 
@@ -33,11 +36,18 @@ class ConfigDict(TypedDict, total=False):
     title: str | None
     """The title for the generated JSON schema, defaults to the model's name"""
 
+    model_title_generator: Callable[[type], str] | None
+    """A callable that takes a model class and returns the title for it. Defaults to `None`."""
+
+    field_title_generator: Callable[[str, FieldInfo | ComputedFieldInfo], str] | None
+    """A callable that takes a field's name and info and returns title for it. Defaults to `None`."""
+
     str_to_lower: bool
     """Whether to convert all characters to lowercase for str types. Defaults to `False`."""
 
     str_to_upper: bool
     """Whether to convert all characters to uppercase for str types. Defaults to `False`."""
+
     str_strip_whitespace: bool
     """Whether to strip leading and trailing whitespace for str types."""
 
@@ -571,13 +581,13 @@ class ConfigDict(TypedDict, total=False):
     - `'base64'` will serialize bytes to URL safe base64 strings.
     """
 
-    ser_json_inf_nan: Literal['null', 'constants']
+    ser_json_inf_nan: Literal['null', 'constants', 'strings']
     """
-    The encoding of JSON serialized infinity and NaN float values. Accepts the string values of `'null'` and `'constants'`.
-    Defaults to `'null'`.
+    The encoding of JSON serialized infinity and NaN float values. Defaults to `'null'`.
 
     - `'null'` will serialize infinity and NaN values as `null`.
     - `'constants'` will serialize infinity and NaN values as `Infinity` and `NaN`.
+    - `'strings'` will serialize infinity as string `"Infinity"` and NaN as string `"NaN"`.
     """
 
     # whether to validate default values during validation, default False
@@ -709,11 +719,35 @@ class ConfigDict(TypedDict, total=False):
 
     defer_build: bool
     """
-    Whether to defer model validator and serializer construction until the first model validation.
+    Whether to defer model validator and serializer construction until the first model validation. Defaults to False.
 
     This can be useful to avoid the overhead of building models which are only
     used nested within other models, or when you want to manually define type namespace via
-    [`Model.model_rebuild(_types_namespace=...)`][pydantic.BaseModel.model_rebuild]. Defaults to False.
+    [`Model.model_rebuild(_types_namespace=...)`][pydantic.BaseModel.model_rebuild].
+
+    See also [`experimental_defer_build_mode`][pydantic.config.ConfigDict.experimental_defer_build_mode].
+
+    !!! note
+        `defer_build` does not work by default with FastAPI Pydantic models. By default, the validator and serializer
+        for said models is constructed immediately for FastAPI routes. You also need to define
+        [`experimental_defer_build_mode=('model', 'type_adapter')`][pydantic.config.ConfigDict.experimental_defer_build_mode] with FastAPI
+        models in order for `defer_build=True` to take effect. This additional (experimental) parameter is required for
+        the deferred building due to FastAPI relying on `TypeAdapter`s.
+    """
+
+    experimental_defer_build_mode: tuple[Literal['model', 'type_adapter'], ...]
+    """
+    Controls when [`defer_build`][pydantic.config.ConfigDict.defer_build] is applicable. Defaults to `('model',)`.
+
+    Due to backwards compatibility reasons [`TypeAdapter`][pydantic.type_adapter.TypeAdapter] does not by default
+    respect `defer_build`. Meaning when `defer_build` is `True` and `experimental_defer_build_mode` is the default `('model',)`
+    then `TypeAdapter` immediately constructs its validator and serializer instead of postponing said construction until
+    the first model validation. Set this to `('model', 'type_adapter')` to make `TypeAdapter` respect the `defer_build`
+    so it postpones validator and serializer construction until the first validation or serialization.
+
+    !!! note
+        The `experimental_defer_build_mode` parameter is named with an underscore to suggest this is an experimental feature. It may
+        be removed or changed in the future in a minor release.
     """
 
     plugin_settings: dict[str, object] | None
@@ -874,6 +908,10 @@ class ConfigDict(TypedDict, total=False):
     - `python-re` use the [`re`](https://docs.python.org/3/library/re.html) module,
       which supports all regex features, but may be slower.
 
+    !!! note
+        If you use a compiled regex pattern, the python-re engine will be used regardless of this setting.
+        This is so that flags such as `re.IGNORECASE` are respected.
+
     ```py
     from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
@@ -912,6 +950,8 @@ class ConfigDict(TypedDict, total=False):
     '''
     Whether docstrings of attributes (bare string literals immediately following the attribute declaration)
     should be used for field descriptions. Defaults to `False`.
+
+    Available in Pydantic v2.7+.
 
     ```py
     from pydantic import BaseModel, ConfigDict, Field
@@ -968,7 +1008,7 @@ _TypeT = TypeVar('_TypeT', bound=type)
 
 
 def with_config(config: ConfigDict) -> Callable[[_TypeT], _TypeT]:
-    """Usage docs: https://docs.pydantic.dev/2.7/concepts/config/#configuration-with-dataclass-from-the-standard-library-or-typeddict
+    """Usage docs: https://docs.pydantic.dev/2.8/concepts/config/#configuration-with-dataclass-from-the-standard-library-or-typeddict
 
     A convenience decorator to set a [Pydantic configuration](config.md) on a `TypedDict` or a `dataclass` from the standard library.
 
@@ -993,9 +1033,19 @@ def with_config(config: ConfigDict) -> Callable[[_TypeT], _TypeT]:
         ```
     """
 
-    def inner(TypedDictClass: _TypeT, /) -> _TypeT:
-        TypedDictClass.__pydantic_config__ = config
-        return TypedDictClass
+    def inner(class_: _TypeT, /) -> _TypeT:
+        # Ideally, we would check for `class_` to either be a `TypedDict` or a stdlib dataclass.
+        # However, the `@with_config` decorator can be applied *after* `@dataclass`. To avoid
+        # common mistakes, we at least check for `class_` to not be a Pydantic model.
+        from ._internal._utils import is_model_class
+
+        if is_model_class(class_):
+            raise PydanticUserError(
+                f'Cannot use `with_config` on {class_.__name__} as it is a Pydantic model',
+                code='with-config-on-model',
+            )
+        class_.__pydantic_config__ = config
+        return class_
 
     return inner
 

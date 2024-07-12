@@ -1,4 +1,5 @@
 """The types module contains custom types used by pydantic."""
+
 from __future__ import annotations as _annotations
 
 import base64
@@ -109,6 +110,7 @@ __all__ = (
     'Discriminator',
     'JsonValue',
     'OnErrorOmit',
+    'FailFast',
 )
 
 
@@ -117,7 +119,7 @@ T = TypeVar('T')
 
 @_dataclasses.dataclass
 class Strict(_fields.PydanticMetadata, BaseMetadata):
-    """Usage docs: https://docs.pydantic.dev/2.7/concepts/strict_mode/#strict-mode-with-annotated-strict
+    """Usage docs: https://docs.pydantic.dev/2.8/concepts/strict_mode/#strict-mode-with-annotated-strict
 
     A field metadata class to indicate that a field should be validated in strict mode.
 
@@ -227,7 +229,7 @@ def conint(
     ```
 
     """  # noqa: D212
-    return Annotated[
+    return Annotated[  # pyright: ignore[reportReturnType]
         int,
         Strict(strict) if strict is not None else None,
         annotated_types.Interval(gt=gt, ge=ge, lt=lt, le=le),
@@ -473,7 +475,7 @@ def confloat(
         '''
     ```
     """  # noqa: D212
-    return Annotated[
+    return Annotated[  # pyright: ignore[reportReturnType]
         float,
         Strict(strict) if strict is not None else None,
         annotated_types.Interval(gt=gt, ge=ge, lt=lt, le=le),
@@ -661,7 +663,7 @@ def conbytes(
     Returns:
         The wrapped bytes type.
     """
-    return Annotated[
+    return Annotated[  # pyright: ignore[reportReturnType]
         bytes,
         Strict(strict) if strict is not None else None,
         annotated_types.Len(min_length or 0, max_length),
@@ -677,12 +679,12 @@ StrictBytes = Annotated[bytes, Strict()]
 
 @_dataclasses.dataclass(frozen=True)
 class StringConstraints(annotated_types.GroupedMetadata):
-    """Usage docs: https://docs.pydantic.dev/2.7/concepts/fields/#string-constraints
+    """Usage docs: https://docs.pydantic.dev/2.8/concepts/fields/#string-constraints
 
     Apply constraints to `str` types.
 
     Attributes:
-        strip_whitespace: Whether to strip whitespace from the string.
+        strip_whitespace: Whether to remove leading and trailing whitespace.
         to_upper: Whether to convert the string to uppercase.
         to_lower: Whether to convert the string to lowercase.
         strict: Whether to validate the string in strict mode.
@@ -705,7 +707,7 @@ class StringConstraints(annotated_types.GroupedMetadata):
         if self.max_length is not None:
             yield MaxLen(self.max_length)
         if self.strict is not None:
-            yield Strict()
+            yield Strict(self.strict)
         if (
             self.strip_whitespace is not None
             or self.pattern is not None
@@ -716,7 +718,7 @@ class StringConstraints(annotated_types.GroupedMetadata):
                 strip_whitespace=self.strip_whitespace,
                 to_upper=self.to_upper,
                 to_lower=self.to_lower,
-                pattern=self.pattern.pattern if isinstance(self.pattern, Pattern) else self.pattern,
+                pattern=self.pattern,
             )
 
 
@@ -784,7 +786,7 @@ def constr(
     Returns:
         The wrapped string type.
     """  # noqa: D212
-    return Annotated[
+    return Annotated[  # pyright: ignore[reportReturnType]
         str,
         StringConstraints(
             strip_whitespace=strip_whitespace,
@@ -819,7 +821,7 @@ def conset(
     Returns:
         The wrapped set type.
     """
-    return Annotated[Set[item_type], annotated_types.Len(min_length or 0, max_length)]
+    return Annotated[Set[item_type], annotated_types.Len(min_length or 0, max_length)]  # pyright: ignore[reportReturnType]
 
 
 def confrozenset(
@@ -835,7 +837,7 @@ def confrozenset(
     Returns:
         The wrapped frozenset type.
     """
-    return Annotated[FrozenSet[item_type], annotated_types.Len(min_length or 0, max_length)]
+    return Annotated[FrozenSet[item_type], annotated_types.Len(min_length or 0, max_length)]  # pyright: ignore[reportReturnType]
 
 
 AnyItemType = TypeVar('AnyItemType')
@@ -870,7 +872,7 @@ def conlist(
             ),
             code='removed-kwargs',
         )
-    return Annotated[List[item_type], annotated_types.Len(min_length or 0, max_length)]
+    return Annotated[List[item_type], annotated_types.Len(min_length or 0, max_length)]  # pyright: ignore[reportReturnType]
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~ IMPORT STRING TYPE ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -990,6 +992,10 @@ else:
                     function=_validators.import_string, schema=handler(source), serialization=serializer
                 )
 
+        @classmethod
+        def __get_pydantic_json_schema__(cls, cs: CoreSchema, handler: GetJsonSchemaHandler) -> JsonSchemaValue:
+            return handler(core_schema.str_schema())
+
         @staticmethod
         def _serialize(v: Any) -> str:
             if isinstance(v, ModuleType):
@@ -1091,7 +1097,7 @@ def condecimal(
         '''
     ```
     """  # noqa: D212
-    return Annotated[
+    return Annotated[  # pyright: ignore[reportReturnType]
         Decimal,
         Strict(strict) if strict is not None else None,
         annotated_types.Interval(gt=gt, ge=ge, lt=lt, le=le),
@@ -1330,7 +1336,7 @@ except ValidationError as e:
 ```
 """
 NewPath = Annotated[Path, PathType('new')]
-"""A path for a new file or directory that must not already exist."""
+"""A path for a new file or directory that must not already exist. The parent directory must already exist."""
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ JSON TYPE ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -2065,7 +2071,7 @@ def condate(
     Returns:
         A date type with the specified constraints.
     """
-    return Annotated[
+    return Annotated[  # pyright: ignore[reportReturnType]
         date,
         Strict(strict) if strict is not None else None,
         annotated_types.Interval(gt=gt, ge=ge, lt=lt, le=le),
@@ -2590,7 +2596,7 @@ __getattr__ = getattr_migration(__name__)
 
 @_dataclasses.dataclass(**_internal_dataclass.slots_true)
 class GetPydanticSchema:
-    """Usage docs: https://docs.pydantic.dev/2.7/concepts/types/#using-getpydanticschema-to-reduce-boilerplate
+    """Usage docs: https://docs.pydantic.dev/2.8/concepts/types/#using-getpydanticschema-to-reduce-boilerplate
 
     A convenience class for creating an annotation that provides pydantic custom type hooks.
 
@@ -2726,7 +2732,7 @@ class Tag:
 
 @_dataclasses.dataclass(**_internal_dataclass.slots_true, frozen=True)
 class Discriminator:
-    """Usage docs: https://docs.pydantic.dev/2.7/concepts/unions/#discriminated-unions-with-callable-discriminator
+    """Usage docs: https://docs.pydantic.dev/2.8/concepts/unions/#discriminated-unions-with-callable-discriminator
 
     Provides a way to use a custom callable as the way to extract the value of a union discriminator.
 
@@ -3002,3 +3008,36 @@ this annotation omits the item from the iteration if there is any error validati
 That is, instead of a [`ValidationError`][pydantic_core.ValidationError] being propagated up and the entire iterable being discarded
 any invalid items are discarded and the valid ones are returned.
 """
+
+
+@_dataclasses.dataclass
+class FailFast(_fields.PydanticMetadata, BaseMetadata):
+    """A `FailFast` annotation can be used to specify that validation should stop at the first error.
+
+    This can be useful when you want to validate a large amount of data and you only need to know if it's valid or not.
+
+    You might want to enable this setting if you want to validate your data faster (basically, if you use this,
+    validation will be more performant with the caveat that you get less information).
+
+    ```py
+    from typing import List
+    from typing_extensions import Annotated
+    from pydantic import BaseModel, FailFast, ValidationError
+
+    class Model(BaseModel):
+        x: Annotated[List[int], FailFast()]
+
+    # This will raise a single error for the first invalid value and stop validation
+    try:
+        obj = Model(x=[1, 2, 'a', 4, 5, 'b', 7, 8, 9, 'c'])
+    except ValidationError as e:
+        print(e)
+        '''
+        1 validation error for Model
+        x.2
+          Input should be a valid integer, unable to parse string as an integer [type=int_parsing, input_value='a', input_type=str]
+        '''
+    ```
+    """
+
+    fail_fast: bool = True

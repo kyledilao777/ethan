@@ -1,4 +1,5 @@
 """Private logic for creating models."""
+
 from __future__ import annotations as _annotations
 
 import builtins
@@ -23,7 +24,7 @@ from ._decorators import DecoratorInfos, PydanticDescriptorProxy, get_attribute_
 from ._fields import collect_model_fields, is_valid_field_name, is_valid_privateattr_name
 from ._generate_schema import GenerateSchema
 from ._generics import PydanticGenericMetadata, get_model_typevars_map
-from ._mock_val_ser import MockValSer, set_model_mocks
+from ._mock_val_ser import set_model_mocks
 from ._schema_generation_shared import CallbackGetCoreSchemaHandler
 from ._signature import generate_pydantic_signature
 from ._typing_extra import get_cls_types_namespace, is_annotated, is_classvar, parent_frame_namespace
@@ -33,12 +34,14 @@ from ._validate_call import ValidateCallWrapper
 if typing.TYPE_CHECKING:
     from ..fields import Field as PydanticModelField
     from ..fields import FieldInfo, ModelPrivateAttr
+    from ..fields import PrivateAttr as PydanticModelPrivateAttr
     from ..main import BaseModel
 else:
     # See PyCharm issues https://youtrack.jetbrains.com/issue/PY-21915
     # and https://youtrack.jetbrains.com/issue/PY-51428
     DeprecationWarning = PydanticDeprecatedSince20
     PydanticModelField = object()
+    PydanticModelPrivateAttr = object()
 
 object_setattr = object.__setattr__
 
@@ -56,7 +59,7 @@ class _ModelNamespaceDict(dict):
         return super().__setitem__(k, v)
 
 
-@dataclass_transform(kw_only_default=True, field_specifiers=(PydanticModelField,))
+@dataclass_transform(kw_only_default=True, field_specifiers=(PydanticModelField, PydanticModelPrivateAttr))
 class ModelMetaclass(ABCMeta):
     def __new__(
         mcs,
@@ -98,12 +101,12 @@ class ModelMetaclass(ABCMeta):
                 if original_model_post_init is not None:
                     # if there are private_attributes and a model_post_init function, we handle both
 
-                    def wrapped_model_post_init(self: BaseModel, __context: Any) -> None:
+                    def wrapped_model_post_init(self: BaseModel, context: Any, /) -> None:
                         """We need to both initialize private attributes and call the user-defined model_post_init
                         method.
                         """
-                        init_private_attributes(self, __context)
-                        original_model_post_init(self, __context)
+                        init_private_attributes(self, context)
+                        original_model_post_init(self, context)
 
                     namespace['model_post_init'] = wrapped_model_post_init
                 else:
@@ -231,14 +234,6 @@ class ModelMetaclass(ABCMeta):
             private_attributes = self.__dict__.get('__private_attributes__')
             if private_attributes and item in private_attributes:
                 return private_attributes[item]
-            if item == '__pydantic_core_schema__':
-                # This means the class didn't get a schema generated for it, likely because there was an undefined reference
-                maybe_mock_validator = getattr(self, '__pydantic_validator__', None)
-                if isinstance(maybe_mock_validator, MockValSer):
-                    rebuilt_validator = maybe_mock_validator.rebuild()
-                    if rebuilt_validator is not None:
-                        # In this case, a validator was built, and so `__pydantic_core_schema__` should now be set
-                        return getattr(self, '__pydantic_core_schema__')
             raise AttributeError(item)
 
     @classmethod
@@ -282,14 +277,14 @@ class ModelMetaclass(ABCMeta):
         return attributes
 
 
-def init_private_attributes(self: BaseModel, __context: Any) -> None:
+def init_private_attributes(self: BaseModel, context: Any, /) -> None:
     """This function is meant to behave like a BaseModel method to initialise private attributes.
 
     It takes context as an argument since that's what pydantic-core passes when calling it.
 
     Args:
         self: The BaseModel instance.
-        __context: The context.
+        context: The context.
     """
     if getattr(self, '__pydantic_private__', None) is None:
         pydantic_private = {}
@@ -350,7 +345,7 @@ def inspect_namespace(  # noqa C901
 
     ignored_names: set[str] = set()
     for var_name, value in list(namespace.items()):
-        if var_name == 'model_config':
+        if var_name == 'model_config' or var_name == '__pydantic_extra__':
             continue
         elif (
             isinstance(value, type)
@@ -531,7 +526,7 @@ def complete_model_class(
         ref_mode='unpack',
     )
 
-    if config_wrapper.defer_build:
+    if config_wrapper.defer_build and 'model' in config_wrapper.experimental_defer_build_mode:
         set_model_mocks(cls, cls_name)
         return False
 

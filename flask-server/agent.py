@@ -23,6 +23,10 @@ from flask import Flask, jsonify, request, send_from_directory
 import spacy
 import json
 from openai import OpenAI
+
+from openai import OpenAI
+
+client = OpenAI()
 import re
 
 import threading
@@ -34,10 +38,10 @@ CORS(app)
 load_dotenv()
 
 OPENAI_API_KEY = os.getenv("OPEN_AI_API_KEY")
-OPENAI_MODEL = "gpt-3.5-turbo-0125"
+OPENAI_MODEL = "gpt-4o"
 
 llm = ChatOpenAI(temperature=0, model=OPENAI_MODEL, api_key=OPENAI_API_KEY)
-persistent_memory = ConversationSummaryBufferMemory(llm=llm,memory_key="chat_history", return_messages=True, max_token_limit=500)
+persistent_memory = ConversationSummaryBufferMemory(llm=llm,memory_key="chat_history", return_messages=True, max_token_limit=2000)
 
 @app.route("/agent", methods=["POST"])
 def run():
@@ -48,22 +52,65 @@ def run():
     user_timezone = data.get("timezone", "UTC")
 
     timezone = pytz.timezone(user_timezone)
-    response_container = start_agent(user_input, user_email, calendar_id, timezone, persistent_memory)
-    
-    return jsonify(response_container)
+    output = start_agent(user_input, user_email, calendar_id, timezone, persistent_memory)
 
-def determine_intent(user_input, response_container):
-   
-    if "schedule" in user_input.lower():
-            return "create"
-    elif "delete" in user_input.lower() or "remove" in user_input.lower():            
-        return "delete"
-    elif "update" in user_input.lower() or "postpone" in user_input.lower():
-            return "update"
-    elif "today" in  user_input.lower():
-        return "today"
-    else:
-         "none"
+    return jsonify(output)
+
+def pre_processing(user_input, response_container):
+    # Prepare the prompt for the GPT-3.5-turbo model
+    prompt = f"""
+    The user has input the following text: "{user_input}". 
+    Based on this input, identify the user's intent and extract corresponding details.
+    The possible intentions are: read, update, delete, create.
+    Respond with a JSON object containing the intent and details.
+    
+    For reading an event, extract start time, end time, date, item title, location, description and attendees. If not provided, the field should be empty.
+    For creating an event, extract item title, start time, end time, date, location, description and attendees. If not provided, the field should be empty.
+    For updating an event, extract start time, end time, date, item title, location, description and attendees. If not provided, the field should be empty.
+    For deleting an event, extract item title, start time, end time and date. If not provided, the field should be empty. If not provided, the field should be empty.
+    
+    Sample Input:
+    "Hi Ethan, create a "catch up" with John (john@example.com) at jewel changi airport on 15 july from 10-11 am."
+    
+    Sample output:
+    {{
+        "intent": "create",
+        "details": {{
+            "title": "catch up",
+            "start time": "10:00 AM",
+            "end time": "11:00 AM",
+            "location": "jewel changi airport",
+            "date": "2024-07-15",
+            "attendees": {{"John": "john@example.com"}},
+        }}
+    }}
+    
+    """
+
+    # Call the OpenAI API
+    response = client.chat.completions.create(model="gpt-3.5-turbo-0125",
+    messages=[
+        {"role": "system", "content": "You are a helpful assistant."},
+        {"role": "user", "content": prompt}
+    ])
+
+    # Extract the intent from the response
+    response_text = response.choices[0].message.content.strip().lower()
+
+    try:
+        response_json = json.loads(response_text)
+        intent = response_json.get("intent", "none").lower()
+        details = response_json.get("details", {})
+    except json.JSONDecodeError:
+        intent = "none"
+        details = {}
+
+    # Validate the intent to ensure it matches one of the expected values
+    valid_intents = ["read", "update", "delete", "create"]
+    if intent not in valid_intents:
+        intent = "none"
+
+    return {"intent": intent, "details": details}
 
 def run_agent_executor(user_email, user_input, calendar_id, user_timezone, memory, response_container, intent):
     tools = [
@@ -85,7 +132,22 @@ def run_agent_executor(user_email, user_input, calendar_id, user_timezone, memor
 
     prompt = ChatPromptTemplate.from_messages(
         [
-            ("system", "Your name is Ethan. You are a funny and friendly assistant who can help me schedule my meetings, fetch my calendar events and optimise my task completion. NEVER print event ids to the user. Remember the user's response."),
+            (
+            "system", 
+            """
+            Context:
+            Your name is Ethan. You are the funniest, friendliest and most competent assistant on Earth who can help me manage my calendar or arrange for meetings,
+            even across timezones. 
+            
+            Note:
+            ALWAYS talk as if you were talking to a friend. However, do not give intermediate responses. Only send the final response.            
+            NEVER EVER bold any text. NEVER EVER include the event ID.
+
+            Event-specific instructions:
+            - Before creating any event, check if the user has something on already. If yes, let him/her know and don't create anything. 
+            - If there is no email specified for attendees, keep attendees as an empty dictionary.
+            """
+            ),
             MessagesPlaceholder(variable_name="chat_history"),
             ("user", "{input}"),
             MessagesPlaceholder(variable_name="agent_scratchpad"),
@@ -107,7 +169,7 @@ def run_agent_executor(user_email, user_input, calendar_id, user_timezone, memor
         | OpenAIFunctionsAgentOutputParser()
     )
 
-    agent_executor = AgentExecutor.from_agent_and_tools(agent=agent, tools=tools, verbose=True, memory=memory, max_iterations=10)
+    agent_executor = AgentExecutor.from_agent_and_tools(agent=agent, tools=tools, verbose=True, memory=memory, max_iterations=15)
     result = agent_executor.invoke({"input": input})
 
     if (result):
@@ -120,7 +182,7 @@ def run_agent_executor(user_email, user_input, calendar_id, user_timezone, memor
              response_container["isEvent"] = False
 
         response_container['eventDetails'] = session
-       
+
 
     for step in result.get("intermediate_steps", []):
         if step["tool"] == "get_calendar_events":
@@ -130,31 +192,20 @@ def run_agent_executor(user_email, user_input, calendar_id, user_timezone, memor
     clear_session(user_email)
 
     response_container['response'] = result.get("output")
-    
+
 
 def agent_task(input_data, user_email, calendar_id, timezone, memory, response_container):
-    intent = determine_intent(input_data, response_container)
+    intent = pre_processing(input_data, response_container)["intent"]
+    # details = pre_processing(input_data, response_container)["details"]
+    
+    print(intent, "This is the intent")
     run_agent_executor(user_email, input_data, calendar_id, timezone, memory, response_container, intent)
-
-    
-    
-    # if intent == "create":
-    #     parsed_details, static_message = parse_create_event(input_data)
-    #     print("create")
-    # elif intent == "delete":
-    #     parsed_details, static_message = parse_delete_event(input_data)
-    #     print("delete")
-    # elif intent == "update":
-    #     parsed_details, static_message = parse_update_event(input_data)
-    #     print("update")
-    # else:
-    #     parsed_details, static_message = None, "Sorry, I didn't understand your request."
 
     response_container['intent'] = intent
     time.sleep(2)
-    
+
     # Append the parsed details and static message to the response container
-    
+
 
 def start_agent(input_data, user_email, calendar_id, timezone, memory):
     response_container = {}

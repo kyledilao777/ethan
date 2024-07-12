@@ -1,7 +1,8 @@
 import NavBar from "./components/navbar";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import ReactMarkdown from "react-markdown";
 import axios from "axios";
-import { ArrowLeft, Send } from "lucide-react";
+import { ArrowLeft, ArrowDown, RefreshCw, Send } from "lucide-react";
 import { v4 as uuidv4 } from "uuid";
 import { Link } from "react-router-dom";
 import TypingEffect from "./components/typingeffect";
@@ -34,6 +35,7 @@ export default function Home() {
   const isAgent = useSelector((state) => state.agent.isAgent);
   const isAuthenticated = useSelector((state) => state.user.isAuthenticated);
   const [firstTypingComplete, setFirstTypingComplete] = useState(false);
+  const containerRef = useRef(null);
 
   const dispatch = useDispatch();
 
@@ -137,14 +139,11 @@ export default function Home() {
   const sendUserInput = async () => {
     console.log(userInput, " this is the real user input");
     const id = uuidv4();
-    let staticMessage;
-    let dynamicMessage;
-    let parsedDetails;
 
     dispatch(setDisplayInput(false));
     dispatch(setAgentResponse(null));
 
-    const initialResponse = isFirstInput ? "Booting up..." : "Loading...";
+    const initialResponse = "Loading...";
     const currentInput = userInput; // Capture the current value of userInput
 
     console.log(currentInput, "this is current input");
@@ -181,7 +180,7 @@ export default function Home() {
         let parsedDetails;
         let staticMessage;
         let isScheduled;
-        let whatsOnMyDayResponse;
+        let isReadSchedule;
         let isDeleteSchedule;
         let isUpdateSchedule;
 
@@ -190,8 +189,7 @@ export default function Home() {
         const temporaryResponse = agentData.response;
 
         if (agentData.eventDetails) {
-          console.log(agentData.intent, "this is intent");
-          if (agentData.intent === "today" || agentData.intent === "delete") {
+          if (agentData.intent === "read" || agentData.intent === "delete") {
             if (agentData.eventDetails.length > 0) {
               parsedDetails = transformToday(
                 agentData.eventDetails,
@@ -242,17 +240,13 @@ export default function Home() {
           }
 
           if (agentData.intent === "create") {
-            staticMessage = `Got it! The event ${parsedDetails.event_name} has been created for you. You can open it in the Calendar page by clicking on the modal below or in your own Google Calendar via this link here.`;
             isScheduled = true;
           } else if (agentData.intent === "delete") {
-            staticMessage = `Got it! The event ${parsedDetails.name} scheduled on ${parsedDetails.date} at ${parsedDetails.start_time} to  ${parsedDetails.end_time} has been deleted.`;
             isDeleteSchedule = true;
           } else if (agentData.intent === "update") {
             isUpdateSchedule = true;
-            staticMessage = `Got it! The event ${parsedDetails.title} scheduled on ${parsedDetails.start_date} at ${parsedDetails.current_start_time} - ${parsedDetails.current_end_time} has been updated to ${parsedDetails.end_date} ${parsedDetails.updated_start_time} - ${parsedDetails.updated_end_time}`;
-          } else if (agentData.intent === "today") {
-            whatsOnMyDayResponse = true;
-            staticMessage = "Here are your schedules for today:";
+          } else if (agentData.intent === "read") {
+            isReadSchedule = true;
           }
         }
 
@@ -261,68 +255,10 @@ export default function Home() {
         try {
           if (!temporaryResponse) {
             itemResponse =
-              "I'm sorry, I am still learning to understand you better. Could you rephrase your question?";
+              "I'm sorry, an error occured. Please re-login or rephrase your query.";
           } else {
-            if (agentData.isEvent === true) {
-              console.log(agentData.intent, "this is from temporary response");
-              // if (agentData.intent === "create") {
-              //   itemResponse =
-              //     "The event has not been sucesfully created, please try again at a later time or change your prompt.";
-              // } else if (agentData.intent === "delete") {
-              //   itemResponse =
-              //     "The event has not been sucesfully deleted, please try again at a later time or change your prompt.";
-              // } else if (agentData.intent === "update") {
-              //   itemResponse =
-              //     "The event has not been sucesfully updated, please try again at a later time or change your prompt.";
-              // } else if (agentData.intent === "today") {
-              //   itemResponse =
-              //     "You have no events scheduled for you today, would you want to schedule an event?";
-              // }
-              itemResponse = temporaryResponse;
-            } else {
-              itemResponse = temporaryResponse;
-            }
+            itemResponse = temporaryResponse;
           }
-
-          //           if (isSpecificResponse) {
-          //             parsedDetails = parseResponse(temporaryResponse);
-          //             parseToFrontEnd = `Title: ${parsedDetails.title}
-          // Date: ${parsedDetails.date}
-          // Time: ${parsedDetails.startTime} - ${parsedDetails.endTime}
-          // Attendees: ${parsedDetails.attendees.join(", ")}
-          // View Event: ${parsedDetails.link}`;
-
-          //             staticMessageToFrontEnd = `Sure! May I confirm if you want me to create a meeting with the below details? (Yes/No)`;
-          //             console.log(combinedMessage);
-          //           }
-
-          //           if (isScheduled) {
-          //             parsedDetails = extractEventDetails(temporaryResponse);
-
-          //             parseToFrontEnd = `Title: ${parsedDetails.title}
-          // Date: ${parsedDetails.date}
-          // Time: ${parsedDetails.startTime} - ${parsedDetails.endTime}
-          // Attendees: ${parsedDetails.attendees.join(", ")}
-          // View Event: ${parsedDetails.link}`;
-
-          //             staticMessageToFrontEnd = `Got it! The event "${parsedDetails.title}" has been created for you. You can open it in the Calendar page by clicking on the modal below or in your own Google Calendar via this link here.`;
-          //             console.log(combinedMessage);
-          //           }
-
-          // if (whatsOnMyDayResponse) {
-          //   events = extractToday(temporaryResponse);
-          //   console.log(events);
-
-          //   if (events.length === 0) {
-          //     staticMessageToFrontEnd =
-          //       "Currently you do not have any events scheduled for you";
-          //   } else {
-          //     parseToFrontEnd = events;
-          //     staticMessageToFrontEnd =
-          //       "Sure, here is your schedule for today: ";
-          //   }
-          // }
-
           dispatch(
             updateDataById({
               id,
@@ -331,9 +267,7 @@ export default function Home() {
                 showTypingEffect: true, //true
                 parsedDetails: parsedDetails,
                 staticMessage: staticMessage,
-                whatsOnMyDayResponse: whatsOnMyDayResponse ? true : null,
-                // isSpecificResponse: isSpecificResponse ? true : null,
-                // whatsOnMyDayResponse: whatsOnMyDayResponse ? true : null,
+                isReadSchedule: isReadSchedule ? true : null,
                 isScheduled: isScheduled ? true : null,
                 isDeleteSchedule: isDeleteSchedule ? true : null,
                 isUpdateSchedule: isUpdateSchedule ? true : null,
@@ -487,7 +421,7 @@ export default function Home() {
     : "px-[20px]";
 
   return (
-    <div className=" w-full h-full ">
+    <div ref={containerRef} className=" w-full h-full overflow-auto">
       <div className="w-full flex sxl:flex-row xsm:flex-col h-screen">
         <NavBar setIsNavOpen={setIsNavOpen} isHome={true} />
         <div
@@ -503,31 +437,26 @@ export default function Home() {
                     {currentMessage}
                   </text>
                 </div>
-                <div className="flex flex-row items-center xsm:my-3 sxl:my-10 space-x-3 ">
-                  <input
-                    className="sxl:h-[60px] w-full border-gray-200 border-2 border-solid p-2 rounded-md"
+                <div className="relative w-full flex items-center my-4">
+                  <textarea
+                    className="sxl:h-[46px] w-full min-h-[46px] border-gray-200 border-2 border-solid p-2 rounded-2xl mt-1 text-black pr-10"
                     placeholder="Hi, how can I help you?"
                     value={userInput}
                     onChange={(e) => dispatch(setUserInput(e.target.value))}
-                    onKeyDown={(e) => e.key === "Enter" && sendUserInput()} // Use onKeyDown to detect the Enter key press
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !e.shiftKey) {
+                        e.preventDefault(); // Prevents the default behavior of Enter key
+                        sendUserInput();
+                      }
+                    }} // Use onKeyDown to detect the Enter key press
                   />
-                  <div className="border-2 border-slate-200 rounded-md sxl:h-[60px]">
-                    <button
-                      onClick={sendUserInput} // Call sendUserInput when the button is clicked
-                      className=" hover:bg-lightPurple sxl:h-[60px] text-white font-bold py-2 px-4 rounded"
-                    >
-                      <Send color="black" />
-                    </button>
-                  </div>
+                  <button
+                    onClick={sendUserInput} // Call sendUserInput when the button is clicked
+                    className="absolute right-2 bottom-2 bg-white rounded-full p-1"
+                  >
+                    <Send color="black" />
+                  </button>
                 </div>
-              </div>
-              <div className="flex flex-row justify-center space-x-5 xsm:invisible sxl:visible items-center">
-                <a href="https://untangled.carrd.co/">
-                  <img src="website.png" alt="website" className="h-[60px]" />
-                </a>
-                <a href="https://www.linkedin.com/company/untangled-ai">
-                  <img src="linkedin.png" alt="linkedin" className="h-[40px]" />
-                </a>
               </div>
             </div>
           )}
@@ -555,17 +484,7 @@ export default function Home() {
               <div
                 className={`w-full text-justify sxl:px-[100px] sxl:py-[20px] xsm:py-[10px] xsm:px-[20px] xsm:mt-20 sxl:mt-10 flex-col overflow-auto transition-all duration-300  ${mainContentClass}`}
               >
-                <div>
-                  <button
-                    onClick={() => {
-                      dispatch(setIsAgent(false));
-                      dispatch(setAgentResponse(null));
-                      dispatch(setData([]));
-                    }}
-                  >
-                    <ArrowLeft color="black" size="20" />
-                  </button>
-                </div>
+                <div></div>
                 {data.map((item, index) => (
                   <div key={index} className="my-3 rounded-md">
                     <div className="flex flex-col rounded-lg my-7">
@@ -576,7 +495,10 @@ export default function Home() {
                               <div className="w-full text-end">
                                 <text className="font-bold text-lg">You</text>
                               </div>
-                              <div className=" rounded-xl mb-1.5 bg-blueNav opacity-90 text-white py-2 px-3 mt-1">
+                              <div
+                                className="rounded-xl mb-1.5 bg-blueNav opacity-90 text-white py-2 px-3 mt-1"
+                                style={{ whiteSpace: "pre-wrap" }}
+                              >
                                 {item.prompt}
                               </div>
                             </div>
@@ -610,13 +532,13 @@ export default function Home() {
                             </text>
                           </div>
                           <div>
-                            <div className="rounded-xl border w-full py-2 px-3 mt-1">
+                            <div className="rounded-xl border w-full mt-1 py-1 px-3">
                               {item.parsedDetails ? (
                                 <div className="">
                                   {item.showTypingEffect ? (
                                     <div className="flex flex-col">
                                       <TypingEffect
-                                        message={item.staticMessage}
+                                        message={item.response}
                                         onComplete={() => {
                                           handleTypingComplete(item.id);
                                         }}
@@ -627,176 +549,11 @@ export default function Home() {
                                       className=""
                                       style={{
                                         wordBreak: "break-word",
-                                        whiteSpace: "pre-wrap",
                                       }}
                                     >
-                                      {item.staticMessage}
-                                      {item.isScheduled &&
-                                        !item.isDeleteSchedule &&
-                                        !item.whatsOnMyDayResponse &&
-                                        !item.isUpdateSchedule && (
-                                          <div className="h-full bg-blue-500 w-fit flex flex-row mt-3">
-                                            <div className="h-fit w-[3px] "></div>
-                                            <div className=" bg-blue-50 w-full py-2 px-3 whitespace-pre-wrap space-y-2">
-                                              <div className=" flex flex-row space-x-2">
-                                                <div className="font-bold text-blue-600">
-                                                  Title:
-                                                </div>
-                                                <div className="">{`${item.parsedDetails.event_name}`}</div>
-                                              </div>
-                                              <div className=" flex flex-row space-x-2">
-                                                <div className="font-bold text-blue-600">
-                                                  Start time:
-                                                </div>
-                                                <div className="">
-                                                  {`${item.parsedDetails.start_time}`}
-                                                </div>
-                                              </div>
-                                              <div className=" flex flex-row space-x-2">
-                                                <div className="font-bold text-blue-600">
-                                                  End time:
-                                                </div>
-                                                <div className="">
-                                                  {`${item.parsedDetails.end_time}`}
-                                                </div>
-                                              </div>
-                                              <div className="flex flex-row space-x-2">
-                                                <div className="font-bold text-blue-600 ">
-                                                  Attendees:
-                                                </div>
-                                                <div className="">
-                                                  {`${item.parsedDetails.attendee}`}
-                                                </div>
-                                              </div>
-                                            </div>
-                                          </div>
-                                        )}
-
-                                      {!item.isScheduled &&
-                                        !item.isDeleteSchedule &&
-                                        item.whatsOnMyDayResponse &&
-                                        !item.isUpdateSchedule && (
-                                          <div className="flex flex-row py-2">
-                                            <div className=" w-[3px] bg-blue-500">
-                                              {" "}
-                                            </div>
-                                            <div className="bg-blue-50 px-3 space-y-2 w-full py-2">
-                                              {item.parsedDetails.map(
-                                                (detail, index) => (
-                                                  <div
-                                                    key={index}
-                                                    className={``}
-                                                  >
-                                                    <div className="flex flex-row space-x-3">
-                                                      <div className="text-blue-600 font-bold">
-                                                        {detail.start_time} -{" "}
-                                                        {detail.end_time}
-                                                      </div>
-
-                                                      <div>{`${detail.name}`}</div>
-                                                    </div>
-                                                  </div>
-                                                )
-                                              )}
-                                            </div>
-                                          </div>
-                                        )}
-
-                                      {!item.isScheduled &&
-                                        !item.whatsOnMyDayResponse &&
-                                        item.isDeleteSchedule &&
-                                        !item.isUpdateSchedule && (
-                                          <div>
-                                            <div className="flex flex-row items-center space-x-3">
-                                              <div className="mt-3 font-bold text-red-500">
-                                                Delete
-                                              </div>
-                                              <div className="h-full bg-red-500 w-fit flex flex-row mt-3">
-                                                <div className="h-fit w-[3px] "></div>
-                                                <div className=" bg-red-50 w-full py-2 px-3 whitespace-pre-wrap flex flex-row space-x-3">
-                                                  <div className="text-red-500 font-bold">
-                                                    {`${item.parsedDetails.start_time} - ${item.parsedDetails.end_time}:`}
-                                                  </div>
-                                                  <div className="">
-                                                    {`${item.parsedDetails.name}`}
-                                                  </div>
-                                                </div>
-                                              </div>
-                                            </div>
-                                          </div>
-                                        )}
-
-                                      {!item.isScheduled &&
-                                        !item.whatsOnMyDayResponse &&
-                                        !item.isDeleteSchedule &&
-                                        item.isUpdateSchedule && (
-                                          <div>
-                                            <div className="flex flex-col space-y-3 w-fit ">
-                                              <div className="flex flex-row space-x-[19px] items-center">
-                                                <div className=" mt-3 h-fit font-bold text-blue-600">
-                                                  Current
-                                                </div>
-                                                <div className="flex flex-row mt-3">
-                                                  <div className=" w-[3px] bg-blue-500">
-                                                    {" "}
-                                                  </div>
-                                                  <div className="bg-blue-50 flex flex-row space-x-3 py-2">
-                                                    <div className="w-full mx-3 flex flex-row space-x-3">
-                                                      <div className="font-bold text-blue-600">
-                                                        {
-                                                          item.parsedDetails
-                                                            .current_start_time
-                                                        }{" "}
-                                                        -{" "}
-                                                        {
-                                                          item.parsedDetails
-                                                            .current_end_time
-                                                        }
-                                                      </div>
-                                                      <div>
-                                                        {
-                                                          item.parsedDetails
-                                                            .title
-                                                        }
-                                                      </div>
-                                                    </div>
-                                                  </div>
-                                                </div>
-                                              </div>
-                                              <div className="flex flex-row space-x-3 items-center">
-                                                <div className=" h-fit font-bold text-blueNav">
-                                                  Updated
-                                                </div>
-                                                <div className="flex flex-row">
-                                                  <div className=" w-[3px] bg-blueNav bg-">
-                                                    {" "}
-                                                  </div>
-                                                  <div className=" bg-green-50 flex flex-row space-x-3 py-2">
-                                                    <div className="w-full mx-3 flex flex-row space-x-3">
-                                                      <div className="text-blueNav font-bold">
-                                                        {
-                                                          item.parsedDetails
-                                                            .updated_start_time
-                                                        }{" "}
-                                                        -{" "}
-                                                        {
-                                                          item.parsedDetails
-                                                            .updated_end_time
-                                                        }
-                                                      </div>
-                                                      <div>
-                                                        {
-                                                          item.parsedDetails
-                                                            .title
-                                                        }
-                                                      </div>
-                                                    </div>
-                                                  </div>
-                                                </div>
-                                              </div>
-                                            </div>
-                                          </div>
-                                        )}
+                                      <ReactMarkdown className="prose prose-xs leading-loose">
+                                        {item.response}
+                                      </ReactMarkdown>
                                     </div>
                                   )}
                                 </div>
@@ -814,7 +571,9 @@ export default function Home() {
                                       className=""
                                       style={{ wordBreak: "break-word" }}
                                     >
-                                      {item.response}
+                                      <ReactMarkdown className="prose prose-xs leading-loose">
+                                        {item.response}
+                                      </ReactMarkdown>
                                     </div>
                                   )}
                                 </div>
@@ -826,30 +585,51 @@ export default function Home() {
                     </div>
                   </div>
                 ))}
-
+                <div className="absolute bottom-8 right-10">
+                <button
+                    onClick={() => {
+                      window.scrollTo({
+                        top: document.documentElement.scrollHeight,
+                        behavior: "smooth",
+                      });
+                    }}
+                    className="p-2 bg-gray-300 rounded-full"
+                  >
+                    <ArrowDown color="black" size={20} />
+                  </button>
+                </div>
+                <div className="absolute bottom-8 right-20">
+                  <button
+                    onClick={() => {
+                      dispatch(setIsAgent(false));
+                      dispatch(setAgentResponse(null));
+                      dispatch(setData([]));
+                      window.location.reload(); // Assuming this is the reset action
+                    }}
+                    className="p-2 bg-gray-300 rounded-full"
+                  >
+                    <RefreshCw color="black" size="20" />
+                  </button>
+                </div>
                 {displayInput && (
-                  <div className="flex justify-between space-x-3 mt-10">
-                    <input
-                      placeholder="Type your follow up questions here"
-                      className={`w-full border  border-solid px-1.5 py-2 h-fit rounded-md transition-opacity duration-1000 ${
-                        agentResponse ? "opacity-100" : "opacity-0"
-                      }`}
-                      value={userInput}
-                      onChange={(e) => {
-                        dispatch(setUserInput(e.target.value));
-                      }}
-                      onKeyDown={(e) => e.key === "Enter" && sendUserInput()}
-                    />
-                    <div
-                      className={`w-[50px] rounded-md flex justify-center border border-slate-200 transition-opacity duration-1000 ${
-                        agentResponse ? "opacity-100" : "opacity-0"
-                      }`}
-                    >
+                  <div className="relative w-full flex items-center bg-white">
+                    <div className="relative w-full flex items-center ">
+                      <textarea
+                        className="sxl:h-[46px] w-full min-h-[46px] border-gray-200 border-2 border-solid p-2 rounded-2xl text-black pr-10"
+                        value={userInput}
+                        onChange={(e) => dispatch(setUserInput(e.target.value))}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" && !e.shiftKey) {
+                            e.preventDefault(); // Prevents the default behavior of Enter key
+                            sendUserInput();
+                          }
+                        }} // Use onKeyDown to detect the Enter key press
+                      />
                       <button
-                        onClick={sendUserInput}
-                        className="hover:bg-lightPurple w-full rounded-md px-3"
+                        onClick={sendUserInput} // Call sendUserInput when the button is clicked
+                        className="absolute right-4 bottom-3 bg-white rounded-full"
                       >
-                        <Send />
+                        <Send color="black" />
                       </button>
                     </div>
                   </div>
@@ -857,7 +637,7 @@ export default function Home() {
               </div>
             </div>
           )}
-          <div className="flex justify-center h-[30px] space-x-3 items-center text-gray-500">
+          <div className="flex justify-center h-[30px] space-x-1 items-center text-gray-500">
             <Link to={{ pathname: "/privacy" }}>
               <text>Privacy</text>
             </Link>
@@ -869,3 +649,162 @@ export default function Home() {
     </div>
   );
 }
+
+// {item.isScheduled &&
+//   !item.isDeleteSchedule &&
+//   !item.isReadSchedule &&
+//   !item.isUpdateSchedule && (
+//     <div className="flex flex-row items-center space-x-3 mt-3">
+//       <div className="font-bold text-blue-600">
+//         Created
+//       </div>
+//       <div className="h-full bg-blue-500 w-fit flex flex-row">
+//         <div className="h-fit w-[3px] bg-blue-600"></div>
+//         <div className="bg-blue-50 w-full py-2 px-3 whitespace-pre-wrap">
+//           {item.parsedDetails.date && (
+//             <div className="text-blue-600 text-sm">
+//               {`${item.parsedDetails.date}`}
+//             </div>
+//           )}
+//           {item.parsedDetails
+//             .start_time && (
+//             <div className="flex flex-row items-center space-x-1 text-blue-600 font-bold">
+//               <div>{`${item.parsedDetails.start_time}`}</div>
+//               <div>-</div>
+//               <div>{`${item.parsedDetails.end_time}:`}</div>
+//               <div className="text-black font-normal ml-1">
+//                 {`${item.parsedDetails.event_name}`}
+//               </div>
+//             </div>
+//           )}
+//         </div>
+//       </div>
+//     </div>
+//   )}
+
+// {!item.isScheduled &&
+//   !item.isDeleteSchedule &&
+//   item.isReadSchedule &&
+//   !item.isUpdateSchedule && (
+//     <div className="flex flex-row py-2">
+//       <div className=" w-[3px] bg-blue-500">
+//         {" "}
+//       </div>
+//       <div className="bg-blue-50 px-3 space-y-2 w-full py-2">
+//         {item.parsedDetails.map(
+//           (detail, index) => (
+//             <div
+//               key={index}
+//               className={``}
+//             >
+//               <div className="flex flex-row space-x-3">
+//                 <div className="text-blue-600 font-bold">
+//                   {detail.start_time} -{" "}
+//                   {detail.end_time}
+//                 </div>
+
+//                 <div>{`${detail.name}`}</div>
+//               </div>
+//             </div>
+//           )
+//         )}
+//       </div>
+//     </div>
+//   )}
+
+// {!item.isScheduled &&
+//   !item.isReadSchedule &&
+//   item.isDeleteSchedule &&
+//   !item.isUpdateSchedule && (
+//     <div>
+//       <div className="flex flex-row items-center space-x-3">
+//         <div className="mt-3 font-bold text-red-500">
+//           Deleted
+//         </div>
+//         <div className="h-full bg-red-500 w-fit flex flex-row mt-3">
+//           <div className="h-fit w-[3px] "></div>
+//           <div className=" bg-red-50 w-full py-2 px-3 whitespace-pre-wrap flex flex-row space-x-3">
+//             <div className="text-red-500 font-bold">
+//               {`${item.parsedDetails.start_time} - ${item.parsedDetails.end_time}:`}
+//             </div>
+//             <div className="">
+//               {`${item.parsedDetails.name}`}
+//             </div>
+//           </div>
+//         </div>
+//       </div>
+//     </div>
+//   )}
+
+// {!item.isScheduled &&
+//   !item.isReadSchedule &&
+//   !item.isDeleteSchedule &&
+//   item.isUpdateSchedule && (
+//     <div>
+//       <div className="flex flex-col space-y-3 w-fit ">
+//         <div className="flex flex-row space-x-[19px] items-center">
+//           <div className=" mt-3 h-fit font-bold text-blue-600">
+//             Previous
+//           </div>
+//           <div className="flex flex-row mt-3">
+//             <div className=" w-[3px] bg-blue-500">
+//               {" "}
+//             </div>
+//             <div className="bg-blue-50 flex flex-row space-x-3 py-2">
+//               <div className="w-full mx-3 flex flex-row space-x-3">
+//                 <div className="font-bold text-blue-600">
+//                   {
+//                     item.parsedDetails
+//                       .current_start_time
+//                   }{" "}
+//                   -{" "}
+//                   {
+//                     item.parsedDetails
+//                       .current_end_time
+//                   }
+//                 </div>
+//                 <div>
+//                   {
+//                     item.parsedDetails
+//                       .title
+//                   }
+//                 </div>
+//               </div>
+//             </div>
+//           </div>
+//         </div>
+//         <div className="flex flex-row space-x-3 items-center">
+//           <div className=" h-fit pr-2 font-bold text-blueNav">
+//             Updated
+//           </div>
+//           <div className="flex flex-row">
+//             <div className=" w-[3px] bg-blueNav bg-">
+//               {" "}
+//             </div>
+//             <div className=" bg-green-50 flex flex-row space-x-3 py-2">
+//               <div className="w-full mx-3 flex flex-row space-x-3">
+//                 <div className="text-blueNav font-bold">
+//                   {
+//                     item.parsedDetails
+//                       .updated_start_time
+//                   }{" "}
+//                   -{" "}
+//                   {
+//                     item.parsedDetails
+//                       .updated_end_time
+//                   }
+//                 </div>
+//                 <div>
+//                   {
+//                     item.parsedDetails
+//                       .title
+//                   }
+//                 </div>
+//               </div>
+//             </div>
+//           </div>
+//         </div>
+//       </div>
+//     </div>
+//   )}
+// </div>
