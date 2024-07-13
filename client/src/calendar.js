@@ -116,7 +116,7 @@ export default function Home() {
   const calendarWidth = isNavOpen ? "w-5/6" : "w-4/5";
 
   return (
-    <div className="w-full h-screen">
+    <div className="w-full h-fit bg-black">
       <div className="flex sxl:flex-row xsm:flex-col w-full h-full">
         <NavBar setIsNavOpen={setIsNavOpen} isCalendar={true}/>
         <div

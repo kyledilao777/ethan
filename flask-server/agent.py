@@ -5,6 +5,7 @@ from datetime import datetime
 from flask_cors import CORS
 
 import pytz
+import openai
 
 from langchain.agents import AgentExecutor
 from langchain.memory import ConversationSummaryBufferMemory
@@ -14,10 +15,21 @@ from langchain.tools.render import format_tool_to_openai_function
 from langchain.agents.format_scratchpad import format_to_openai_function_messages
 from langchain.agents.output_parsers import OpenAIFunctionsAgentOutputParser
 from langchain_core.utils import function_calling
+from usecases.calendar_functions import get_from_session, save_to_session, clear_session
 
 from usecases.calendar_tools import GetCalendarEventsTool, TimeDeltaTool, CreateCalendarEventTool, SpecificTimeTool, DeleteCalendarEventTool, UpdateCalendarEventTool
 
 from flask import Flask, jsonify, request, send_from_directory
+
+import spacy
+import json
+from openai import OpenAI
+
+from openai import OpenAI
+
+openai.api_key = os.getenv("OPEN_AI_API_KEY")
+client = OpenAI()
+import re
 
 import threading
 import time
@@ -28,36 +40,81 @@ CORS(app)
 load_dotenv()
 
 OPENAI_API_KEY = os.getenv("OPEN_AI_API_KEY")
-OPENAI_MODEL = "gpt-3.5-turbo-0613"
-
-asia_singapore_timezone = pytz.timezone("Asia/Singapore")
+OPENAI_MODEL = "gpt-4o"
 
 llm = ChatOpenAI(temperature=0, model=OPENAI_MODEL, api_key=OPENAI_API_KEY)
-persistent_memory = ConversationSummaryBufferMemory(llm=llm,memory_key="chat_history", return_messages=True, max_token_limit=500)
+persistent_memory = ConversationSummaryBufferMemory(llm=llm,memory_key="chat_history", return_messages=True, max_token_limit=2000)
 
 @app.route("/agent", methods=["POST"])
-
-### Main interaction loop ###
 def run():
     data = request.get_json()
-    user_input = data.get("user_input")
-    user_email = data.get("user_email")
-    calendar_id = data.get("calendar_id")
+    user_input = data["user_input"]
+    user_email = data["user_email"]
+    calendar_id = data["calendar_id"]
+    user_timezone = data.get("timezone", "UTC")
+
+    timezone = pytz.timezone(user_timezone)
+    output = start_agent(user_input, user_email, calendar_id, timezone, persistent_memory)
+
+    return jsonify(output)
+
+def pre_processing(user_input, response_container):
+    # Prepare the prompt for the GPT-3.5-turbo model
+    prompt = f"""
+    The user has input the following text: "{user_input}". 
+    Based on this input, identify the user's intent and extract corresponding details.
+    The possible intentions are: read, update, delete, create.
+    Respond with a JSON object containing the intent and details.
+    
+    For reading an event, extract start time, end time, date, item title, location, description and attendees. If not provided, the field should be empty.
+    For creating an event, extract item title, start time, end time, date, location, description and attendees. If not provided, the field should be empty.
+    For updating an event, extract start time, end time, date, item title, location, description and attendees. If not provided, the field should be empty.
+    For deleting an event, extract item title, start time, end time and date. If not provided, the field should be empty. If not provided, the field should be empty.
+    
+    Sample Input:
+    "Hi Ethan, create a "catch up" with John (john@example.com) at jewel changi airport on 15 july from 10-11 am."
+    
+    Sample output:
+    {{
+        "intent": "create",
+        "details": {{
+            "title": "catch up",
+            "start time": "10:00 AM",
+            "end time": "11:00 AM",
+            "location": "jewel changi airport",
+            "date": "2024-07-15",
+            "attendees": {{"John": "john@example.com"}},
+        }}
+    }}
+    
+    """
+
+    # Call the OpenAI API
+    response = client.chat.completions.create(model="gpt-3.5-turbo-0125",
+    messages=[
+        {"role": "system", "content": "You are a helpful assistant."},
+        {"role": "user", "content": prompt}
+    ])
+
+    # Extract the intent from the response
+    response_text = response.choices[0].message.content.strip().lower()
 
     try:
-        output = start_agent(user_input, user_email, calendar_id, persistent_memory)
-        return jsonify(output)
-    except Exception as e:
-        print(f"Error occurred: {e}")
-        error_message = ("My apologies, I couldn't process your request at the moment. "
-                         "Please try again later or ask me something different. "
-                         "If you believe this is an error, feel free to contact support at "
-                         "kyle.untangled@gmail.com. Thank you for your understanding!")
-        return jsonify({"error": error_message}), 500
+        response_json = json.loads(response_text)
+        intent = response_json.get("intent", "none").lower()
+        details = response_json.get("details", {})
+    except json.JSONDecodeError:
+        intent = "none"
+        details = {}
 
-        
-def run_agent_executor(user_email: str, user_input: str, calendar_id: str, memory, response_container):
-     # Options
+    # Validate the intent to ensure it matches one of the expected values
+    valid_intents = ["read", "update", "delete", "create"]
+    if intent not in valid_intents:
+        intent = "none"
+
+    return {"intent": intent, "details": details}
+
+def run_agent_executor(user_email, user_input, calendar_id, user_timezone, memory, response_container, intent):
     tools = [
         TimeDeltaTool(),
         GetCalendarEventsTool(),
@@ -65,22 +122,33 @@ def run_agent_executor(user_email: str, user_input: str, calendar_id: str, memor
         SpecificTimeTool(),
         DeleteCalendarEventTool(),
         UpdateCalendarEventTool(),
-
     ]
 
     input = f"""
     calendar_id: {calendar_id}
     user_email: {user_email}
-    current datetime: {datetime.now(asia_singapore_timezone).strftime("%Y-%m-%dT%H:%M:%S%z")}
-    current weekday: {datetime.now(asia_singapore_timezone).strftime("%A")}
+    current datetime: {datetime.now(user_timezone).strftime("%Y-%m-%dT%H:%M:%S%z")}
+    current weekday: {datetime.now(user_timezone).strftime("%A")}
     user input: {user_input}
     """
 
     prompt = ChatPromptTemplate.from_messages(
         [
             (
-                "system",
-                "Your name is Ethan. You are a funny and friendly assistant who can help me schedule my meetings, fetch my calendar events and optimise my task completion. NEVER print event ids to the user. Remember the user's response.",
+            "system", 
+            """
+            Context:
+            Your name is Ethan. You are the funniest, friendliest and most competent assistant on Earth who can help me manage my calendar or arrange for meetings,
+            even across timezones. 
+            
+            Note:
+            ALWAYS talk as if you were talking to a friend. However, do not give intermediate responses. Only send the final response.            
+            NEVER EVER bold any text. NEVER EVER include the event ID.
+
+            Event-specific instructions:
+            - Before creating any event, check if the user has something on already. If yes, let him/her know and don't create anything. 
+            - If there is no email specified for attendees, keep attendees as an empty dictionary.
+            """
             ),
             MessagesPlaceholder(variable_name="chat_history"),
             ("user", "{input}"),
@@ -95,9 +163,7 @@ def run_agent_executor(user_email: str, user_input: str, calendar_id: str, memor
     agent = (
         {
             "input": lambda x: x["input"],
-            "agent_scratchpad": lambda x: format_to_openai_function_messages(
-                x["intermediate_steps"]
-            ),
+            "agent_scratchpad": lambda x: format_to_openai_function_messages(x["intermediate_steps"]),
             "chat_history": lambda x: x["chat_history"],
         }
         | prompt
@@ -105,32 +171,51 @@ def run_agent_executor(user_email: str, user_input: str, calendar_id: str, memor
         | OpenAIFunctionsAgentOutputParser()
     )
 
-    agent_executor = AgentExecutor.from_agent_and_tools(agent=agent, tools=tools, verbose=True, memory=memory, max_iterations=10)
+    agent_executor = AgentExecutor.from_agent_and_tools(agent=agent, tools=tools, verbose=True, memory=memory, max_iterations=15)
     result = agent_executor.invoke({"input": input})
+
+    if (result):
+        session = get_from_session(user_email)
+        print(session, "Session from agent.py")
+
+        if (intent != "none"):
+             response_container["isEvent"] = True
+        else:
+             response_container["isEvent"] = False
+
+        response_container['eventDetails'] = session
+
+
+    for step in result.get("intermediate_steps", []):
+        if step["tool"] == "get_calendar_events":
+            response_container['events'] = step["output"]
+            print(step["output"], "This is step output")
+
+    clear_session(user_email)
+
+    response_container['response'] = result.get("output")
+
+
+def agent_task(input_data, user_email, calendar_id, timezone, memory, response_container):
+    intent = pre_processing(input_data, response_container)["intent"]
+    # details = pre_processing(input_data, response_container)["details"]
     
-    response_container["response"] = result.get("output")
+    print(intent, "This is the intent")
+    run_agent_executor(user_email, input_data, calendar_id, timezone, memory, response_container, intent)
 
-### running the agent ###
-def agent_task(input_data, user_email, calendar_id, memory, response_container):
-    """
-    This is where the agent's work based on the user input  is executed.
-    Replace the print statement with the actual work of your agent.
-    """
-
-    run_agent_executor(user_email, input_data, calendar_id, memory, response_container)
-
-    # Simulate some work with a sleep
+    response_container['intent'] = intent
     time.sleep(2)
-def start_agent(input_data, user_email, calendar_id, memory):
-    """
-    Starts the agent task in a new thread based on the given input_data.
-    """
+
+    # Append the parsed details and static message to the response container
+
+
+def start_agent(input_data, user_email, calendar_id, timezone, memory):
     response_container = {}
-    agent_thread = threading.Thread(target=agent_task, args=(input_data, user_email, calendar_id, memory, response_container))
+    agent_thread = threading.Thread(target=agent_task, args=(input_data, user_email, calendar_id, timezone, memory, response_container))
     agent_thread.start()
     agent_thread.join()
-    
+
     return response_container
-    
+
 if __name__ == "__main__":
     app.run(debug=True, port=5001)

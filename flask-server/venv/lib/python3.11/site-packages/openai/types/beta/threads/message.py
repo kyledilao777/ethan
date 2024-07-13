@@ -1,12 +1,35 @@
 # File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-from typing import List, Optional
+from typing import List, Union, Optional
 from typing_extensions import Literal
 
 from ...._models import BaseModel
 from .message_content import MessageContent
+from ..code_interpreter_tool import CodeInterpreterTool
 
-__all__ = ["Message", "IncompleteDetails"]
+__all__ = [
+    "Message",
+    "Attachment",
+    "AttachmentTool",
+    "AttachmentToolAssistantToolsFileSearchTypeOnly",
+    "IncompleteDetails",
+]
+
+
+class AttachmentToolAssistantToolsFileSearchTypeOnly(BaseModel):
+    type: Literal["file_search"]
+    """The type of tool being defined: `file_search`"""
+
+
+AttachmentTool = Union[CodeInterpreterTool, AttachmentToolAssistantToolsFileSearchTypeOnly]
+
+
+class Attachment(BaseModel):
+    file_id: Optional[str] = None
+    """The ID of the file to attach to the message."""
+
+    tools: Optional[List[AttachmentTool]] = None
+    """The tools to add this file to."""
 
 
 class IncompleteDetails(BaseModel):
@@ -25,6 +48,9 @@ class Message(BaseModel):
     authored this message.
     """
 
+    attachments: Optional[List[Attachment]] = None
+    """A list of files attached to the message, and the tools they were added to."""
+
     completed_at: Optional[int] = None
     """The Unix timestamp (in seconds) for when the message was completed."""
 
@@ -33,13 +59,6 @@ class Message(BaseModel):
 
     created_at: int
     """The Unix timestamp (in seconds) for when the message was created."""
-
-    file_ids: List[str]
-    """
-    A list of [file](https://platform.openai.com/docs/api-reference/files) IDs that
-    the assistant should use. Useful for tools like retrieval and code_interpreter
-    that can access files. A maximum of 10 files can be attached to a message.
-    """
 
     incomplete_at: Optional[int] = None
     """The Unix timestamp (in seconds) for when the message was marked as incomplete."""
@@ -63,9 +82,9 @@ class Message(BaseModel):
 
     run_id: Optional[str] = None
     """
-    If applicable, the ID of the
-    [run](https://platform.openai.com/docs/api-reference/runs) associated with the
-    authoring of this message.
+    The ID of the [run](https://platform.openai.com/docs/api-reference/runs)
+    associated with the creation of this message. Value is `null` when messages are
+    created manually using the create message or create thread endpoints.
     """
 
     status: Literal["in_progress", "incomplete", "completed"]
