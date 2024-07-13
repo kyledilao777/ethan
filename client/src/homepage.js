@@ -32,12 +32,37 @@ export default function Home() {
   const photo = useSelector((state) => state.user.photo);
   const email = useSelector((state) => state.user.email);
   const calendarId = useSelector((state) => state.user.calendarId);
+  const occupation = useSelector((state) => state.user.occupation);
   const isAgent = useSelector((state) => state.agent.isAgent);
   const isAuthenticated = useSelector((state) => state.user.isAuthenticated);
   const [firstTypingComplete, setFirstTypingComplete] = useState(false);
   const containerRef = useRef(null);
 
   const dispatch = useDispatch();
+  const messagesEndRef = useRef(null);
+  const [isScrollable, setIsScrollable] = useState(false);
+
+  useEffect(() => {
+    const checkIfScrollable = () => {
+      setIsScrollable(document.documentElement.scrollHeight > document.documentElement.clientHeight);
+    };
+
+    checkIfScrollable();
+    window.addEventListener("resize", checkIfScrollable);
+    console.log(isScrollable, "isScrollable")
+    return () => {
+      window.removeEventListener("resize", checkIfScrollable);
+    };
+  }, []);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [data]);
+
 
   const rotatingMessages = [
     "To start, say “Hi Ethan”.",
@@ -67,7 +92,7 @@ export default function Home() {
           { withCredentials: true }
         );
 
-        // Update userInfo state with fetched data
+        // Update userInfo state with fetched dxata
         let finalName;
         let finalPhoto;
 
@@ -89,6 +114,7 @@ export default function Home() {
             photo: finalPhoto,
             email: data.email,
             calendarId: data.calendarId,
+            occupation: data.occupation,
           })
         );
       } catch (error) {
@@ -100,7 +126,7 @@ export default function Home() {
     fetchUserInfo();
 
     // Dependency array is empty, so this effect runs only once when the component mounts
-  }, []);
+  }, [dispatch]);
 
   const parseResponse = (response) => {
     // Custom parsing logic based on your response format
@@ -417,13 +443,15 @@ export default function Home() {
   }, []);
 
   const mainContentClass = isNavOpen
-    ? "xsm:ml-[300px] sxl:ml-[0px]"
+    ? isAgent ? "xsm:ml-[170px] sxl:ml-[0px]" : "xsm:ml-[300px] sxl:ml-[0px]"
     : "px-[20px]";
 
+
+
   return (
-    <div ref={containerRef} className=" w-full h-full overflow-auto">
+    <div className={`w-full ${isScrollable ? "h-fit" : "h-screen"}`}>
       <div className="w-full flex sxl:flex-row xsm:flex-col h-screen">
-        <NavBar setIsNavOpen={setIsNavOpen} isHome={true} />
+        <NavBar setIsNavOpen={setIsNavOpen} isHome={true} setIsAgent={setIsAgent} setAgentResponse={setAgentResponse} setData={setData} />
         <div
           className={`flex flex-col w-full h-full transition-all duration-300 ${mainContentClass} `}
         >
@@ -484,7 +512,6 @@ export default function Home() {
               <div
                 className={`w-full text-justify sxl:px-[100px] sxl:py-[20px] xsm:py-[10px] xsm:px-[20px] xsm:mt-20 sxl:mt-10 flex-col overflow-auto transition-all duration-300  ${mainContentClass}`}
               >
-                <div></div>
                 {data.map((item, index) => (
                   <div key={index} className="my-3 rounded-md">
                     <div className="flex flex-col rounded-lg my-7">
@@ -634,16 +661,22 @@ export default function Home() {
                     </div>
                   </div>
                 )}
+                <div ref={messagesEndRef} />
               </div>
             </div>
           )}
-          <div className="flex justify-center h-[30px] space-x-1 items-center text-gray-500">
-            <Link to={{ pathname: "/privacy" }}>
-              <text>Privacy</text>
-            </Link>
-
-            <text className="">© 2024 Untangled AI. All rights reserved.</text>
-          </div>
+          {
+            !isAgent && (
+              <div className="flex justify-center h-[30px] space-x-3 items-center text-gray-500">
+              <Link to={{ pathname: "/privacy" }}>
+                <text>Privacy</text>
+              </Link>
+  
+              <text className="">© 2024 Untangled AI. All rights reserved.</text>
+            </div>
+            )
+          }
+          
         </div>
       </div>
     </div>

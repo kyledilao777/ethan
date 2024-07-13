@@ -31,6 +31,10 @@ const userSchema = new mongoose.Schema({
   newName: { type: String, required: true },
   newPhoto: { type: String, required: true },
   calendarId: { type: String, required: true },
+  occupation: { type: [String] },
+  comment: { type: String },
+  reason: { type: [String] }
+
 });
 
 const Token = mongoose.model("Token", tokenSchema);
@@ -95,6 +99,7 @@ async function main() {
         "http://localhost:3000",
         "http://localhost:3001",
         "http://localhost:3002",
+        "http://localhost:5001",
       ],
       credentials: true,
       methods: "GET,POST,OPTIONS,PUT,DELETE",
@@ -332,6 +337,7 @@ async function main() {
         newPhoto: user.newPhoto,
         email: user.email,
         calendarId: user.calendarId,
+        occupation: user.occupation,
       };
 
       console.log("User Info:", userInfo);
@@ -356,61 +362,69 @@ async function main() {
     const data = req.body;
     const email = req.session.email;
     console.log("Email update profile: ", email);
-
-    console.log("New name update-profile: ", data.name);
-    console.log("New photo update-photo: ", data.imageSrc);
-
+  
+    console.log("Comment: ", data.comment);
+    console.log("Reason: ", data.reason);
+    console.log("Occupation: ", data.occupation);
+  
     if (!email) {
       return res.status(400).json({ message: "No email found in session." });
     }
-
+  
+    // Process custom "Others" values
+    const occupation = data.occupation.includes("Others") ? [...data.occupation.filter(item => item !== "Others"), data.customOccupation] : data.occupation;
+    const reason = data.reason.includes("Others") ? [...data.reason.filter(item => item !== "Others"), data.customReason] : data.reason;
+  
     try {
       if (data.name !== "" && data.imageSrc !== "logo.jpeg") {
-        console.log("not here 1")
+        console.log("not here 1");
         await User.findOneAndUpdate(
           { email: email }, // Query to find the document to update
           {
             newName: data.name, // Update the name
             newPhoto: data.imageSrc, // Update the photo
+            comment: data.comment,
+            reason: reason,
+            occupation: occupation,
           },
           {
             new: true, // Return the updated document
             runValidators: true, // Ensure validation is run on update
           }
         );
-      } else {
-        if (data.name !== "" && data.imageSrc === "logo.jpeg") {
-          console.log("not here 2")
-          await User.findOneAndUpdate(
-            { email: email }, // Query to find the document to update
-            {
-              newName: data.name, // Update the name
-              // Update the photo
-            },
-            {
-              new: true, // Return the updated document
-              runValidators: true, // Ensure validation is run on update
-            }
-          );
-        } else if (data.name === "" && data.imageSrc !== "logo.jpeg") {
-          console.log("should be here")
-          await User.findOneAndUpdate(
-            { email: email }, // Query to find the document to update
-            {
-              // Update the name
-              newPhoto: data.imageSrc, // Update the photo
-            },
-            {
-              new: true, // Return the updated document
-              runValidators: true, // Ensure validation is run on update
-            }
-          );
-        }
+      } else if (data.name !== "" && data.imageSrc === "logo.jpeg") {
+        console.log("not here 2");
+        await User.findOneAndUpdate(
+          { email: email }, // Query to find the document to update
+          {
+            newName: data.name, // Update the name
+            comment: data.comment,
+            reason: reason,
+            occupation: occupation,
+          },
+          {
+            new: true, // Return the updated document
+            runValidators: true, // Ensure validation is run on update
+          }
+        );
+      } else if (data.name === "" && data.imageSrc !== "logo.jpeg") {
+        console.log("should be here");
+        await User.findOneAndUpdate(
+          { email: email }, // Query to find the document to update
+          {
+            newPhoto: data.imageSrc, // Update the photo
+            comment: data.comment,
+            reason: reason,
+            occupation: occupation,
+          },
+          {
+            new: true, // Return the updated document
+            runValidators: true, // Ensure validation is run on update
+          }
+        );
       }
-
-      res
-        .status(200)
-        .json({ message: "Profile updated successfully" });
+  
+      res.status(200).json({ message: "Profile updated successfully" });
     } catch (error) {
       console.error("Error updating user profile:", error);
       res.status(500).json({
@@ -418,6 +432,35 @@ async function main() {
         error: error.toString(),
       });
     }
+  });  
+
+  app.get("/logout", async (req, res) => {
+    const tokens = req.session.tokens;
+  
+    if (tokens && tokens.access_token) {
+      try {
+        // Revoke the token
+        await axios.post(
+          `https://oauth2.googleapis.com/revoke?token=${tokens.access_token}`,
+          {},
+          {
+            headers: {
+              "Content-Type": "application/x-www-form-urlencoded",
+            }
+          }
+        );
+      } catch (error) {
+        console.error("Error revoking token:", error);
+      }
+    }
+  
+    req.session.destroy((err) => {
+      if (err) {
+        console.error("Error destroying session:", err);
+        return res.status(500).send("Failed to clear session");
+      }
+      res.clearCookie('connect.sid'); // Clear the session cookie
+    });
   });
 
   app.get("/fetch-calendar-events", async (req, res) => {
