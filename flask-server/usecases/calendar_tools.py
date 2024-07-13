@@ -5,61 +5,12 @@ from langchain.tools import BaseTool
 from usecases.calendar_functions import get_calendar_events, create_event, delete_event, update_event, save_to_session, get_from_session, clear_session
 import pytz
 
-
-# asia_singapore_timezone = pytz.timezone("Asia/Singapore")
-
-class CalendarEventSearchInput(BaseModel):
-    """Inputs for get_calendar_events"""
-
-    user_email: str = Field(description="email of the user")
-    calendar_id: str = Field(description="Calendar id of the calendar")
-    start_date: str = Field(
-        description="Start date of the events to search. Must be an RFC3339 timestamp, in this format YYYY-MM-DDTHH:MM:SS+HH:MM"
-    )
-    end_date: str = Field(
-        description="End date of the events to search. Must be an RFC3339 timestamp, in this format YYYY-MM-DDTHH:MM:SS+HH:MM"
-    )
-    
-
-class GetCalendarEventsTool(BaseTool):
-    name = "get_calendar_events"
-    description = """
-        Useful for retrieving calendar events in a particular date or time range.
-        This tool should also be triggered whenever the user wants to update or reschedule an existing event to fetch the necessary event details.
-        """
-    args_schema: Type[BaseModel] = CalendarEventSearchInput
-
-    def _run(
-        self,
-        user_email: str,
-        calendar_id: str,
-        start_date: str,
-        end_date: str,
-        
-    ):
-        events_response = get_calendar_events(
-            user_email, calendar_id, start_date, end_date
-        )
-
-        save_to_session(user_email, events_response)
-
-        return events_response
-
-    def _arun(self):
-        raise NotImplementedError("get_calendar_events does not support async")
-    def _arun(self):
-        raise NotImplementedError("get_calendar_events does not support async")
-
 class TimeInput(BaseModel):
     timezone: str = Field(default="UTC", description="Timezone of the user")
 
 class CurrentTimeInput(TimeInput):
     """Inputs for getting the current time"""
     pass
-
-# class CurrentTimeInput(BaseModel):
-#     """Inputs for getting the current time"""
-#     pass
 
 class CurrentTimeTool(BaseTool):
     name = "get_current_time"
@@ -75,23 +26,6 @@ class CurrentTimeTool(BaseTool):
     
     def _arun(self):
         raise NotImplementedError("convert_time does not support async")
-
-
-# class CurrentTimeTool(BaseTool):
-#     name = "get_current_time"
-#     description = """
-#     Useful when you want to get the current time in an RFC3339 timestamp, in this format YYYY-MM-DDTHH:MM:SS+HH:MM"
-#     """
-#     args_schema: Type[BaseModel] = CurrentTimeInput
-
-#     def _run(self, timezone: str):
-#         # Fetch the timezone for Asia/Singapore
-
-#         # Return the current time in a format google calendar api can understand
-#         return (datetime.now(asia_singapore_timezone).strftime("%Y-%m-%dT%H:%M:%S.%fZ"),)
-
-#     def _arun(self):
-#         raise NotImplementedError("convert_time does not support async")
 
 class TimeDeltaInput(BaseModel):
     """Inputs for getting time deltas"""
@@ -166,181 +100,91 @@ class SpecificTimeTool(BaseTool):
 
     def _arun(self):
         raise NotImplementedError("set_specific_time does not support async")
-    
-# class ConfirmEventInput(BaseModel):
-#     """Inputs for confirm_event"""
 
-#     user_email: str = Field(description="email of the user")
-#     calendar_id: str = Field(description="calendar id of the calendar")
-#     event_name: str = Field(description="name of the event")
-#     start_datetime: str = Field(
-#         description="Start datetime of the event to create in the user timezone. Must be an RFC3339 timestamp, in this format YYYY-MM-DDTHH:MM:SS+HH:MM and NOT YYYY-MM-DDTHH:MM:SS+HHMM."
-#     )
-#     end_datetime: str = Field(
-#         description="End datetime of the event to create in the user timezone. Must be an RFC3339 timestamp, in this format YYYY-MM-DDTHH:MM:SS+HH:MM and NOT YYYY-MM-DDTHH:MM:SS+HHMM."
-#     )
-#     attendee: Optional[str] = Field(
-#         description="Attendees of a meeting event"
-#     )
-#     location: Optional[str] = Field(
-#         default=None, description="Location of event"
-#     )
-#     description: Optional[str] = Field(
-#         default=None, description="Description of the event."
-#     )
-
-# class ConfirmEventTool(BaseTool):
-#     name = "confirm_event"
-#     description = """
-#     Displays event details to ask the user for confirmation.
-#     """
-#     args_schema: Type[BaseModel] = ConfirmEventInput
-
-#     def _run(
-#         self,
-#         user_email: str,
-#         calendar_id: str,
-#         event_name: str,
-#         start_datetime: str,
-#         end_datetime: str,
-#         attendee: str = "",
-#         location: str = "",
-#         description: str = ""
-#     ):
-#         # Store event details in the session or a temporary cache
-#         session_store = {
-#             "user_email": user_email,
-#             "calendar_id": calendar_id,
-#             "event_name": event_name,
-#             "start_datetime": start_datetime,
-#             "end_datetime": end_datetime,
-#             "attendee": attendee,
-#             "location": location,
-#             "description": description
-#         }
-
-#         # Save the event details to session or a state management tool
-#         save_to_session(user_email, session_store)
-
-#         # Return details with a confirmation message to the user
-#         confirmation_message = f"Please confirm the following event details:\n" \
-#                                 f"Event Name: {event_name}\n" \
-#                                 f"Start: {start_datetime}\n" \
-#                                 f"End: {end_datetime}\n" \
-#                                 f"Attendee: {attendee}\n" \
-#                                 f"Location: {location}\n" \
-#                                 f"Description: {description}\n" \
-#                                 "Is this correct? (Yes/No)"
-#         return confirmation_message
-
-#     def _arun(self):
-#         raise NotImplementedError("This tool does not support async execution.")
-
-# class ConfirmCalendarEventTool(BaseTool):
-#     name = "confirm_event"
-#     description = """
-#     Interactively confirms event details with the user. If the user confirms, it proceeds to create the event.
-#     """
-#     args_schema: Type[BaseModel] = ConfirmEventInput
-
-#     def _run(
-#         self,
-#         user_email: str,
-#         calendar_id: str,
-#         event_name: str,
-#         start_datetime: str,
-#         end_datetime: str,
-#         attendee: str = "",
-#         location: str = ""
-#     ):
-#         # Instead of creating the event, return the details for confirmation
-#         event_details = {
-#             "user_email": user_email,
-#             "calendar_id": calendar_id,
-#             "event_name": event_name,
-#             "start_datetime": start_datetime,
-#             "end_datetime": end_datetime,
-#             "attendee": attendee,
-#             "location": location
-#         }
-#         return event_details
-
-#     def _arun(self):
-#         raise NotImplementedError("confirm_event does not support async")
-
-class CalendarCreateInput(BaseModel):
-    """Inputs for create_calendar_event"""
+#Read
+class CalendarEventSearchInput(BaseModel):
+    """Inputs for get_calendar_events"""
 
     user_email: str = Field(description="email of the user")
-    calendar_id: str = Field(description="calendar id of the calendar")
-    event_name: str = Field(description="name of the event")
-    start_datetime: str = Field(
-        description="Start datetime of the event to create. Must be an RFC3339 timestamp, no need for timezone for example, 2011-06-03T10:00:00-07:00, 2011-06-03 "
+    calendar_id: str = Field(description="Calendar id of the calendar")
+    start_date: str = Field(
+        description="Start date of the events to search. Must be an RFC3339 timestamp, in this format YYYY-MM-DDTHH:MM:SS+HH:MM"
     )
-    end_datetime: str = Field(
-        description="End datetime of the event to create. Must be an RFC3339 timestamp, no need for timezone for example, 2011-06-03T10:00:00-07:00, 2011-06-03"
-    )
-    attendee: Optional[str] = Field(
-        description="Attendees of a meeting event"
-    )
-    location: Optional[str] = Field(
-        description="Location of event"
+    end_date: str = Field(
+        description="End date of the events to search. Must be an RFC3339 timestamp, in this format YYYY-MM-DDTHH:MM:SS+HH:MM"
     )
 
-class CreateCalendarEventTool(BaseTool):
-    name = "create_calendar_event"
+class GetCalendarEventsTool(BaseTool):
+    name = "get_calendar_events"
     description = """
-    Useful when you want to create a calendar event given a calendar id, event name, start time, and end time.
-    """
-    args_schema: Type[BaseModel] = CalendarCreateInput
+        Useful for retrieving calendar events in a particular date or time range.
+        This tool should also be triggered whenever the user wants to update or reschedule an existing event to fetch the necessary event details.
+        """
+    args_schema: Type[BaseModel] = CalendarEventSearchInput
 
     def _run(
         self,
         user_email: str,
         calendar_id: str,
-        event_name: str,
-        start_datetime: str,
-        end_datetime: str,
-        attendee: str = "",
-        location: str = ""
+        start_date: str,
+        end_date: str,
+        
     ):
-        events_response = create_event(
-            user_email, calendar_id, event_name, start_datetime, end_datetime, attendee, location
+        events_response = get_calendar_events(
+            user_email, calendar_id, start_date, end_date
         )
 
         save_to_session(user_email, events_response)
-        
+
         return events_response
 
     def _arun(self):
-        raise NotImplementedError("create_calendar_event does not support async")
+        raise NotImplementedError("get_calendar_events does not support async")
+    def _arun(self):
+        raise NotImplementedError("get_calendar_events does not support async")
+    
+#Create
+class CreateCalendarEventInput(BaseModel):
+    """Inputs for create_event"""
+    user_email: str = Field(description="email of the user")
+    calendar_id: str = Field(description="calendar id of the calendar")
+    event_name: str = Field(description="name of the event")
+    start_datetime: str = Field(
+        description="Start datetime of the event to create in the user timezone. Must be an RFC3339 timestamp, in this format YYYY-MM-DDTHH:MM:SS+HH:MM and NOT YYYY-MM-DDTHH:MM:SS+HHMM."
+    )
+    end_datetime: str = Field(
+        description="End datetime of the event to create in the user timezone. Must be an RFC3339 timestamp, in this format YYYY-MM-DDTHH:MM:SS+HH:MM and NOT YYYY-MM-DDTHH:MM:SS+HHMM."
+    )
+    attendees: Optional[List[str]] = Field(
+        default=[],
+        description="List of email addresses for attendees of the meeting"
+    )
+    location: Optional[str] = Field(
+        default=None, description="Location of event"
+    )
+    description: Optional[str] = Field(
+        default=None, description="Description of the event."
+    )
 
-# class CreateCalendarEventTool(BaseTool):
-#     name = "create_calendar_event"
-#     description = """
-#     Useful when you want to create a calendar event given a calendar id, event name, start time, and end time.
-#     """
-#     args_schema: Type[BaseModel] = CalendarCreateInput
+class CreateCalendarEventTool(BaseTool):
+    name = "create_event"
+    description = """
+    Create a calendar event when the user wants to schedule a meeting
+    """
+    args_schema: Type[BaseModel] = CreateCalendarEventInput
 
-#     def _run(
-#         self,
-#         user_email: str,
-#         calendar_id: str,
-#         event_name: str,
-#         start_datetime: str,
-#         end_datetime: str,
-#         attendee: str = "",
-#         location: str = ""
-#     ):
-#         events_response = create_event(
-#             user_email, calendar_id, event_name, start_datetime, end_datetime, attendee, location
-#         )
-#         return events_response
+    def _run(self, user_email, calendar_id, event_name, start_datetime, end_datetime, attendees=None, location=None, description=None):
+        
+        events_response = create_event(user_email, calendar_id, event_name, start_datetime, end_datetime, attendees, location, description)
+        
+        save_to_session(user_email, events_response)
 
-#     def _arun(self):
-#         raise NotImplementedError("create_calendar_event does not support async")
+        return events_response
+        
+    def _arun(self):
+        raise NotImplementedError("create_event does not support async")
 
-
+#Delete
 class CalendarDeleteInput(BaseModel):
     """Inputs for delete_calendar_event"""
 
@@ -365,7 +209,7 @@ class DeleteCalendarEventTool(BaseTool):
     def _arun(self):
         raise NotImplementedError("delete_calendar_event does not support async")
 
-
+#Update
 class UpdateCalendarEventInput(BaseModel):
     """Inputs for update_calendar_event"""
     user_email: str = Field(description="email of the user")
@@ -377,9 +221,6 @@ class UpdateCalendarEventInput(BaseModel):
     attendees: Optional[List[str]] = Field(default=None, description="additional attendees of the event in addition to existing attendees")
     location: Optional[str] = Field(default=None, description="new location of the event")
     description: Optional[str] = Field(default=None, description="Description of the event.")
-
-
-    
 
 class UpdateCalendarEventTool(BaseTool):
     name = "update_calendar_event"
@@ -415,42 +256,3 @@ class UpdateCalendarEventTool(BaseTool):
 
     def _arun(self):
         raise NotImplementedError("update_calendar_event does not support async")
-
-# class UpdateCalendarEventInput(BaseModel):
-#     """Inputs for update_calendar_event"""
-#     user_email: str = Field(description="email of the user")
-#     calendar_id: str = Field(description="calendar id of the calendar")
-#     event_id: str = Field(description="id of the event to update")
-#     event_name: Optional[str] = Field(description="new name of the event")
-#     start_datetime: Optional[str] = Field(description="new start datetime of the event in RFC3339 format")
-#     end_datetime: Optional[str] = Field(description="new end datetime of the event in RFC3339 format")
-#     attendee: Optional[str] = Field(description="new attendee of the event")
-#     location: Optional[str] = Field(description="new location of the event")
-    
-
-# class UpdateCalendarEventTool(BaseTool):
-#     name = "update_calendar_event"
-#     description = """
-#     Useful when you want to update a calendar event given a calendar id, event id, and new event details.
-#     """
-#     args_schema: Type[BaseModel] = UpdateCalendarEventInput
-
-#     def _run(
-#         self,
-#         user_email: str,
-#         calendar_id: str,
-#         event_id: str,
-#         event_name: Optional[str] = None,
-#         start_datetime: Optional[str] = None,
-#         end_datetime: Optional[str] = None,
-#         attendee: Optional[str] = None,
-#         location: Optional[str] = None
-#     ):
-#         # Call the update_event function with the provided parameters
-#         update_response = update_event(
-#             user_email, calendar_id, event_id, event_name, start_datetime, end_datetime, attendee, location
-#         )
-#         return update_response
-
-#     def _arun(self):
-#         raise NotImplementedError("update_calendar_event does not support async")

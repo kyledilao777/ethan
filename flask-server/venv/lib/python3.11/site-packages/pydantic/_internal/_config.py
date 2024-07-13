@@ -27,6 +27,7 @@ if not TYPE_CHECKING:
 
 if TYPE_CHECKING:
     from .._internal._schema_generation_shared import GenerateSchema
+    from ..fields import ComputedFieldInfo, FieldInfo
 
 DEPRECATION_MESSAGE = 'Support for class-based `config` is deprecated, use ConfigDict instead.'
 
@@ -57,6 +58,8 @@ class ConfigWrapper:
     # to construct error `loc`s, default `True`
     loc_by_alias: bool
     alias_generator: Callable[[str], str] | AliasGenerator | None
+    model_title_generator: Callable[[type], str] | None
+    field_title_generator: Callable[[str, FieldInfo | ComputedFieldInfo], str] | None
     ignored_types: tuple[type, ...]
     allow_inf_nan: bool
     json_schema_extra: JsonDict | JsonSchemaExtraCallable | None
@@ -68,13 +71,14 @@ class ConfigWrapper:
     revalidate_instances: Literal['always', 'never', 'subclass-instances']
     ser_json_timedelta: Literal['iso8601', 'float']
     ser_json_bytes: Literal['utf8', 'base64']
-    ser_json_inf_nan: Literal['null', 'constants']
+    ser_json_inf_nan: Literal['null', 'constants', 'strings']
     # whether to validate default values during validation, default False
     validate_default: bool
     validate_return: bool
     protected_namespaces: tuple[str, ...]
     hide_input_in_errors: bool
     defer_build: bool
+    experimental_defer_build_mode: tuple[Literal['model', 'type_adapter'], ...]
     plugin_settings: dict[str, object] | None
     schema_generator: type[GenerateSchema] | None
     json_schema_serialization_defaults_required: bool
@@ -242,6 +246,8 @@ config_defaults = ConfigDict(
     from_attributes=False,
     loc_by_alias=True,
     alias_generator=None,
+    model_title_generator=None,
+    field_title_generator=None,
     ignored_types=(),
     allow_inf_nan=True,
     json_schema_extra=None,
@@ -256,6 +262,7 @@ config_defaults = ConfigDict(
     hide_input_in_errors=False,
     json_encoders=None,
     defer_build=False,
+    experimental_defer_build_mode=('model',),
     plugin_settings=None,
     schema_generator=None,
     json_schema_serialization_defaults_required=False,

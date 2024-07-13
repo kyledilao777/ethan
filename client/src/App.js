@@ -9,6 +9,7 @@ import Login from "./login";
 import Documentation from "./documentation";
 import Privacy from "./privacy";
 import UserInfo from "./userinfo";
+import Terms from "./termsandservices";
 
 export default function App() {
   return (
@@ -25,6 +26,7 @@ export default function App() {
           <Route path="/routemap" element={<RouteMap />} />
           <Route path="/userinfo" element={<UserInfo />} />
           <Route path="/" element={<Navigate to="/login" />} />
+          <Route path="/termsandservices" element={<Terms />} />
         </Routes>
       </Router>
     </div>

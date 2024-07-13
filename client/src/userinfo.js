@@ -1,6 +1,5 @@
 import { useState } from "react";
 import axios from "axios";
-import { Link } from "react-router-dom";
 import Select from "react-select";
 
 export default function UserInfo() {
@@ -8,33 +7,63 @@ export default function UserInfo() {
   const [isName, setIsName] = useState(true);
   const [isPhoto, setIsPhoto] = useState(false);
   const [fileName, setFileName] = useState("No file chosen");
-  const [occupation, setOccupation] = useState(null);
+  const [occupation, setOccupation] = useState([]);
+  const [customOccupation, setCustomOccupation] = useState("");
   const [comment, setComment] = useState("");
   const [reason, setReason] = useState([]);
+  const [customReason, setCustomReason] = useState("");
+  const [imageSrc, setImageSrc] = useState("logo.jpeg");
 
   const handleNameNext = () => {
-    setIsName(false);
-    setIsPhoto(true);
+    const hasOtherOccupation = occupation.some(option => option.value === "Others");
+    const hasOtherReason = reason.some(option => option.value === "Others");
+    
+    if (name && comment && occupation.length > 0 && reason.length > 0 && (!hasOtherOccupation || customOccupation) && (!hasOtherReason || customReason)) {
+      setIsName(false);
+      setIsPhoto(true);
+    } else {
+      alert("Please fill out all fields before proceeding.");
+    }
+  };
+
+  const handlePhotoBack = () => {
+    setIsName(true);
+    setIsPhoto(false);
   };
 
   const jobData = [
-    { name: "Software Engineer" },
+    { name: "Accountant" },
+    { name: "Administrative Assistant" },
+    { name: "Analyst" },
+    { name: "Customer Service Representative" },
+    { name: "Engineer" },
+    { name: "Freelancer" },
+    { name: "Graphic Designer" },
+    { name: "Human Resources Manager" },
+    { name: "IT Support Specialist" },
+    { name: "Marketing Manager" },
+    { name: "Nurse" },
+    { name: "Office Manager" },
+    { name: "Operations Manager" },
+    { name: "Product Manager" },
     { name: "Project Manager" },
-    { name: "CEO" },
-    { name: "Sales Managers" },
-    { name: "Teacher" },
-    { name: "Database Administrator" },
+    { name: "Sales Representative" },
+    { name: "Software Developer" },
     { name: "Student" },
-    { name: "Lawyer" },
-    { name: "" },
+    { name: "Teacher" },
+    { name: "Web Developer" },
+    { name: "Writer" },
+    { name: "Entrepreneur" },
+    { name: "Others" }
   ];
 
   const whyData = [
-    { reason: "Natural Language Processing" },
+    { reason: "Natural Language Capabilities" },
     { reason: "Scheduling Across Timezones" },
     { reason: "Convenience of Scheduling on the go" },
     { reason: "Attaching Conference Links" },
     { reason: "Find best time for a meeting" },
+    { reason: "Others" }
   ];
 
   const whyOptions = whyData.map((why) => ({
@@ -51,8 +80,6 @@ export default function UserInfo() {
     setComment(event.target.value);
   };
 
-  const [imageSrc, setImageSrc] = useState("logo.jpeg"); // You can place a default avatar URL or keep it empty
-
   const handleImageChange = (event) => {
     const file = event.target.files[0];
     if (file && file.type.substr(0, 5) === "image") {
@@ -68,71 +95,98 @@ export default function UserInfo() {
   };
 
   const sendData = async () => {
-    console.log("sendData is called");
-    const processedReason = reason.map(obj => obj.value)
-    const res = await axios.post(
-      "http://localhost:3001/update-profile",
-      { name: name, imageSrc: imageSrc, comment: comment, occupation: occupation.value, reason: processedReason },
-      {
-        headers: {
-          "Content-Type": "application/json",
+    const processedReason = reason.map(obj => obj.value);
+    const processedOccupation = occupation.map(obj => obj.value);
+    try {
+      const res = await axios.post(
+        "http://localhost:3001/update-profile",
+        {
+          name: name,
+          imageSrc: imageSrc,
+          comment: comment,
+          occupation: processedOccupation.includes("Others") ? [...processedOccupation, customOccupation] : processedOccupation,
+          reason: processedReason.includes("Others") ? [...processedReason, customReason] : processedReason
         },
-        withCredentials: true, // Include this in the same object as headers
-      }
-    );
-    console.log(res.data.message);
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          withCredentials: true, // Include this in the same object as headers
+        }
+      );
+      console.log(res.data.message);
+      window.location.href = "http://localhost:3000/home?auth=success"; // Redirect to the specified URL
+    } catch (error) {
+      console.error("Error updating user profile:", error);
+      alert("Failed to update profile.");
+    }
   };
+
 
   const handleSelectOption = (selectedOption) => {
     setOccupation(selectedOption);
+    if (!selectedOption.some(option => option.value === "Others")) {
+      setCustomOccupation("");
+    }
   };
 
   const handleSelectWhy = (selectedOption) => {
     setReason(selectedOption);
+    if (!selectedOption.some(option => option.value === "Others")) {
+      setCustomReason("");
+    }
   };
 
   return (
-    <div className="w-full h-full ">
+    <div className="w-full h-full">
       <div className="w-full h-screen flex flex-col">
         <div className="w-full h-full flex items-center justify-center">
           {isName && (
-            <div className="bg-white sxl:w-[1000px] sxl:h-fit flex items-center flex-col">
-              <div className=" text-justify">
+            <div className="bg-white sxl:w-[1000px] sxl:h-fit flex items-center flex-col p-6">
+              <div className="text-justify">
                 <div className="font-bold text-3xl text-justify w-full">
-                  Hello there 👋! Please kindly provide your details!
+                  Hello there 👋! We hope to get to know you better.
                 </div>
               </div>
 
               <div className="w-full flex flex-row space-x-10 my-6">
                 <div className="w-full">
-                  <text className="font-semibold text-gray-500 opacity-80">
+                  <label className="font-semibold text-gray-500 opacity-80">
                     Chosen name
-                  </text>
+                  </label>
                   <input
                     placeholder="Type here..."
-                    className={`w-full border border-solid px-1.5 py-2 h-[40px] mt-2 rounded-md`}
+                    className="w-full border border-solid px-1.5 py-2 h-[40px] mt-2 rounded-md"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                   />
                 </div>
                 <div className="w-full">
-                  <text className="font-semibold text-gray-500 opacity-80">
+                  <label className="font-semibold text-gray-500 opacity-80">
                     Occupation
-                  </text>
+                  </label>
                   <Select
                     className="mt-2"
                     options={jobOptions}
                     value={occupation}
                     onChange={handleSelectOption} // Handle selection change
                     placeholder="Select a job"
+                    isMulti
                   />
+                  {occupation.some(option => option.value === "Others") && (
+                    <input
+                      placeholder="Please specify"
+                      className="w-full border border-solid px-1.5 py-2 h-[40px] mt-2 rounded-md"
+                      value={customOccupation}
+                      onChange={(e) => setCustomOccupation(e.target.value)}
+                    />
+                  )}
                 </div>
               </div>
               <div className="w-full flex flex-row space-x-10 my-3">
                 <div className="flex flex-col space-y-3 w-full">
                   <label className="font-semibold text-gray-500 opacity-80">
-                    Would you be open to give more in-depth
-                    feedback to us?
+                    Would you be open to give more in-depth feedback to us?
                   </label>
                   <div className="flex items-center space-x-4">
                     <label className="flex items-center space-x-2">
@@ -158,9 +212,9 @@ export default function UserInfo() {
                   </div>
                 </div>
                 <div className="w-full">
-                  <text className="font-semibold text-gray-500 opacity-80">
-                    Why do you choose to use untangled?
-                  </text>
+                  <label className="font-semibold text-gray-500 opacity-80">
+                    Why did you want to try Ethan?
+                  </label>
                   <Select
                     className="mt-2"
                     options={whyOptions}
@@ -169,16 +223,18 @@ export default function UserInfo() {
                     placeholder="Select a reason"
                     isMulti
                   />
+                  {reason.some(option => option.value === "Others") && (
+                    <input
+                      placeholder="Please specify"
+                      className="w-full border border-solid px-1.5 py-2 h-[40px] mt-2 rounded-md"
+                      value={customReason}
+                      onChange={(e) => setCustomReason(e.target.value)}
+                    />
+                  )}
                 </div>
               </div>
-              {/* <button onClick={() => {
-                console.log(reason, "this is reason")
-                console.log(comment, "this is comment")
-                console.log(occupation, "this is occupation")
-              }}>Check</button> */}
-
               <button
-                className=" bg-blueNav w-[100px] mt-5 rounded-md h-[40px] text-white font-semibold"
+                className="bg-blueNav w-[100px] mt-5 rounded-md h-[40px] text-white font-semibold"
                 onClick={handleNameNext}
               >
                 Next
@@ -186,14 +242,13 @@ export default function UserInfo() {
             </div>
           )}
           {isPhoto && (
-            <div className="sxl:w-[450px] sxl:h-[250px] flex items-center flex-col">
+            <div className="sxl:w-[450px] sxl:h-[250px] flex items-center flex-col p-6">
               <img
                 src={imageSrc}
                 alt="Profile"
                 className="w-32 h-32 rounded-full mb-4"
-              />{" "}
-              <div className="bg-white space-x-3 flex items-center">
-                {" "}
+              />
+              <div className="bg-white space-x-3 flex items-center mb-4">
                 <label className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-4 rounded-lg cursor-pointer">
                   Choose File
                   <input
@@ -206,17 +261,17 @@ export default function UserInfo() {
                 <span className="text-sm text-gray-500">{fileName}</span>
               </div>
               <button
-                className=" bg-blueNav w-[150px] rounded-xl p-1 my-3 text-white font-semibold"
+                className="bg-blueNav w-[150px] rounded-xl p-1 my-3 text-white font-semibold"
                 onClick={sendData}
               >
-                Confirm Submit
+                Submit
               </button>
-              <Link
-                to={{ pathname: "/home" }}
-                className="flex flex-row w-[150px] bg-blueNav p-1 justify-center text-white font-semibold rounded-xl items-center"
+              <button
+                className="bg-gray-500 w-[150px] rounded-xl p-1 my-3 text-white font-semibold"
+                onClick={handlePhotoBack}
               >
-                Home
-              </Link>
+                Back
+              </button>
             </div>
           )}
         </div>
@@ -226,7 +281,7 @@ export default function UserInfo() {
             <img
               src="logo.jpeg"
               alt="logo"
-              className="rounded-full  border h-[80px] w-[80px]"
+              className="rounded-full border h-[80px] w-[80px]"
             />
           </div>
         </div>

@@ -1,4 +1,5 @@
 """Logic for interacting with type annotations, mostly extensions, shims and hacks to wrap python's typing module."""
+
 from __future__ import annotations as _annotations
 
 import dataclasses
@@ -108,10 +109,11 @@ def all_literal_values(type_: type[Any]) -> list[Any]:
 
 
 def is_annotated(ann_type: Any) -> bool:
-    from ._utils import lenient_issubclass
+    return get_origin(ann_type) is Annotated
 
-    origin = get_origin(ann_type)
-    return origin is not None and lenient_issubclass(origin, Annotated)
+
+def annotated_type(type_: Any) -> Any | None:
+    return get_args(type_)[0] if is_annotated(type_) else None
 
 
 def is_namedtuple(type_: type[Any]) -> bool:
@@ -242,7 +244,10 @@ def eval_type_lenient(value: Any, globalns: dict[str, Any] | None = None, localn
 
 
 def eval_type_backport(
-    value: Any, globalns: dict[str, Any] | None = None, localns: dict[str, Any] | None = None
+    value: Any,
+    globalns: dict[str, Any] | None = None,
+    localns: dict[str, Any] | None = None,
+    type_params: tuple[Any] | None = None,
 ) -> Any:
     """Like `typing._eval_type`, but falls back to the `eval_type_backport` package if it's
     installed to let older Python versions use newer typing features.
@@ -251,9 +256,14 @@ def eval_type_backport(
     if the original syntax is not supported in the current Python version.
     """
     try:
-        return typing._eval_type(  # type: ignore
-            value, globalns, localns
-        )
+        if sys.version_info >= (3, 13):
+            return typing._eval_type(  # type: ignore
+                value, globalns, localns, type_params=type_params
+            )
+        else:
+            return typing._eval_type(  # type: ignore
+                value, globalns, localns
+            )
     except TypeError as e:
         if not (isinstance(value, typing.ForwardRef) and is_backport_fixable_error(e)):
             raise
@@ -289,11 +299,15 @@ def get_function_type_hints(
     except AttributeError:
         type_hints = get_type_hints(function)
         if isinstance(function, type):
-            type_hints.setdefault('return', type)
+            # `type[...]` is a callable, which returns an instance of itself.
+            # At some point, we might even look into the return type of `__new__`
+            # if it returns something else.
+            type_hints.setdefault('return', function)
         return type_hints
 
     globalns = add_module_globals(function)
     type_hints = {}
+    type_params: tuple[Any] = getattr(function, '__type_params__', ())  # type: ignore
     for name, value in annotations.items():
         if include_keys is not None and name not in include_keys:
             continue
@@ -302,7 +316,7 @@ def get_function_type_hints(
         elif isinstance(value, str):
             value = _make_forward_ref(value)
 
-        type_hints[name] = eval_type_backport(value, globalns, types_namespace)
+        type_hints[name] = eval_type_backport(value, globalns, types_namespace, type_params)
 
     return type_hints
 

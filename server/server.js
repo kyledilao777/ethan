@@ -12,7 +12,7 @@ const port = process.env.PORT || 3001;
 const clientId = process.env.GOOGLE_CLIENT_ID;
 const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
 const redirectUri =
-  process.env.GOOGLE_REDIRECT_URI || "http://localhost:3001/oauth2callback";
+  /*process.env.GOOGLE_REDIRECT_URI || */"http://localhost:3001/oauth2callback";
 const oAuth2Client = new google.auth.OAuth2(
   clientId,
   clientSecret,
@@ -31,7 +31,7 @@ const userSchema = new mongoose.Schema({
   newName: { type: String, required: true },
   newPhoto: { type: String, required: true },
   calendarId: { type: String, required: true },
-  occupation: { type: String },
+  occupation: { type: [String] },
   comment: { type: String },
   reason: { type: [String] }
 
@@ -92,10 +92,10 @@ async function main() {
   app.use(
     cors({
       origin: [
-        "https://main.untangled-ai.com",
-        "https://backend.untangled-ai.com",
-        "https://untangled-ai.com",
-        "https://www.untangled-ai.com",
+        // "https://main.untangled-ai.com",
+        // "https://backend.untangled-ai.com",
+        // "https://untangled-ai.com",
+        // "https://www.untangled-ai.com",
         "http://localhost:3000",
         "http://localhost:3001",
         "http://localhost:3002",
@@ -121,11 +121,13 @@ async function main() {
     try {
       const email = req.query.email;
       const tokenRecord = await Token.findOne({ email: email });
-      console.log("Token Record:", tokenRecord);
+      
       if (!tokenRecord) {
         return res.status(404).send("Tokens not found");
       }
       res.json(tokenRecord.tokens);
+      console.error("Tokens retrieved successfully");
+
     } catch (error) {
       console.error("Error fetching tokens:", error);
       res.status(500).send("Internal Server Error");
@@ -141,6 +143,8 @@ async function main() {
         { upsert: true, new: true }
       );
       res.json(tokenRecord);
+      console.error("Tokens updated successfully");
+
     } catch (error) {
       console.error("Error updating tokens:", error);
       res.status(500).send("Internal Server Error");
@@ -168,12 +172,7 @@ async function main() {
 
   app.get("/oauth2callback", async (req, res) => {
     let q = url.parse(req.url, true).query;
-    // console.log("Callback state:", q.state); // Log state in callback
-    // console.log("Session state:", req.session.state); // Log session state
-    // console.log("Callback:", q);
-    // console.log("Session state q:", req.session);
 
-    console.log("oauth2callback");
     if (q.error) {
       console.log("Error:" + q.error);
       return res.status(400).send("Authentication error");
@@ -184,6 +183,9 @@ async function main() {
       try {
         const { tokens } = await oAuth2Client.getToken(q.code);
         oAuth2Client.setCredentials(tokens);
+        // Log the tokens to verify their structure
+        console.log("Tokens received:", tokens);
+        
         req.session.tokens = tokens;
         delete req.session.state;
 
@@ -361,70 +363,69 @@ async function main() {
     const data = req.body;
     const email = req.session.email;
     console.log("Email update profile: ", email);
-
+  
     console.log("Comment: ", data.comment);
     console.log("Reason: ", data.reason);
     console.log("Occupation: ", data.occupation);
-
+  
     if (!email) {
       return res.status(400).json({ message: "No email found in session." });
     }
-
+  
+    // Process custom "Others" values
+    const occupation = data.occupation.includes("Others") ? [...data.occupation.filter(item => item !== "Others"), data.customOccupation] : data.occupation;
+    const reason = data.reason.includes("Others") ? [...data.reason.filter(item => item !== "Others"), data.customReason] : data.reason;
+  
     try {
       if (data.name !== "" && data.imageSrc !== "logo.jpeg") {
-        console.log("not here 1")
+        console.log("not here 1");
         await User.findOneAndUpdate(
           { email: email }, // Query to find the document to update
           {
             newName: data.name, // Update the name
             newPhoto: data.imageSrc, // Update the photo
             comment: data.comment,
-            reason: data.reason,
-            occupation: data.occupation,
+            reason: reason,
+            occupation: occupation,
           },
           {
             new: true, // Return the updated document
             runValidators: true, // Ensure validation is run on update
           }
         );
-      } else {
-        if (data.name !== "" && data.imageSrc === "logo.jpeg") {
-          console.log("not here 2")
-          await User.findOneAndUpdate(
-            { email: email }, // Query to find the document to update
-            {
-              newName: data.name, // Update the name
-              comment: data.comment,
-              reason: data.reason,
-              occupation: data.occupation,
-            },
-            {
-              new: true, // Return the updated document
-              runValidators: true, // Ensure validation is run on update
-            }
-          );
-        } else if (data.name === "" && data.imageSrc !== "logo.jpeg") {
-          console.log("should be here")
-          await User.findOneAndUpdate(
-            { email: email }, // Query to find the document to update
-            {
-              // Update the name
-              newPhoto: data.imageSrc, // Update the photo
-              comment: data.comment,
-              reason: data.reason,
-              occupation: data.occupation,
-            },
-            {
-              new: true, // Return the updated document
-              runValidators: true, // Ensure validation is run on update
-            }
-          );
-        }
+      } else if (data.name !== "" && data.imageSrc === "logo.jpeg") {
+        console.log("not here 2");
+        await User.findOneAndUpdate(
+          { email: email }, // Query to find the document to update
+          {
+            newName: data.name, // Update the name
+            comment: data.comment,
+            reason: reason,
+            occupation: occupation,
+          },
+          {
+            new: true, // Return the updated document
+            runValidators: true, // Ensure validation is run on update
+          }
+        );
+      } else if (data.name === "" && data.imageSrc !== "logo.jpeg") {
+        console.log("should be here");
+        await User.findOneAndUpdate(
+          { email: email }, // Query to find the document to update
+          {
+            newPhoto: data.imageSrc, // Update the photo
+            comment: data.comment,
+            reason: reason,
+            occupation: occupation,
+          },
+          {
+            new: true, // Return the updated document
+            runValidators: true, // Ensure validation is run on update
+          }
+        );
       }
-
-      res
-        .status(200)
-        .json({ message: "Profile updated successfully" });
+  
+      res.status(200).json({ message: "Profile updated successfully" });
     } catch (error) {
       console.error("Error updating user profile:", error);
       res.status(500).json({
@@ -432,7 +433,7 @@ async function main() {
         error: error.toString(),
       });
     }
-  });
+  });  
 
   app.get("/logout", async (req, res) => {
     const tokens = req.session.tokens;

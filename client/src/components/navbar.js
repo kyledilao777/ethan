@@ -34,17 +34,20 @@ export default function NavBar({
     }
   );
 
-  const handleLogout = async () => {
+  const handleLogout = () => {
+    console.log("confirmation here 1");
     const confirmation = window.confirm("Are you sure you want to log out?");
+    console.log(confirmation, "confirmation here 2");
     if (!confirmation) {
       return; // Abort logout if user cancels
     }
 
     try {
-      await axios.get("http://localhost:3001/logout", {
+      axios.get("http://localhost:3001/logout", {
         withCredentials: true,
       });
-      window.location.href = "http://localhost:3000/login";
+      console.log("hello");
+      window.location.reload();
       console.log("halo");
     } catch (error) {
       console.error("Error logging out:", error);
@@ -188,7 +191,7 @@ export default function NavBar({
               isOpen ? "w-[285px]" : "w-0"
             }`} // Use Tailwind's width utilities for animation
           >
-            <div className="flex justify-center">
+            <div className="flex justify-center ">
               <div className="flex items-center space-x-5 h-20 mt-5">
                 {isOpen && (
                   <div className="flex items-center space-x-5">
@@ -210,6 +213,19 @@ export default function NavBar({
                     <span className="text-sm font-semibold text-blueNav">
                       Free Plan
                     </span>
+                    {isFreePlan && (
+                      <button
+                        onClick={() =>
+                          window.open(
+                            "https://untangled-ai.carrd.co/#ethanplus",
+                            "_blank"
+                          )
+                        }
+                        className="text-xs font-semibold bg-blueNav text-white py-1 mt-1 max-w-[130px] rounded"
+                      >
+                        Upgrade to Ethan+
+                      </button>
+                    )}
                     {isFreePlan && (
                       <button
                         onClick={() =>
@@ -416,20 +432,6 @@ export default function NavBar({
                           </div>
                         </Link>
                       </div>
-                    </div>
-                    <div className="flex flex-row items-center justify-between w-full space-x-5 mt-2 p-3 bg-white rounded-lg">
-                      <button
-                        onClick={handleLogout}
-                        className="flex flex-row items-center w-full"
-                        type="reset"
-                      >
-                        <LogOut size="30" className="opacity-80" />
-                        {isOpen && (
-                          <span className="font-medium text-blackNav opacity-70 ml-5">
-                            Logout
-                          </span>
-                        )}
-                      </button>
                     </div>
                   </div>
                 )}
@@ -766,11 +768,16 @@ export default function NavBar({
                     <div className="flex flex-row items-center justify-between w-full space-x-5 mt-2 p-3 bg-white rounded-lg">
                       <button
                         onClick={handleLogout}
-                        className="flex flex-row items-center w-full"
+                        className="flex flex-row items-center w-full space-x-5"
                       >
-                        <LogOut size="30" className="opacity-80" />
+                        <div><img
+                          src="exit.png"
+                          alt="exit"
+                          className="h-[32px] w-[31px]"
+                        /></div>
+                        
                         {isOpen && (
-                          <span className="font-medium text-blackNav opacity-70 ml-2">
+                          <span className="font-medium text-blackNav opacity-70">
                             Logout
                           </span>
                         )}
@@ -782,16 +789,27 @@ export default function NavBar({
             </nav>
           </div>
         </div>
+        {/* {isOpen && (
+          <div
+            className={`flex flex-row justify-center items-center w-full   space-x-8 px-5  mt-25vh`}
+          >
+            <a href="https://untangled.carrd.co/">
+              <img
+                src="new_website.png"
+                alt="website"
+                className="h-[40px] w-[40px]"
+              />
+            </a>
+            <a href="https://www.linkedin.com/company/untangled-ai">
+              <img
+                src="linkedin.png"
+                alt="linkedin"
+                className="h-[40px] w-[40px]"
+              />
+            </a>
+          </div>
+        )} */}
       </div>
     </div>
   );
 }
-
-// <div className="flex flex-row justify-center space-x-5 xsm:invisible sxl:visible items-center">
-//                 <a href="https://untangled.carrd.co/">
-//                   <img src="website.png" alt="website" className="h-[60px]" />
-//                 </a>
-//                 <a href="https://www.linkedin.com/company/untangled-ai">
-//                   <img src="linkedin.png" alt="linkedin" className="h-[40px]" />
-//                 </a>
-//               </div>

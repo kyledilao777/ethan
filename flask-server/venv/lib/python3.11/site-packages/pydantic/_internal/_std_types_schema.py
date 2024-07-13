@@ -2,6 +2,7 @@
 
 Import of this module is deferred since it contains imports of many standard library modules.
 """
+
 from __future__ import annotations as _annotations
 
 import collections
@@ -15,7 +16,7 @@ from enum import Enum
 from functools import partial
 from ipaddress import IPv4Address, IPv4Interface, IPv4Network, IPv6Address, IPv6Interface, IPv6Network
 from operator import attrgetter
-from typing import Any, Callable, Iterable, Literal, TypeVar
+from typing import Any, Callable, Iterable, Literal, Tuple, TypeVar
 
 import typing_extensions
 from pydantic_core import (
@@ -306,6 +307,7 @@ class SequenceValidator:
     min_length: int | None = None
     max_length: int | None = None
     strict: bool | None = None
+    fail_fast: bool | None = None
 
     def __get_pydantic_core_schema__(self, source_type: Any, handler: GetCoreSchemaHandler) -> CoreSchema:
         if self.item_source_type is Any:
@@ -313,7 +315,12 @@ class SequenceValidator:
         else:
             items_schema = handler.generate_schema(self.item_source_type)
 
-        metadata = {'min_length': self.min_length, 'max_length': self.max_length, 'strict': self.strict}
+        metadata = {
+            'min_length': self.min_length,
+            'max_length': self.max_length,
+            'strict': self.strict,
+            'fail_fast': self.fail_fast,
+        }
 
         if self.mapped_origin in (list, set, frozenset):
             if self.mapped_origin is list:
@@ -402,7 +409,7 @@ def sequence_like_prepare_pydantic_annotations(
     args = get_args(source_type)
 
     if not args:
-        args = (Any,)
+        args = typing.cast(Tuple[Any], (Any,))
     elif len(args) != 1:
         raise ValueError('Expected sequence to have exactly 1 generic parameter')
 
@@ -573,7 +580,7 @@ def mapping_like_prepare_pydantic_annotations(
     args = get_args(source_type)
 
     if not args:
-        args = (Any, Any)
+        args = typing.cast(Tuple[Any, Any], (Any, Any))
     elif mapped_origin is collections.Counter:
         # a single generic
         if len(args) != 1:

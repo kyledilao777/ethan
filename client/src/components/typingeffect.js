@@ -14,7 +14,7 @@ const TypingEffect = ({ message, onComplete }) => {
                     </span>,
                 ]);
                 setIndex(index + 1);
-            }, 15); // Adjust typing speed here
+            }, 5); // Adjust typing speed here
             return () => clearTimeout(timer);
         } else if (index === message.length && message.length > 0) {
             onComplete(); // Ensure onComplete is called only after the full message is typed
