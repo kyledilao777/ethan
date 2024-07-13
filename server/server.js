@@ -103,6 +103,7 @@ async function main() {
       ],
       credentials: true,
       methods: "GET,POST,OPTIONS,PUT,DELETE",
+      
       allowedHeaders:
         "Origin, X-Requested-With, Content-Type, Accept, Authorization",
     })
@@ -459,6 +460,7 @@ async function main() {
         return res.status(500).send("Failed to clear session");
       }
       res.clearCookie('connect.sid'); // Clear the session cookie
+      
     });
   });
 
