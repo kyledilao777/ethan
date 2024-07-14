@@ -41,18 +41,20 @@ export default function NavBar({
     if (!confirmation) {
       return; // Abort logout if user cancels
     }
-
-    try {
-      axios.get("http://localhost:3001/logout", {
-        withCredentials: true,
+  
+    axios.get(process.env.REACT_LOGOUT_URL /*|| "http://localhost:3001/logout"*/, {
+      withCredentials: true,
+    })
+      .then(() => {
+        console.log("hello");
+        window.location.reload();
+        console.log("halo");
+      })
+      .catch((error) => {
+        console.error("Error logging out:", error);
       });
-      console.log("hello");
-      window.location.reload();
-      console.log("halo");
-    } catch (error) {
-      console.error("Error logging out:", error);
-    }
   };
+  
 
   useEffect(() => {
     const fetchUserInfo = async () => {
