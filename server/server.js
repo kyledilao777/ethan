@@ -461,7 +461,6 @@ async function main() {
         return res.status(500).send("Failed to clear session");
       }
       res.clearCookie('connect.sid'); // Clear the session cookie
-      
     });
   });
 

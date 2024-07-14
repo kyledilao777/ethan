@@ -43,7 +43,7 @@ export default function NavBar({
     }
 
     try {
-      axios.get(process.env.REACT_LOGOUT_URL || "http://localhost:3001/logout", {
+      axios.get(process.env.REACT_LOGOUT_URL /*|| "http://localhost:3001/logout"*/, {
         withCredentials: true,
       });
       console.log("hello");
