@@ -28,7 +28,7 @@ export default function NavBar({
     (response) => response,
     (error) => {
       if (error.response && error.response.status === 401) {
-        window.location.href = process.env.REACT_MAIN_URL /*|| "http://localhost:3000/login"*/;
+        window.location.href = process.env.REACT_APP_MAIN_URL /*|| "http://localhost:3000/login"*/;
       }
       return Promise.reject(error);
     }
@@ -61,7 +61,8 @@ export default function NavBar({
       // Refresh the page almost immediately after sending the request
       setTimeout(() => {
         console.log("Logout successful, reloading page...");
-        window.location.reload();
+        const loginPage = process.env.REACT_APP_MAIN_URL
+        window.location.href = loginPage;
       }, 100); // Adjust the timeout as needed
     } catch (error) {
       console.error("Error logging out:", error);
