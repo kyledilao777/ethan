@@ -230,7 +230,7 @@ async function main() {
             calendarId: primaryCalendar.id, // Assuming you set this later or modify it
           });
 
-          redirectUrl = process.env.REACT_USER_INFO_URL /*|| "http://localhost:3000/userinfo"*/;
+          redirectUrl = process.env.REACT_APP_USER_INFO_URL /*|| "http://localhost:3000/userinfo"*/;
         } else {
           redirectUrl = process.env.REDIRECT_HOME /*|| "http://localhost:3000/home?auth=success"*/;
         }

@@ -99,7 +99,7 @@ export default function UserInfo() {
     const processedOccupation = occupation.map(obj => obj.value);
     try {
       const res = await axios.post(
-        process.env.REACT_UPDATE_PROFILE_URL /*||
+        process.env.REACT_APP_UPDATE_PROFILE_URL /*||
         "http://localhost:3001/update-profile"*/,
         {
           name: name,
