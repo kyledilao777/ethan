@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-BACKEND_URL = os.getenv('BACKEND_URI')
+BACKEND_URL = os.getenv("BACKEND_URI")
 
 def get_tokens(email):
     response = requests.get(f"{BACKEND_URL}/get-tokens?email={email}")
