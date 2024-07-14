@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 export default function Login() {
   const handleLogin = () => {
     const loginUrl =
-      process.env.REACT_APP_LOGIN_URL || "http://localhost:3001/login";
+      process.env.REACT_APP_LOGIN_URL /*|| "http://localhost:3001/login"*/;
     window.location.href = loginUrl;
   };
 

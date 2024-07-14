@@ -28,7 +28,7 @@ export default function NavBar({
     (response) => response,
     (error) => {
       if (error.response && error.response.status === 401) {
-        window.location.href = process.env.LOGIN_URL /*|| "http://localhost:3000/login"*/;
+        window.location.href = process.env.REACT_MAIN_URL /*|| "http://localhost:3000/login"*/;
       }
       return Promise.reject(error);
     }
@@ -43,7 +43,7 @@ export default function NavBar({
     }
 
     try {
-      axios.get(process.env.LOGOUT_URL /*|| "http://localhost:3001/logout"*/, {
+      axios.get(process.env.REACT_LOGOUT_URL || "http://localhost:3001/logout", {
         withCredentials: true,
       });
       console.log("hello");
