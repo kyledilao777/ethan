@@ -34,7 +34,7 @@ export default function NavBar({
     }
   );
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     console.log("confirmation here 1");
     const confirmation = window.confirm("Are you sure you want to log out?");
     console.log(confirmation, "confirmation here 2");
@@ -42,19 +42,19 @@ export default function NavBar({
       return; // Abort logout if user cancels
     }
   
-    axios.get(process.env.REACT_LOGOUT_URL /*|| "http://localhost:3001/logout"*/, {
+    axios.get(/*process.env.REACT_LOGOUT_URL ||*/ "http://localhost:3001/logout", {
       withCredentials: true,
     })
-      .then(() => {
-        console.log("hello");
-        window.location.reload();
-        console.log("halo");
-      })
       .catch((error) => {
         console.error("Error logging out:", error);
       });
-  };
   
+    // Refresh the page almost immediately after sending the request
+    setTimeout(() => {
+      console.log("Logout successful, reloading page...");
+      window.location.reload();
+    }, 100); // Adjust the timeout as needed
+  };
 
   useEffect(() => {
     const fetchUserInfo = async () => {
