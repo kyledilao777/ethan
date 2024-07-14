@@ -80,6 +80,7 @@ async function main() {
       secret: process.env.SESSION_SECRET,
       store: sessionStore,
       resave: false,
+      // saveUninitialized: true,
       saveUninitialized: false,
       cookie: {
         httpOnly: true,
