@@ -41,7 +41,8 @@ export default function NavBar({
     if (!confirmation) {
       return; // Abort logout if user cancels
     }
-  
+    
+    console.log(process.env.REACT_LOGOUT_URL, "Logout URL")
     axios.get(process.env.REACT_LOGOUT_URL /*|| "http://localhost:3001/logout"*/, {
       withCredentials: true,
     })
