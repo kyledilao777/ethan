@@ -16,7 +16,7 @@ export default function App() {
     <div>
       <Router>
         <Routes>
-          <Route path="/login" element={<Login />} />
+          <Route path="/" element={<Login />} />
           <Route path="/home" element={<Home />} />
           <Route path="/calendar" element={<Calendar />} />
           <Route path="/privacy" element={<Privacy />} />
@@ -25,7 +25,6 @@ export default function App() {
           <Route path="/todo" element={<Todo />} />
           <Route path="/routemap" element={<RouteMap />} />
           <Route path="/userinfo" element={<UserInfo />} />
-          <Route path="/" element={<Navigate to="/login" />} />
           <Route path="/termsandservices" element={<Terms />} />
         </Routes>
       </Router>

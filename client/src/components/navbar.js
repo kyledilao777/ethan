@@ -28,7 +28,7 @@ export default function NavBar({
     (response) => response,
     (error) => {
       if (error.response && error.response.status === 401) {
-        window.location.href = "http://localhost:3000/login";
+        window.location.href = "http://localhost:3000/";
       }
       return Promise.reject(error);
     }
