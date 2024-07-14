@@ -44,10 +44,10 @@ export default function Login() {
             <div className="flex flex-wrap justify-center text-center">
               <span>By continuing, you agree to the</span>
               <Link to="/termsandservices" className="ml-1 underline">
-                Terms and Services
+                Terms of Services
               </Link>
               <span className="ml-1">and acknowledge you've read our</span>
-              <Link to="/privacy-policy" className="ml-1 underline">
+              <Link to="/privacy" className="ml-1 underline">
                 Privacy Policy
               </Link>
             </div>
