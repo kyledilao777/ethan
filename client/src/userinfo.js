@@ -99,8 +99,8 @@ export default function UserInfo() {
     const processedOccupation = occupation.map(obj => obj.value);
     try {
       const res = await axios.post(
-        
-        "http://localhost:3001/update-profile",
+        process.env.UPDATE_PROFILE_URL /*||
+        "http://localhost:3001/update-profile"*/,
         {
           name: name,
           imageSrc: imageSrc,
@@ -116,7 +116,8 @@ export default function UserInfo() {
         }
       );
       console.log(res.data.message);
-      window.location.href = "http://localhost:3000/home?auth=success"; // Redirect to the specified URL
+      window.location.href = `${process.env.REDIRECT_HOME}`; /*||
+            "http://localhost:3000/home?auth=success"*/// Redirect to the specified URL
     } catch (error) {
       console.error("Error updating user profile:", error);
       alert("Failed to update profile.");
