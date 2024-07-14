@@ -42,18 +42,30 @@ export default function NavBar({
       return; // Abort logout if user cancels
     }
   
-    axios.get(/*process.env.REACT_LOGOUT_URL ||*/ "http://localhost:3001/logout", {
-      withCredentials: true,
-    })
-      .catch((error) => {
-        console.error("Error logging out:", error);
-      });
+    const logoutUrl = process.env.REACT_LOGOUT_URL /*|| "http://localhost:3001/logout"*/;
+    console.log("Logout URL:", logoutUrl);
   
-    // Refresh the page almost immediately after sending the request
-    setTimeout(() => {
-      console.log("Logout successful, reloading page...");
-      window.location.reload();
-    }, 100); // Adjust the timeout as needed
+    if (!logoutUrl) {
+      console.error("Logout URL is not defined!");
+      return;
+    }
+  
+    try {
+      axios.get(logoutUrl, {
+        withCredentials: true,
+      })
+        .catch((error) => {
+          console.error("Error logging out:", error);
+        });
+  
+      // Refresh the page almost immediately after sending the request
+      setTimeout(() => {
+        console.log("Logout successful, reloading page...");
+        window.location.reload();
+      }, 100); // Adjust the timeout as needed
+    } catch (error) {
+      console.error("Error logging out:", error);
+    }
   };
 
   useEffect(() => {
