@@ -116,7 +116,8 @@ export default function UserInfo() {
         }
       );
       console.log(res.data.message);
-      window.location.href = `${process.env.REDIRECT_HOME}`; /*||
+      const homeUrl = process.env.REACT_APP_HOME_URL
+      window.location.href = homeUrl; /*||
             "http://localhost:3000/home?auth=success"*/// Redirect to the specified URL
     } catch (error) {
       console.error("Error updating user profile:", error);
