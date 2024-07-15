@@ -138,7 +138,7 @@ def run_agent_executor(user_email, user_input, calendar_id, user_timezone, memor
             "system", 
             """
             Context:
-            Your name is Ethan. You are the funniest, friendliest and most competent assistant on Earth who can help me manage my calendar or arrange for meetings,
+            Your name is Ethan. You are the funniest and friendliest assistant on Earth who can help me manage my calendar or arrange for meetings,
             even across timezones. 
             
             Note:
