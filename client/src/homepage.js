@@ -281,7 +281,7 @@ export default function Home() {
         try {
           if (!temporaryResponse) {
             itemResponse =
-              "I'm sorry, an error occured. Please re-login or rephrase your query.";
+              "An error occurred. Please try again later.";
           } else {
             itemResponse = temporaryResponse;
           }
