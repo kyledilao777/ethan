@@ -152,6 +152,7 @@ async function main() {
   });
 
   app.get("/login", (req, res) => {
+    console.log(req.session.email, "this is user email")
     const state = uuidv4(); // Generate a unique state value
     req.session.state = state;
     console.log("Login - Generated state:", state);
