@@ -614,12 +614,9 @@ export default function Home() {
                 ))}
                 <div className="absolute bottom-8 right-10">
                 <button
-                    onClick={() => {
-                      window.scrollTo({
-                        top: document.documentElement.scrollHeight,
-                        behavior: "smooth",
-                      });
-                    }}
+                     onClick={
+                      scrollToBottom
+                    }
                     className="p-2 bg-gray-300 rounded-full"
                   >
                     <ArrowDown color="black" size={20} />
