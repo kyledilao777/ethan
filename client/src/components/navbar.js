@@ -231,20 +231,7 @@ export default function NavBar({
                       <button
                         onClick={() =>
                           window.open(
-                            "https://untangled-ai.carrd.co/#ethanplus",
-                            "_blank"
-                          )
-                        }
-                        className="text-xs font-semibold bg-blueNav text-white py-1 mt-1 max-w-[130px] rounded"
-                      >
-                        Upgrade to Ethan+
-                      </button>
-                    )}
-                    {isFreePlan && (
-                      <button
-                        onClick={() =>
-                          window.open(
-                            "https://untangled-ai.carrd.co/#ethanplus",
+                            "https://blog.untangled-ai.com/#ethanplus",
                             "_blank"
                           )
                         }
@@ -494,7 +481,7 @@ export default function NavBar({
                   <button
                     onClick={() =>
                       window.open(
-                        "https://untangled-ai.carrd.co/#ethanplus",
+                        "https://blog.untangled-ai.com/#ethanplus",
                         "_blank"
                       )
                     }
