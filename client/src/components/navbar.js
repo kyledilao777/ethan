@@ -434,6 +434,24 @@ export default function NavBar({
                         </Link>
                       </div>
                     </div>
+                    <div className="flex flex-row items-center justify-between w-full space-x-5 mt-2 p-3 bg-white rounded-lg">
+                      <button
+                        onClick={handleLogout}
+                        className="flex flex-row items-center w-full space-x-5"
+                      >
+                        <div><img
+                          src="exit.png"
+                          alt="exit"
+                          className="h-[32px] w-[31px]"
+                        /></div>
+                        
+                        {isOpen && (
+                          <span className="font-medium text-blackNav opacity-70">
+                            Logout
+                          </span>
+                        )}
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>
