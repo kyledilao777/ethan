@@ -172,24 +172,32 @@ export default function NavBar({
 
   const navbarRef = useRef(null);
 
-  const handleClickOutside = (event) => {
-    if (navbarRef.current && !navbarRef.current.contains(event.target)) {
-      setIsOpen(false);
-      setIsNavOpen(false);
-    }
-  };
+  const mobileNavbarRef = useRef(null);
+  const desktopNavbarRef = useRef(null)
 
   useEffect(() => {
-    document.addEventListener("click", handleClickOutside, true);
+    const handleClickOutside = (event) => {
+      if (
+        mobileNavbarRef.current &&
+        !mobileNavbarRef.current.contains(event.target) &&
+        desktopNavbarRef.current &&
+        !desktopNavbarRef.current.contains(event.target)
+      ) {
+        setIsOpen(false);
+        setIsNavOpen(false)
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
     return () => {
-      document.removeEventListener("click", handleClickOutside, true);
+      document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
 
   return (
     <div className=" font-poppins">
       <div
-        ref={navbarRef}
+        ref={mobileNavbarRef}
         className="w-full bg-white visible xsm:visible sxl:hidden xl:hidden xsm:fixed border h-[50px] flex justify-between px-[20px] py-[10px]"
       >
         <div className="visible xsm:visible sxl:hidden xl:hidden  ">
@@ -475,7 +483,7 @@ export default function NavBar({
         className={`duration-500 visible xsm:hidden xl:block sxl:block h-full text-black ${
           isOpen ? "w-[285px]" : "w-[70px]"
         } transition-width border rounded-lg`}
-        ref={navbarRef}
+        ref={desktopNavbarRef}
         onClick={handleButton}
       >
         <div className="flex justify-center">
