@@ -257,10 +257,10 @@ async function main() {
 
   app.get("/auth-check", async (req, res) => {
     const tokens = req.session.tokens; // Corrected line
-
+    console.log(tokens)
     if (!tokens || !tokens.access_token) {
       console.log("Token issue or not authenticated");
-      return res.status(401).send("User not authenticated");
+      return res.json({ isAuthenticated: false });
     }
 
     try {
@@ -286,7 +286,6 @@ async function main() {
           } catch (refreshError) {
             console.error("Error refreshing token:", refreshError);
             return res
-              .status(401)
               .json({ isAuthenticated: false, error: "Token refresh failed" });
           }
         } else {
@@ -294,7 +293,6 @@ async function main() {
         }
       }
       return res
-        .status(401)
         .json({ isAuthenticated: false, error: "Invalid or expired token" });
     }
   });

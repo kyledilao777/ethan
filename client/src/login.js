@@ -1,4 +1,6 @@
 import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import axios from "axios";
 
 export default function Login() {
   const handleLogin = () => {
@@ -6,6 +8,21 @@ export default function Login() {
       process.env.REACT_APP_LOGIN_URL || "http://localhost:3001/login";
     window.location.href = loginUrl;
   };
+
+  useEffect(() => {
+    const verifyAuth = async () => {
+      const { data } = await axios.get(
+        /*process.env
+          .REACT_APP_USER_INFO ||*/ "http://localhost:3001/auth-check",
+        { withCredentials: true }
+      );
+      if (data.isAuthenticated) {
+        window.location.href = "http://localhost:3000/home";
+      } 
+    };
+
+    verifyAuth();
+  }, []);
 
   return (
     <div className="w-full h-screen flex justify-center items-center">
