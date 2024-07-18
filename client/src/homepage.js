@@ -450,7 +450,7 @@ export default function Home() {
 
   return (
     <div className={`w-full ${isScrollable ? "h-fit" : "h-screen"}`}>
-      <div className="w-full flex sxl:flex-row xsm:flex-col h-screen">
+      <div className="w-full flex sxl:flex-row xsm:flex-row h-screen">
         <NavBar setIsNavOpen={setIsNavOpen} isHome={true} setIsAgent={setIsAgent} setAgentResponse={setAgentResponse} setData={setData} />
         <div
           className={`flex flex-col w-full h-full transition-all duration-300 ${mainContentClass} `}

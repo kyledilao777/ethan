@@ -28,7 +28,8 @@ export default function NavBar({
     (response) => response,
     (error) => {
       if (error.response && error.response.status === 401) {
-        window.location.href = process.env.REACT_MAIN_URL /*|| "http://localhost:3000/login"*/;
+        window.location.href =
+          process.env.REACT_MAIN_URL /*|| "http://localhost:3000/login"*/;
       }
       return Promise.reject(error);
     }
@@ -41,27 +42,28 @@ export default function NavBar({
     if (!confirmation) {
       return; // Abort logout if user cancels
     }
-  
+
     const logoutUrl = "http://localhost:3001/logout";
     console.log("Logout URL:", logoutUrl);
-  
+
     if (!logoutUrl) {
       console.error("Logout URL is not defined!");
       return;
     }
-  
+
     try {
-      axios.get(logoutUrl, {
-        withCredentials: true,
-      })
+      axios
+        .get(logoutUrl, {
+          withCredentials: true,
+        })
         .catch((error) => {
           console.error("Error logging out:", error);
         });
-  
+
       // Refresh the page almost immediately after sending the request
       setTimeout(() => {
         console.log("Logout successful, reloading page...");
-        const loginPage = "http://localhost:3000"
+        const loginPage = "http://localhost:3000";
         window.location.href = loginPage;
       }, 100); // Adjust the timeout as needed
     } catch (error) {
@@ -72,11 +74,9 @@ export default function NavBar({
   useEffect(() => {
     const fetchUserInfo = async () => {
       try {
-        const { data } = await axios.get(
-          
-             "http://localhost:3001/user-info",
-          { withCredentials: true }
-        );
+        const { data } = await axios.get("http://localhost:3001/user-info", {
+          withCredentials: true,
+        });
 
         // Update userInfo state with fetched dxata
         let finalName;
@@ -165,32 +165,42 @@ export default function NavBar({
     setIsNavOpen(false);
   };
 
-  const bgContentClass = isOpen ? "mt-5" : "bg-white";
-
-  const bgMargin = isOpen ? "mt-5" : "mt-0";
-
+  
   const bgMargin2 = isOpen ? "mt-2" : "mt-0";
 
-  const navbarRef = useRef(null);
-
-  const handleClickOutside = (event) => {
-    if (navbarRef.current && !navbarRef.current.contains(event.target)) {
-      setIsOpen(false);
-      setIsNavOpen(false);
-    }
-  };
+  const mobileNavbarRef = useRef(null);
+  const desktopNavbarRef = useRef(null)
 
   useEffect(() => {
-    document.addEventListener("click", handleClickOutside, true);
+    const handleClickOutside = (event) => {
+      if (
+        mobileNavbarRef.current &&
+        !mobileNavbarRef.current.contains(event.target) &&
+        desktopNavbarRef.current &&
+        !desktopNavbarRef.current.contains(event.target)
+      ) {
+        setIsOpen(false);
+        setIsNavOpen(false)
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
     return () => {
-      document.removeEventListener("click", handleClickOutside, true);
+      document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
+
+  // useEffect(() => {
+  //   document.addEventListener("click", handleClickOutside, true);
+  //   return () => {
+  //     document.removeEventListener("click", handleClickOutside, true);
+  //   };
+  // }, []);
 
   return (
     <div className=" font-poppins">
       <div
-        ref={navbarRef}
+        ref={mobileNavbarRef}
         className="w-full bg-white visible xsm:visible sxl:hidden xl:hidden xsm:fixed border h-[50px] flex justify-between px-[20px] py-[10px]"
       >
         <div className="visible xsm:visible sxl:hidden xl:hidden  ">
@@ -232,20 +242,7 @@ export default function NavBar({
                       <button
                         onClick={() =>
                           window.open(
-                            "https://untangled-ai.carrd.co/#ethanplus",
-                            "_blank"
-                          )
-                        }
-                        className="text-xs font-semibold bg-blueNav text-white py-1 mt-1 max-w-[130px] rounded"
-                      >
-                        Upgrade to Ethan+
-                      </button>
-                    )}
-                    {isFreePlan && (
-                      <button
-                        onClick={() =>
-                          window.open(
-                            "https://untangled-ai.carrd.co/#ethanplus",
+                            "https://blog.untangled-ai.com/#ethanplus",
                             "_blank"
                           )
                         }
@@ -448,6 +445,24 @@ export default function NavBar({
                         </Link>
                       </div>
                     </div>
+                    <div className="flex flex-row items-center justify-between w-full space-x-5 mt-2 p-3 bg-white rounded-lg">
+                      <button
+                        onClick={handleLogout}
+                        className="flex flex-row items-center w-full space-x-5"
+                      >
+                        <div><img
+                          src="exit.png"
+                          alt="exit"
+                          className="h-[32px] w-[31px]"
+                        /></div>
+                        
+                        {isOpen && (
+                          <span className="font-medium text-blackNav opacity-70">
+                            Logout
+                          </span>
+                        )}
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>
@@ -466,12 +481,11 @@ export default function NavBar({
           <img src="logo.jpeg" alt="logo" className="h-[33px]" />
         </div>
       </div>
-
       <div
         className={`duration-500 visible xsm:hidden xl:block sxl:block h-full text-black ${
           isOpen ? "w-[285px]" : "w-[70px]"
         } transition-width border rounded-lg`}
-        ref={navbarRef}
+        ref={desktopNavbarRef}
         onClick={handleButton}
       >
         <div className="flex justify-center">
@@ -778,6 +792,7 @@ export default function NavBar({
                             </text>
                           </div>
                         )}
+                        
                       </Link>
                     </div>
                     <div className="flex flex-row items-center justify-between w-full space-x-5 mt-2 p-3 bg-white rounded-lg">
@@ -785,18 +800,21 @@ export default function NavBar({
                         onClick={handleLogout}
                         className="flex flex-row items-center w-full space-x-5"
                       >
-                        <div><img
-                          src="exit.png"
-                          alt="exit"
-                          className="h-[32px] w-[31px]"
-                        /></div>
-                        
+                        <div>
+                          <img
+                            src="exit.png"
+                            alt="exit"
+                            className="h-[32px] w-[31px]"
+                          />
+                        </div>
+
                         {isOpen && (
                           <span className="font-medium text-blackNav opacity-70">
                             Logout
                           </span>
                         )}
                       </button>
+                      <button onClick={() => console.log("this is test")}>Test</button>
                     </div>
                   </div>
                 </div>
@@ -828,4 +846,3 @@ export default function NavBar({
     </div>
   );
 }
-
