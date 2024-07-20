@@ -1,4 +1,6 @@
 import { Link } from "react-router-dom";
+import { useEffect } from "react";
+import axios from "axios";
 
 export default function Login() {
   const handleLogin = () => {
@@ -6,6 +8,21 @@ export default function Login() {
       process.env.REACT_APP_LOGIN_URL /*|| "http://localhost:3001/login"*/;
     window.location.href = loginUrl;
   };
+
+  useEffect(() => {
+    const verifyAuth = async () => {
+      const { data } = await axios.get(
+        process.env.REACT_APP_AUTH_CHECK,
+        { withCredentials: true }
+      );
+      if (data.isAuthenticated) {
+        const homeUrl = process.env.REACT_APP_HOME_URL
+        window.location.href = homeUrl;
+      } 
+    };
+
+    verifyAuth();
+  }, []);
 
   return (
     <div className="w-full h-screen flex justify-center items-center">
