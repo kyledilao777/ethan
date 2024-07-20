@@ -17,6 +17,7 @@ import { setTypingEffect } from "./redux/reducers/userReducer";
 import { setIsAuthenticated } from "./redux/reducers/userReducer";
 import { current } from "@reduxjs/toolkit";
 import { setUserInput } from "./redux/reducers/userReducer";
+import ReactGA from "react-ga"
 
 export default function Home() {
   const [timezone, setTimezone] = useState("UTC"); // Default timezone
@@ -163,6 +164,12 @@ export default function Home() {
   }, []);
 
   const sendUserInput = async () => {
+    ReactGA.event({
+      category: 'User',
+      action: 'Send Response',
+      label: 'User Send Response'
+    });
+
     console.log(userInput, " this is the real user input");
     const id = uuidv4();
 
@@ -625,6 +632,12 @@ export default function Home() {
                 <div className="absolute bottom-8 right-20">
                   <button
                     onClick={() => {
+                      ReactGA.event({
+                        category: 'User',
+                        action: 'Reloads',
+                        label: 'User Reloads'
+                      });
+
                       dispatch(setIsAgent(false));
                       dispatch(setAgentResponse(null));
                       dispatch(setData([]));

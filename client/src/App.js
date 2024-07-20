@@ -10,6 +10,11 @@ import Documentation from "./documentation";
 import Privacy from "./privacy";
 import UserInfo from "./userinfo";
 import Terms from "./termsandservices";
+import ReactGA from 'react-ga';
+
+const TRACKING_ID = "G-5NYP0WVVQM"; // Replace with your tracking ID
+ReactGA.initialize(TRACKING_ID);
+
 
 export default function App() {
   return (
