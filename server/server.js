@@ -122,6 +122,9 @@ async function main() {
     try {
       const email = req.query.email;
       const tokenRecord = await Token.findOne({ email: email });
+
+      console.log("email:", email);
+      console.log("tokenRecord:", tokenRecord);
       
       if (!tokenRecord) {
         return res.status(404).send("Tokens not found");
