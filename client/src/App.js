@@ -17,23 +17,23 @@ import UserInfo from "./userinfo";
 import Terms from "./termsandservices";
 import ReactGA from "react-ga";
 import { useEffect } from "react";
-import { useHistory } from "react-router-dom";
+
 
 const TRACKING_ID = process.env.REACT_APP_GA_TRACKING_ID; // Replace with your tracking ID
 ReactGA.initialize(TRACKING_ID);
 
-function usePageViews() {
-  let history = useHistory();
-  useEffect(() => {
-    ReactGA.pageview(window.location.pathname + window.location.search);
-    return history.listen((location) => {
-      ReactGA.pageview(location.pathname + location.search);
-    });
-  }, [history]);
-}
+// function usePageViews() {
+//   let history = useNavigate();
+//   useEffect(() => {
+//     ReactGA.pageview(window.location.pathname + window.location.search);
+//     return history.listen((location) => {
+//       ReactGA.pageview(location.pathname + location.search);
+//     });
+//   }, [history]);
+// }
 
 export default function App() {
-  usePageViews();
+  // usePageViews();
 
   return (
     <div>
