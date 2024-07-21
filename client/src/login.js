@@ -6,9 +6,9 @@ import ReactGA from "react-ga"
 export default function Login() {
   const handleLogin = () => {
     ReactGA.event({
-      category: 'User',
-      action: 'Logins',
-      label: 'User Logins'
+      'category': 'Test',
+      'action': 'submit',
+      'label': 'label'
     });
     const loginUrl =
       process.env.REACT_APP_LOGIN_URL /*|| "http://localhost:3001/login"*/;
