@@ -16,25 +16,12 @@ import Privacy from "./privacy";
 import UserInfo from "./userinfo";
 import Terms from "./termsandservices";
 import ReactGA from "react-ga";
-import { useEffect } from "react";
 
 
 const TRACKING_ID = process.env.REACT_APP_GA_TRACKING_ID; // Replace with your tracking ID
 ReactGA.initialize(TRACKING_ID);
 
-// function usePageViews() {
-//   let history = useNavigate();
-//   useEffect(() => {
-//     ReactGA.pageview(window.location.pathname + window.location.search);
-//     return history.listen((location) => {
-//       ReactGA.pageview(location.pathname + location.search);
-//     });
-//   }, [history]);
-// }
-
 export default function App() {
-  // usePageViews();
-
   return (
     <div>
       <Router>
