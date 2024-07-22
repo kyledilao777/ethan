@@ -288,7 +288,7 @@ export default function Home() {
         try {
           if (!temporaryResponse) {
             itemResponse =
-              "Your session has timed out. Please logout and log in again.";
+              "Your session has timed out. Please logout and log in again. If the error persists, please contact us at blog.untangled-ai.com/#contactus.";
           } else {
             itemResponse = temporaryResponse;
           }
