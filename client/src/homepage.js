@@ -288,7 +288,7 @@ export default function Home() {
         try {
           if (!temporaryResponse) {
             itemResponse =
-              "An error occurred. Please try again later.";
+              "Your session has timed out. Please logout and log in again.";
           } else {
             itemResponse = temporaryResponse;
           }
