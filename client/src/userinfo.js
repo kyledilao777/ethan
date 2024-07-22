@@ -1,6 +1,7 @@
 import { useState } from "react";
 import axios from "axios";
 import Select from "react-select";
+import ReactGA from "react-ga"
 
 export default function UserInfo() {
   const [name, setName] = useState("");
@@ -13,8 +14,15 @@ export default function UserInfo() {
   const [reason, setReason] = useState([]);
   const [customReason, setCustomReason] = useState("");
   const [imageSrc, setImageSrc] = useState("logo.jpeg");
+  
 
   const handleNameNext = () => {
+    ReactGA.event({
+      category: 'User',
+      action: 'Clicks Next',
+      label: 'User Clicks Next'
+    });
+
     const hasOtherOccupation = occupation.some(option => option.value === "Others");
     const hasOtherReason = reason.some(option => option.value === "Others");
     
@@ -27,6 +35,12 @@ export default function UserInfo() {
   };
 
   const handlePhotoBack = () => {
+    ReactGA.event({
+      category: 'User',
+      action: 'Backs to Name',
+      label: 'User Backs to Name'
+    });
+
     setIsName(true);
     setIsPhoto(false);
   };
@@ -81,6 +95,11 @@ export default function UserInfo() {
   };
 
   const handleImageChange = (event) => {
+    ReactGA.event({
+      category: 'User',
+      action: 'Changes Image',
+      label: 'User Changes Image'
+    });
     const file = event.target.files[0];
     if (file && file.type.substr(0, 5) === "image") {
       const reader = new FileReader();
@@ -95,11 +114,17 @@ export default function UserInfo() {
   };
 
   const sendData = async () => {
+    ReactGA.event({
+      category: 'User',
+      action: 'Sends User Data',
+      label: 'User Sends User Data'
+    });
     const processedReason = reason.map(obj => obj.value);
     const processedOccupation = occupation.map(obj => obj.value);
     try {
       const res = await axios.post(
-        "http://localhost:3001/update-profile",
+        process.env.REACT_APP_UPDATE_PROFILE_URL /*||
+        "http://localhost:3001/update-profile"*/,
         {
           name: name,
           imageSrc: imageSrc,
@@ -115,7 +140,9 @@ export default function UserInfo() {
         }
       );
       console.log(res.data.message);
-      window.location.href = "http://localhost:3000/home?auth=success"; // Redirect to the specified URL
+      const homeUrl = process.env.REACT_APP_HOME_URL
+      window.location.href = homeUrl; /*||
+            "http://localhost:3000/home?auth=success"*/// Redirect to the specified URL
     } catch (error) {
       console.error("Error updating user profile:", error);
       alert("Failed to update profile.");

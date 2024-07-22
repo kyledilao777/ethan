@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-BACKEND_URL = "http://localhost:3001"
+BACKEND_URL = os.getenv("BACKEND_URI")
 
 def get_tokens(email):
     response = requests.get(f"{BACKEND_URL}/get-tokens?email={email}")
@@ -61,7 +61,7 @@ def get_calendar_events(user_email, calendar_id, start_time, end_time):
     response = requests.get(endpoint, headers=headers, params=params)
     
     #refresh expired tokens
-    if response.status_code == 401:
+    if response.status_code in (400, 401, 404):
         print(f"email: {user_email}")
         
         # Token expired, refresh it
@@ -104,7 +104,7 @@ def get_calendar_timezone(user_email, calendar_id):
     response = requests.get(endpoint, headers=headers)
     
     #refresh expired tokens
-    if response.status_code == 401:
+    if response.status_code in (400, 401, 404):
         print(f"email: {user_email}")
         # Token expired, refresh it
         tokens = get_tokens(user_email)
@@ -163,7 +163,7 @@ def create_event(user_email, calendar_id, event_name, start_datetime, end_dateti
     response = requests.post(endpoint, headers=headers, json=event_data)
     
     #refresh expired tokens
-    if response.status_code == 401:
+    if response.status_code in (400, 401, 404):
         print(f"email: {user_email}")
         
         # Token expired, refresh it
@@ -206,7 +206,7 @@ def delete_event(user_email, calendar_id, event_id):
     response = requests.delete(endpoint, headers=headers)
     
     #refresh expired tokens
-    if response.status_code == 401:
+    if response.status_code in (400, 401, 404):
         print(f"email: {user_email}")
         
         # Token expired, refresh it
@@ -244,7 +244,7 @@ def update_event(user_email, calendar_id, event_id, event_name=None, start_datet
     existing_event_response = requests.get(endpoint, headers=headers)
     
     #refresh expired tokens
-    if existing_event_response.status_code == 401:
+    if existing_event_response.status_code in (400, 401, 404):
         print(f"email: {user_email}")
         
         # Token expired, refresh it
@@ -302,7 +302,7 @@ def update_event(user_email, calendar_id, event_id, event_name=None, start_datet
     response = requests.put(endpoint, headers=headers, json=event_data)
     
     #refresh expired tokens
-    if response.status_code == 401:
+    if response.status_code in (400, 401, 404):
         print(f"email: {user_email}")
         
         # Token expired, refresh it

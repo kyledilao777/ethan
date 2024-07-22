@@ -1,4 +1,9 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
 
 import Home from "./homepage";
 import Calendar from "./calendar";
@@ -10,6 +15,11 @@ import Documentation from "./documentation";
 import Privacy from "./privacy";
 import UserInfo from "./userinfo";
 import Terms from "./termsandservices";
+import ReactGA from "react-ga";
+
+
+const TRACKING_ID = process.env.REACT_APP_GA_TRACKING_ID; // Replace with your tracking ID
+ReactGA.initialize(TRACKING_ID);
 
 export default function App() {
   return (

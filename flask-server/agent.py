@@ -215,5 +215,5 @@ def start_agent(input_data, user_email, calendar_id, timezone, memory):
 
     return response_container
 
-if __name__ == "__main__":
-    app.run(debug=True, port=5001)
+# if __name__ == "__main__":
+#     app.run(debug=True, port=5001)

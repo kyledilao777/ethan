@@ -17,6 +17,7 @@ import { setTypingEffect } from "./redux/reducers/userReducer";
 import { setIsAuthenticated } from "./redux/reducers/userReducer";
 import { current } from "@reduxjs/toolkit";
 import { setUserInput } from "./redux/reducers/userReducer";
+import ReactGA from "react-ga"
 
 export default function Home() {
   const [timezone, setTimezone] = useState("UTC"); // Default timezone
@@ -87,8 +88,8 @@ export default function Home() {
     const fetchUserInfo = async () => {
       try {
         const { data } = await axios.get(
-          /*process.env
-            .REACT_APP_USER_INFO ||*/ "http://localhost:3001/user-info",
+          process.env
+            .REACT_APP_USER_INFO /*|| "http://localhost:3001/user-info"*/,
           { withCredentials: true }
         );
 
@@ -163,6 +164,12 @@ export default function Home() {
   }, []);
 
   const sendUserInput = async () => {
+    ReactGA.event({
+      category: 'User',
+      action: 'Send Response',
+      label: 'User Send Response'
+    });
+
     console.log(userInput, " this is the real user input");
     const id = uuidv4();
 
@@ -187,7 +194,7 @@ export default function Home() {
     dispatch(setData([...data, newData])); // Add the new input to the data array immediately
     dispatch(setIsAgent(true));
     await fetch(
-      /*process.env.REACT_APP_API_URL ||*/ "http://localhost:5001/agent",
+      process.env.REACT_APP_API_URL /*|| "http://localhost:5001/agent"*/,
       {
         method: "POST",
         headers: {
@@ -281,7 +288,7 @@ export default function Home() {
         try {
           if (!temporaryResponse) {
             itemResponse =
-              "I'm sorry, an error occured. Please re-login or rephrase your query.";
+              "An error occurred. Please try again later.";
           } else {
             itemResponse = temporaryResponse;
           }
@@ -424,8 +431,8 @@ export default function Home() {
       try {
         // Note: Adjust the URL based on your server's configuration
         const { data } = await axios.get(
-          /*process.env
-            .REACT_APP_AUTH_CHECK ||*/ "http://localhost:3001/auth-check",
+          process.env
+            .REACT_APP_AUTH_CHECK /*|| "http://localhost:3001/auth-check"*/,
           { withCredentials: true }
         );
 
@@ -614,7 +621,7 @@ export default function Home() {
                 ))}
                 <div className="absolute bottom-8 right-10">
                 <button
-                    onClick={
+                     onClick={
                       scrollToBottom
                     }
                     className="p-2 bg-gray-300 rounded-full"
@@ -625,6 +632,12 @@ export default function Home() {
                 <div className="absolute bottom-8 right-20">
                   <button
                     onClick={() => {
+                      ReactGA.event({
+                        category: 'User',
+                        action: 'Reloads',
+                        label: 'User Reloads'
+                      });
+
                       dispatch(setIsAgent(false));
                       dispatch(setAgentResponse(null));
                       dispatch(setData([]));

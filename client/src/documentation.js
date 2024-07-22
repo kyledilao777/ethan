@@ -4,6 +4,7 @@ import NavBar from "./components/navbar";
 import { setIsAgent, setAgentResponse } from "./redux/reducers/agentReducer";
 import { setData } from "./redux/reducers/userReducer";
 import AccordionItem from "./components/AccordionItem"; // Import the new AccordionItem component
+import ReactGA from "react-ga"
 
 export default function Documentation() {
   const [isNavOpen, setIsNavOpen] = useState(false);
@@ -12,6 +13,13 @@ export default function Documentation() {
   const mainContentClass = isNavOpen ? "xsm:ml-[300px] sxl:ml-[0px]" : "";
 
   const handleToggle = (id) => {
+    
+      ReactGA.event({
+        category: 'User',
+        action: 'Toggles',
+        label: 'User Toggles'
+      });
+    
     setOpenItem(openItem === id ? null : id);
   };
 
