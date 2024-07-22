@@ -163,6 +163,10 @@ export default function Home() {
     setTimezone(userTimezone); // Set the fetched timezone in state
   }, []);
 
+  useEffect(() => {
+    ReactGA.pageview(window.location.pathname);
+  }, []);
+
   const sendUserInput = async () => {
     ReactGA.event({
       category: 'User',
