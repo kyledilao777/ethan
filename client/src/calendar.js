@@ -27,7 +27,7 @@ export default function Home() {
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const res = await axios.get(process.env.REACT_APP_FETCH_CALENDAR_URL /*||  "http://localhost:3001/fetch-calendar-events"*/, {
+        const res = await axios.get(/*process.env.REACT_APP_FETCH_CALENDAR_URL || */ "http://localhost:3001/fetch-calendar-events", {
           withCredentials: true,
         });
         const transformedEvents = res.data.map((event) => {
@@ -201,4 +201,3 @@ export default function Home() {
     </div>
   );
 }
-

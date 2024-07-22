@@ -4,7 +4,6 @@ import { Link } from "react-router-dom";
 import axios from "axios";
 import { useSelector, useDispatch } from "react-redux";
 import { setUserInfo } from "../redux/reducers/userReducer";
-import ReactGA from "react-ga";
 
 export default function NavBar({
   setIsNavOpen,
@@ -30,18 +29,13 @@ export default function NavBar({
     (error) => {
       if (error.response && error.response.status === 401) {
         window.location.href =
-          process.env.REACT_APP_MAIN_URL /*|| "http://localhost:3000/login"*/;
+          process.env.REACT_MAIN_URL /*|| "http://localhost:3000/login"*/;
       }
       return Promise.reject(error);
     }
   );
 
   const handleLogout = async () => {
-    ReactGA.event({
-      category: "User",
-      action: "Logout",
-      label: "User Logout",
-    });
     console.log("confirmation here 1");
     const confirmation = window.confirm("Are you sure you want to log out?");
     console.log(confirmation, "confirmation here 2");
@@ -49,8 +43,7 @@ export default function NavBar({
       return; // Abort logout if user cancels
     }
 
-    const logoutUrl =
-      process.env.REACT_APP_LOGOUT_URL; /*|| "http://localhost:3001/logout"*/
+    const logoutUrl = "http://localhost:3001/logout";
     console.log("Logout URL:", logoutUrl);
 
     if (!logoutUrl) {
@@ -70,21 +63,20 @@ export default function NavBar({
       // Refresh the page almost immediately after sending the request
       setTimeout(() => {
         console.log("Logout successful, reloading page...");
-        const loginPage = process.env.REACT_APP_MAIN_URL;
+        const loginPage = "http://localhost:3000";
         window.location.href = loginPage;
       }, 100); // Adjust the timeout as needed
     } catch (error) {
       console.error("Error logging out:", error);
     }
   };
+
   useEffect(() => {
     const fetchUserInfo = async () => {
       try {
-        const { data } = await axios.get(
-          process.env
-            .REACT_APP_USER_INFO /*|| "http://localhost:3001/user-info"*/,
-          { withCredentials: true }
-        );
+        const { data } = await axios.get("http://localhost:3001/user-info", {
+          withCredentials: true,
+        });
 
         // Update userInfo state with fetched dxata
         let finalName;
@@ -164,12 +156,6 @@ export default function NavBar({
   // }, []);
 
   const handleButton = () => {
-    ReactGA.event({
-      category: "User",
-      action: "Navbar",
-      label: "User Navbar",
-    });
-
     setIsOpen(true);
     setIsNavOpen(true);
   };
@@ -183,7 +169,7 @@ export default function NavBar({
   const bgMargin2 = isOpen ? "mt-2" : "mt-0";
 
   const mobileNavbarRef = useRef(null);
-  const desktopNavbarRef = useRef(null);
+  const desktopNavbarRef = useRef(null)
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -194,13 +180,13 @@ export default function NavBar({
         !desktopNavbarRef.current.contains(event.target)
       ) {
         setIsOpen(false);
-        setIsNavOpen(false);
+        setIsNavOpen(false)
       }
     };
 
-    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener('mousedown', handleClickOutside);
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
 
@@ -254,17 +240,12 @@ export default function NavBar({
                     </span>
                     {isFreePlan && (
                       <button
-                        onClick={() => {
-                          ReactGA.event({
-                            category: "User",
-                            action: "Opens Ethanplus",
-                            label: "User Opens Ethanplus",
-                          });
+                        onClick={() =>
                           window.open(
                             "https://blog.untangled-ai.com/#ethanplus",
                             "_blank"
-                          );
-                        }}
+                          )
+                        }
                         className="text-xs font-semibold bg-blueNav text-white py-1 mt-1 max-w-[130px] rounded"
                       >
                         Upgrade to Ethan+
@@ -469,14 +450,12 @@ export default function NavBar({
                         onClick={handleLogout}
                         className="flex flex-row items-center w-full space-x-5"
                       >
-                        <div>
-                          <img
-                            src="exit.png"
-                            alt="exit"
-                            className="h-[32px] w-[31px]"
-                          />
-                        </div>
-
+                        <div><img
+                          src="exit.png"
+                          alt="exit"
+                          className="h-[32px] w-[31px]"
+                        /></div>
+                        
                         {isOpen && (
                           <span className="font-medium text-blackNav opacity-70">
                             Logout
@@ -489,6 +468,17 @@ export default function NavBar({
               </div>
             </div>
           </div>
+        </div>
+        <div className="flex flex-row  items-center space-x-3 ">
+          <div className="flex flex-row justify-center space-x-3 items-center">
+            <a href="https://untangled.carrd.co/">
+              <img src="website.png" alt="website" className="h-[35px]" />
+            </a>
+            <a href="https://www.linkedin.com/company/untangled-ai">
+              <img src="linkedin.png" alt="linkedin" className="h-[25px]" />
+            </a>
+          </div>
+          <img src="logo.jpeg" alt="logo" className="h-[33px]" />
         </div>
       </div>
       <div
@@ -517,17 +507,12 @@ export default function NavBar({
                 </span>
                 {isFreePlan && (
                   <button
-                    onClick={() => {
-                      ReactGA.event({
-                        category: "User",
-                        action: "Opens Ethanplus",
-                        label: "User Opens Ethanplus",
-                      });
+                    onClick={() =>
                       window.open(
-                        "https://blog.untangled-ai.com/#ethanplus",
+                        "https://untangled-ai.carrd.co/#ethanplus",
                         "_blank"
-                      );
-                    }}
+                      )
+                    }
                     className="text-xs font-semibold bg-blueNav text-white py-1 mt-1 max-w-[130px] rounded"
                   >
                     Upgrade to Ethan+
@@ -564,13 +549,6 @@ export default function NavBar({
                   >
                     <Link
                       to={{ pathname: "/home" }}
-                      onClick={() => {
-                        ReactGA.event({
-                          category: 'User',
-                          action: 'Opens Homepage',
-                          label: 'User Opens Homepage'
-                        });
-                      }}
                       className="flex flex-row space-x-5 items-center"
                     >
                       <li>
@@ -791,13 +769,6 @@ export default function NavBar({
                       <Link
                         to={{ pathname: "/documentation" }}
                         className="flex flex-row space-x-5 items-center"
-                        onClick={() => {
-                          ReactGA.event({
-                            category: 'User',
-                            action: 'Opens Documentation',
-                            label: 'User Opens Documentation'
-                          });
-                        }}
                       >
                         <li>
                           {" "}

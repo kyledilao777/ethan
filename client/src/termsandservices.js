@@ -9,7 +9,7 @@ export default function Terms() {
   return (
     <div className="w-full h-full">
       <div className="w-full flex sxl:flex-row xsm:flex-col h-full ">
-        {/* <NavBar setIsNavOpen={setIsNavOpen} /> */}
+        <NavBar setIsNavOpen={setIsNavOpen} />
         <div
           className={`p-10 space-y-8 sxl:mt-0 text-justify xsm:mt-10 ${mainContentClass}`}
         >

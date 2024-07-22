@@ -12,7 +12,7 @@ const port = process.env.PORT || 3001;
 const clientId = process.env.GOOGLE_CLIENT_ID;
 const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
 const redirectUri =
-  process.env.GOOGLE_REDIRECT_URI /*|| "http://localhost:3001/oauth2callback"*/;
+  /*process.env.GOOGLE_REDIRECT_URI || */"http://localhost:3001/oauth2callback";
 const oAuth2Client = new google.auth.OAuth2(
   clientId,
   clientSecret,
@@ -80,14 +80,10 @@ async function main() {
       secret: process.env.SESSION_SECRET,
       store: sessionStore,
       resave: false,
-      // saveUninitialized: true,
       saveUninitialized: false,
       cookie: {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        path: "/",
-        domain: ".untangled-ai.com",
-        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+        secure: false,
+        sameSite: "lax",
         maxAge: 1000 * 60 * 60 * 24 * 7,
       },
     })
@@ -96,11 +92,14 @@ async function main() {
   app.use(
     cors({
       origin: [
-        "https://main.untangled-ai.com",
-        "https://backend.untangled-ai.com",
-        "https://untangled-ai.com",
-        "https://www.untangled-ai.com",
-        "https://agent.untangled-ai.com",
+        // "https://main.untangled-ai.com",
+        // "https://backend.untangled-ai.com",
+        // "https://untangled-ai.com",
+        // "https://www.untangled-ai.com",
+        "http://localhost:3000",
+        "http://localhost:3001",
+        "http://localhost:3002",
+        "http://localhost:5001",
       ],
       credentials: true,
       methods: "GET,POST,OPTIONS,PUT,DELETE",
@@ -121,9 +120,6 @@ async function main() {
     try {
       const email = req.query.email;
       const tokenRecord = await Token.findOne({ email: email });
-
-      console.log("email:", email);
-      console.log("tokenRecord:", tokenRecord);
       
       if (!tokenRecord) {
         return res.status(404).send("Tokens not found");
@@ -233,9 +229,9 @@ async function main() {
             calendarId: primaryCalendar.id, // Assuming you set this later or modify it
           });
 
-          redirectUrl = process.env.REACT_APP_USER_INFO_URL /*|| "http://localhost:3000/userinfo"*/;
+          redirectUrl = "http://localhost:3000/userinfo";
         } else {
-          redirectUrl = process.env.REDIRECT_HOME /*|| "http://localhost:3000/home?auth=success"*/;
+          redirectUrl = "http://localhost:3000/home?auth=success";
         }
 
         req.session.email = email;
@@ -312,8 +308,9 @@ async function main() {
       console.log("Token issue or not authenticated");
       return res.status(401).send("User not authenticated");
     }
-
-    oAuth2Client.setCredentials(tokens);
+    // // Extract user info from the session
+    // const { tokens } = req.session;
+    // oAuth2Client.setCredentials(tokens);
 
     const peopleService = google.people({ version: "v1", auth: oAuth2Client });
     const calendarService = google.calendar({
@@ -462,6 +459,7 @@ async function main() {
         return res.status(500).send("Failed to clear session");
       }
       res.clearCookie('connect.sid'); // Clear the session cookie
+      
     });
   });
 

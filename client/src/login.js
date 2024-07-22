@@ -1,29 +1,23 @@
 import { Link } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
-import ReactGA from "react-ga"
 
 export default function Login() {
   const handleLogin = () => {
-    ReactGA.event({
-      'category': 'Test',
-      'action': 'submit',
-      'label': 'label'
-    });
     const loginUrl =
-      process.env.REACT_APP_LOGIN_URL /*|| "http://localhost:3001/login"*/;
+      process.env.REACT_APP_LOGIN_URL || "http://localhost:3001/login";
     window.location.href = loginUrl;
   };
 
   useEffect(() => {
     const verifyAuth = async () => {
       const { data } = await axios.get(
-        process.env.REACT_APP_AUTH_CHECK,
+        /*process.env
+          .REACT_APP_USER_INFO ||*/ "http://localhost:3001/auth-check",
         { withCredentials: true }
       );
       if (data.isAuthenticated) {
-        const homeUrl = process.env.REACT_APP_HOME_URL
-        window.location.href = homeUrl;
+        window.location.href = "http://localhost:3000/home";
       } 
     };
 
@@ -67,10 +61,10 @@ export default function Login() {
             <div className="flex flex-wrap justify-center text-center">
               <span>By continuing, you agree to the</span>
               <Link to="/termsandservices" className="ml-1 underline">
-                Terms of Services
+                Terms and Services
               </Link>
               <span className="ml-1">and acknowledge you've read our</span>
-              <Link to="/privacy" className="ml-1 underline">
+              <Link to="/privacy-policy" className="ml-1 underline">
                 Privacy Policy
               </Link>
             </div>
