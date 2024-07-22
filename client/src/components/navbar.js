@@ -486,17 +486,6 @@ export default function NavBar({
             </div>
           </div>
         </div>
-        <div className="flex flex-row  items-center space-x-3 ">
-          <div className="flex flex-row justify-center space-x-3 items-center">
-            <a href="https://untangled.carrd.co/">
-              <img src="website.png" alt="website" className="h-[35px]" />
-            </a>
-            <a href="https://www.linkedin.com/company/untangled-ai">
-              <img src="linkedin.png" alt="linkedin" className="h-[25px]" />
-            </a>
-          </div>
-          <img src="logo.jpeg" alt="logo" className="h-[33px]" />
-        </div>
       </div>
 
       <div
