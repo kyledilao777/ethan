@@ -1,7 +1,7 @@
 import { useState } from "react";
 import axios from "axios";
 import Select from "react-select";
-import ReactGA from "react-ga"
+import ReactGA from "react-ga";
 
 export default function UserInfo() {
   const [name, setName] = useState("");
@@ -14,19 +14,27 @@ export default function UserInfo() {
   const [reason, setReason] = useState([]);
   const [customReason, setCustomReason] = useState("");
   const [imageSrc, setImageSrc] = useState("logo.jpeg");
-  
 
   const handleNameNext = () => {
     ReactGA.event({
-      category: 'User',
-      action: 'Clicks Next',
-      label: 'User Clicks Next'
+      category: "User",
+      action: "Clicks Next",
+      label: "User Clicks Next",
     });
 
-    const hasOtherOccupation = occupation.some(option => option.value === "Others");
-    const hasOtherReason = reason.some(option => option.value === "Others");
-    
-    if (name && comment && occupation.length > 0 && reason.length > 0 && (!hasOtherOccupation || customOccupation) && (!hasOtherReason || customReason)) {
+    const hasOtherOccupation = occupation.some(
+      (option) => option.value === "Others"
+    );
+    const hasOtherReason = reason.some((option) => option.value === "Others");
+
+    if (
+      name &&
+      comment &&
+      occupation.length > 0 &&
+      reason.length > 0 &&
+      (!hasOtherOccupation || customOccupation) &&
+      (!hasOtherReason || customReason)
+    ) {
       setIsName(false);
       setIsPhoto(true);
     } else {
@@ -36,9 +44,9 @@ export default function UserInfo() {
 
   const handlePhotoBack = () => {
     ReactGA.event({
-      category: 'User',
-      action: 'Backs to Name',
-      label: 'User Backs to Name'
+      category: "User",
+      action: "Backs to Name",
+      label: "User Backs to Name",
     });
 
     setIsName(true);
@@ -68,7 +76,7 @@ export default function UserInfo() {
     { name: "Web Developer" },
     { name: "Writer" },
     { name: "Entrepreneur" },
-    { name: "Others" }
+    { name: "Others" },
   ];
 
   const whyData = [
@@ -77,7 +85,7 @@ export default function UserInfo() {
     { reason: "Convenience of Scheduling on the go" },
     { reason: "Attaching Conference Links" },
     { reason: "Find best time for a meeting" },
-    { reason: "Others" }
+    { reason: "Others" },
   ];
 
   const whyOptions = whyData.map((why) => ({
@@ -96,9 +104,9 @@ export default function UserInfo() {
 
   const handleImageChange = (event) => {
     ReactGA.event({
-      category: 'User',
-      action: 'Changes Image',
-      label: 'User Changes Image'
+      category: "User",
+      action: "Changes Image",
+      label: "User Changes Image",
     });
     const file = event.target.files[0];
     if (file && file.type.substr(0, 5) === "image") {
@@ -115,12 +123,12 @@ export default function UserInfo() {
 
   const sendData = async () => {
     ReactGA.event({
-      category: 'User',
-      action: 'Sends User Data',
-      label: 'User Sends User Data'
+      category: "User",
+      action: "Sends User Data",
+      label: "User Sends User Data",
     });
-    const processedReason = reason.map(obj => obj.value);
-    const processedOccupation = occupation.map(obj => obj.value);
+    const processedReason = reason.map((obj) => obj.value);
+    const processedOccupation = occupation.map((obj) => obj.value);
     try {
       const res = await axios.post(
         process.env.REACT_APP_UPDATE_PROFILE_URL /*||
@@ -129,8 +137,12 @@ export default function UserInfo() {
           name: name,
           imageSrc: imageSrc,
           comment: comment,
-          occupation: processedOccupation.includes("Others") ? [...processedOccupation, customOccupation] : processedOccupation,
-          reason: processedReason.includes("Others") ? [...processedReason, customReason] : processedReason
+          occupation: processedOccupation.includes("Others")
+            ? [...processedOccupation, customOccupation]
+            : processedOccupation,
+          reason: processedReason.includes("Others")
+            ? [...processedReason, customReason]
+            : processedReason,
         },
         {
           headers: {
@@ -140,26 +152,25 @@ export default function UserInfo() {
         }
       );
       console.log(res.data.message);
-      const homeUrl = process.env.REACT_APP_HOME_URL
+      const homeUrl = process.env.REACT_APP_HOME_URL;
       window.location.href = homeUrl; /*||
-            "http://localhost:3000/home?auth=success"*/// Redirect to the specified URL
+            "http://localhost:3000/home?auth=success"*/ // Redirect to the specified URL
     } catch (error) {
       console.error("Error updating user profile:", error);
       alert("Failed to update profile.");
     }
   };
 
-
   const handleSelectOption = (selectedOption) => {
     setOccupation(selectedOption);
-    if (!selectedOption.some(option => option.value === "Others")) {
+    if (!selectedOption.some((option) => option.value === "Others")) {
       setCustomOccupation("");
     }
   };
 
   const handleSelectWhy = (selectedOption) => {
     setReason(selectedOption);
-    if (!selectedOption.some(option => option.value === "Others")) {
+    if (!selectedOption.some((option) => option.value === "Others")) {
       setCustomReason("");
     }
   };
@@ -200,7 +211,7 @@ export default function UserInfo() {
                     placeholder="Select a job"
                     isMulti
                   />
-                  {occupation.some(option => option.value === "Others") && (
+                  {occupation.some((option) => option.value === "Others") && (
                     <input
                       placeholder="Please specify"
                       className="w-full border border-solid px-1.5 py-2 h-[40px] mt-2 rounded-md"
@@ -250,7 +261,7 @@ export default function UserInfo() {
                     placeholder="Select a reason"
                     isMulti
                   />
-                  {reason.some(option => option.value === "Others") && (
+                  {reason.some((option) => option.value === "Others") && (
                     <input
                       placeholder="Please specify"
                       className="w-full border border-solid px-1.5 py-2 h-[40px] mt-2 rounded-md"
@@ -270,6 +281,9 @@ export default function UserInfo() {
           )}
           {isPhoto && (
             <div className="sxl:w-[450px] sxl:h-[250px] flex items-center flex-col p-6">
+              <div className="text-center font-bold mb-4 text-lg">
+                Choose a Profile Photo
+              </div>
               <img
                 src={imageSrc}
                 alt="Profile"
