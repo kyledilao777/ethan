@@ -15,10 +15,19 @@ export default function UserInfo() {
   const [imageSrc, setImageSrc] = useState("logo.jpeg");
 
   const handleNameNext = () => {
-    const hasOtherOccupation = occupation.some(option => option.value === "Others");
-    const hasOtherReason = reason.some(option => option.value === "Others");
-    
-    if (name && comment && occupation.length > 0 && reason.length > 0 && (!hasOtherOccupation || customOccupation) && (!hasOtherReason || customReason)) {
+    const hasOtherOccupation = occupation.some(
+      (option) => option.value === "Others"
+    );
+    const hasOtherReason = reason.some((option) => option.value === "Others");
+
+    if (
+      name &&
+      comment &&
+      occupation.length > 0 &&
+      reason.length > 0 &&
+      (!hasOtherOccupation || customOccupation) &&
+      (!hasOtherReason || customReason)
+    ) {
       setIsName(false);
       setIsPhoto(true);
     } else {
@@ -54,7 +63,7 @@ export default function UserInfo() {
     { name: "Web Developer" },
     { name: "Writer" },
     { name: "Entrepreneur" },
-    { name: "Others" }
+    { name: "Others" },
   ];
 
   const whyData = [
@@ -63,7 +72,7 @@ export default function UserInfo() {
     { reason: "Convenience of Scheduling on the go" },
     { reason: "Attaching Conference Links" },
     { reason: "Find best time for a meeting" },
-    { reason: "Others" }
+    { reason: "Others" },
   ];
 
   const whyOptions = whyData.map((why) => ({
@@ -95,8 +104,8 @@ export default function UserInfo() {
   };
 
   const sendData = async () => {
-    const processedReason = reason.map(obj => obj.value);
-    const processedOccupation = occupation.map(obj => obj.value);
+    const processedReason = reason.map((obj) => obj.value);
+    const processedOccupation = occupation.map((obj) => obj.value);
     try {
       const res = await axios.post(
         "http://localhost:3001/update-profile",
@@ -104,8 +113,12 @@ export default function UserInfo() {
           name: name,
           imageSrc: imageSrc,
           comment: comment,
-          occupation: processedOccupation.includes("Others") ? [...processedOccupation, customOccupation] : processedOccupation,
-          reason: processedReason.includes("Others") ? [...processedReason, customReason] : processedReason
+          occupation: processedOccupation.includes("Others")
+            ? [...processedOccupation, customOccupation]
+            : processedOccupation,
+          reason: processedReason.includes("Others")
+            ? [...processedReason, customReason]
+            : processedReason,
         },
         {
           headers: {
@@ -122,17 +135,16 @@ export default function UserInfo() {
     }
   };
 
-
   const handleSelectOption = (selectedOption) => {
     setOccupation(selectedOption);
-    if (!selectedOption.some(option => option.value === "Others")) {
+    if (!selectedOption.some((option) => option.value === "Others")) {
       setCustomOccupation("");
     }
   };
 
   const handleSelectWhy = (selectedOption) => {
     setReason(selectedOption);
-    if (!selectedOption.some(option => option.value === "Others")) {
+    if (!selectedOption.some((option) => option.value === "Others")) {
       setCustomReason("");
     }
   };
@@ -173,7 +185,7 @@ export default function UserInfo() {
                     placeholder="Select a job"
                     isMulti
                   />
-                  {occupation.some(option => option.value === "Others") && (
+                  {occupation.some((option) => option.value === "Others") && (
                     <input
                       placeholder="Please specify"
                       className="w-full border border-solid px-1.5 py-2 h-[40px] mt-2 rounded-md"
@@ -223,7 +235,7 @@ export default function UserInfo() {
                     placeholder="Select a reason"
                     isMulti
                   />
-                  {reason.some(option => option.value === "Others") && (
+                  {reason.some((option) => option.value === "Others") && (
                     <input
                       placeholder="Please specify"
                       className="w-full border border-solid px-1.5 py-2 h-[40px] mt-2 rounded-md"
@@ -243,6 +255,10 @@ export default function UserInfo() {
           )}
           {isPhoto && (
             <div className="sxl:w-[450px] sxl:h-[250px] flex items-center flex-col p-6">
+              <div className="text-center font-bold mb-4 text-lg">
+                Choose a Profile Photo, else click submit
+              </div>
+
               <img
                 src={imageSrc}
                 alt="Profile"
