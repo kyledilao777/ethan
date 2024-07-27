@@ -341,7 +341,7 @@ export default function Home() {
       let [name, times] = event.split(": ");
       let [start_time, end_time] = times.split(" to ");
       let real_end_time;
-      let event_id;
+      
 
       const matches = end_time.split(" ");
       real_end_time = matches[0];
