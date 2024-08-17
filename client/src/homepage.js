@@ -534,7 +534,7 @@ export default function Home() {
                               <img
                                 src={photo}
                                 alt="logo"
-                                className="rounded-full  w-full h-full border"
+                                className="rounded-full w-full h-full border"
                               />
                             </div>
                           </div>

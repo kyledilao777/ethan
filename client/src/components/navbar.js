@@ -211,6 +211,7 @@ export default function NavBar({
               <Menu size="30" /> {/* Replaced <text> with <span> */}
             </button>
           )}
+          <div></div>
           <div
             className={`fixed z-20 duration-500 left-0 top-0 h-screen bg-white transition-all border rounded-lg ${
               isOpen ? "w-[285px]" : "w-0"
