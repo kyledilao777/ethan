@@ -281,7 +281,7 @@ export default function Home() {
         try {
           if (!temporaryResponse) {
             itemResponse =
-              "I'm sorry, an error occured. Please re-login or rephrase your query.";
+              "Your session has timed out. Please logout and log in again. If the error persists, please contact us at blog.untangled-ai.com/#contactus.";
           } else {
             itemResponse = temporaryResponse;
           }
@@ -334,7 +334,7 @@ export default function Home() {
       let [name, times] = event.split(": ");
       let [start_time, end_time] = times.split(" to ");
       let real_end_time;
-      let event_id;
+      
 
       const matches = end_time.split(" ");
       real_end_time = matches[0];

@@ -1,9 +1,15 @@
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import axios from "axios";
+import ReactGA from "react-ga";
 
 export default function Login() {
   const handleLogin = () => {
+    ReactGA.event({
+      category: 'User',
+      action: 'Logins',
+      label: 'User Logins'
+    });
     const loginUrl =
       process.env.REACT_APP_LOGIN_URL || "http://localhost:3001/login";
     window.location.href = loginUrl;

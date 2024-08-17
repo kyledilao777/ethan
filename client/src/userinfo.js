@@ -1,6 +1,7 @@
 import { useState } from "react";
 import axios from "axios";
 import Select from "react-select";
+import ReactGA from "react-ga";
 
 export default function UserInfo() {
   const [name, setName] = useState("");
@@ -13,8 +14,15 @@ export default function UserInfo() {
   const [reason, setReason] = useState([]);
   const [customReason, setCustomReason] = useState("");
   const [imageSrc, setImageSrc] = useState("logo.jpeg");
+  
 
   const handleNameNext = () => {
+    ReactGA.event({
+      category: "User",
+      action: "Clicks Next",
+      label: "User Clicks Next",
+    });
+
     const hasOtherOccupation = occupation.some(
       (option) => option.value === "Others"
     );
@@ -36,6 +44,12 @@ export default function UserInfo() {
   };
 
   const handlePhotoBack = () => {
+    ReactGA.event({
+      category: "User",
+      action: "Backs to Name",
+      label: "User Backs to Name",
+    });
+
     setIsName(true);
     setIsPhoto(false);
   };
@@ -90,6 +104,11 @@ export default function UserInfo() {
   };
 
   const handleImageChange = (event) => {
+    ReactGA.event({
+      category: "User",
+      action: "Changes Image",
+      label: "User Changes Image",
+    });
     const file = event.target.files[0];
     if (file && file.type.substr(0, 5) === "image") {
       const reader = new FileReader();
@@ -104,6 +123,11 @@ export default function UserInfo() {
   };
 
   const sendData = async () => {
+    ReactGA.event({
+      category: "User",
+      action: "Sends User Data",
+      label: "User Sends User Data",
+    });
     const processedReason = reason.map((obj) => obj.value);
     const processedOccupation = occupation.map((obj) => obj.value);
     try {
@@ -256,9 +280,8 @@ export default function UserInfo() {
           {isPhoto && (
             <div className="sxl:w-[450px] sxl:h-[250px] flex items-center flex-col p-6">
               <div className="text-center font-bold mb-4 text-lg">
-                Choose a Profile Photo, else click submit
+                Choose a Profile Photo
               </div>
-
               <img
                 src={imageSrc}
                 alt="Profile"
