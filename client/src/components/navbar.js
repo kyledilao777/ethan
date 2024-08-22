@@ -24,16 +24,16 @@ export default function NavBar({
   const occupation = useSelector((state) => state.user.occupation);
   const dispatch = useDispatch();
 
-  axios.interceptors.response.use(
-    (response) => response,
-    (error) => {
-      if (error.response && error.response.status === 401) {
-        window.location.href =
-          process.env.REACT_MAIN_URL /*|| "http://localhost:3000/login"*/;
-      }
-      return Promise.reject(error);
-    }
-  );
+  // axios.interceptors.response.use(
+  //   (response) => response,
+  //   (error) => {
+  //     if (error.response && error.response.status === 401) {
+  //       window.location.href =
+  //         /*process.env.REACT_MAIN_URL */ "http://localhost:3000/";
+  //     }
+  //     return Promise.reject(error);
+  //   }
+  // );
 
   const handleLogout = async () => {
     console.log("confirmation here 1");
@@ -815,7 +815,7 @@ export default function NavBar({
                           </span>
                         )}
                       </button>
-                      <button onClick={() => console.log("this is test")}>Test</button>
+                      
                     </div>
                   </div>
                 </div>

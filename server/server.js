@@ -12,7 +12,7 @@ const port = process.env.PORT || 3001;
 const clientId = process.env.GOOGLE_CLIENT_ID;
 const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
 const redirectUri =
-  /*process.env.GOOGLE_REDIRECT_URI || */"http://localhost:3001/oauth2callback";
+  /*process.env.GOOGLE_REDIRECT_URI || */ "http://localhost:3001/oauth2callback";
 const oAuth2Client = new google.auth.OAuth2(
   clientId,
   clientSecret,
@@ -33,8 +33,7 @@ const userSchema = new mongoose.Schema({
   calendarId: { type: String, required: true },
   occupation: { type: [String] },
   comment: { type: String },
-  reason: { type: [String] }
-
+  reason: { type: [String] },
 });
 
 const Token = mongoose.model("Token", tokenSchema);
@@ -120,13 +119,12 @@ async function main() {
     try {
       const email = req.query.email;
       const tokenRecord = await Token.findOne({ email: email });
-      
+
       if (!tokenRecord) {
         return res.status(404).send("Tokens not found");
       }
       res.json(tokenRecord.tokens);
       console.error("Tokens retrieved successfully");
-
     } catch (error) {
       console.error("Error fetching tokens:", error);
       res.status(500).send("Internal Server Error");
@@ -142,8 +140,8 @@ async function main() {
         { upsert: true, new: true }
       );
       res.json(tokenRecord);
+      req.session.tokens = tokens
       console.error("Tokens updated successfully");
-
     } catch (error) {
       console.error("Error updating tokens:", error);
       res.status(500).send("Internal Server Error");
@@ -151,7 +149,7 @@ async function main() {
   });
 
   app.get("/login", (req, res) => {
-    console.log(req.session.email, "this is user email")
+    console.log(req.session.email, "this is user email");
     const state = uuidv4(); // Generate a unique state value
     req.session.state = state;
     console.log("Login - Generated state:", state);
@@ -185,7 +183,7 @@ async function main() {
         oAuth2Client.setCredentials(tokens);
         // Log the tokens to verify their structure
         console.log("Tokens received:", tokens);
-        
+
         req.session.tokens = tokens;
         delete req.session.state;
 
@@ -255,9 +253,29 @@ async function main() {
     }
   });
 
+  app.get("/check-refresh-token", async (req, res) => {
+    try {
+      const tokenRecord = req.session.tokens
+
+      const params = {
+          grant_type: "refresh_token",
+          client_id: process.env.GOOGLE_CLIENT_ID,
+          client_secret: process.env.GOOGLE_CLIENT_SECRET,
+          refresh_token: tokenRecord.refresh_token,
+      };
+
+      const response = await axios.post(process.env.TOKEN_URI, params);
+      res.json({ ...response.data, error: "None" });
+  } catch (error) {
+      console.error("Error refreshing token:", error);
+      // Respond with an appropriate HTTP status code and error message
+      res.status(500).json({ error: "Failed to refresh token", message: error.message });
+  }
+  });
+
   app.get("/auth-check", async (req, res) => {
     const tokens = req.session.tokens; // Corrected line
-    console.log(tokens)
+    console.log(tokens);
     if (!tokens || !tokens.access_token) {
       console.log("Token issue or not authenticated");
       return res.json({ isAuthenticated: false });
@@ -285,15 +303,19 @@ async function main() {
             return res.json({ isAuthenticated: true });
           } catch (refreshError) {
             console.error("Error refreshing token:", refreshError);
-            return res
-              .json({ isAuthenticated: false, error: "Token refresh failed" });
+            return res.json({
+              isAuthenticated: false,
+              error: "Token refresh failed",
+            });
           }
         } else {
           console.error("No refresh token available");
         }
       }
-      return res
-        .json({ isAuthenticated: false, error: "Invalid or expired token" });
+      return res.json({
+        isAuthenticated: false,
+        error: "Invalid or expired token",
+      });
     }
   });
 
@@ -361,19 +383,26 @@ async function main() {
     const data = req.body;
     const email = req.session.email;
     console.log("Email update profile: ", email);
-  
+
     console.log("Comment: ", data.comment);
     console.log("Reason: ", data.reason);
     console.log("Occupation: ", data.occupation);
-  
+
     if (!email) {
       return res.status(400).json({ message: "No email found in session." });
     }
-  
+
     // Process custom "Others" values
-    const occupation = data.occupation.includes("Others") ? [...data.occupation.filter(item => item !== "Others"), data.customOccupation] : data.occupation;
-    const reason = data.reason.includes("Others") ? [...data.reason.filter(item => item !== "Others"), data.customReason] : data.reason;
-  
+    const occupation = data.occupation.includes("Others")
+      ? [
+          ...data.occupation.filter((item) => item !== "Others"),
+          data.customOccupation,
+        ]
+      : data.occupation;
+    const reason = data.reason.includes("Others")
+      ? [...data.reason.filter((item) => item !== "Others"), data.customReason]
+      : data.reason;
+
     try {
       if (data.name !== "" && data.imageSrc !== "logo.jpeg") {
         console.log("not here 1");
@@ -422,7 +451,7 @@ async function main() {
           }
         );
       }
-  
+
       res.status(200).json({ message: "Profile updated successfully" });
     } catch (error) {
       console.error("Error updating user profile:", error);
@@ -431,11 +460,11 @@ async function main() {
         error: error.toString(),
       });
     }
-  });  
+  });
 
   app.get("/logout", async (req, res) => {
     const tokens = req.session.tokens;
-  
+
     if (tokens && tokens.access_token) {
       try {
         // Revoke the token
@@ -445,21 +474,20 @@ async function main() {
           {
             headers: {
               "Content-Type": "application/x-www-form-urlencoded",
-            }
+            },
           }
         );
       } catch (error) {
         console.error("Error revoking token:", error);
       }
     }
-  
+
     req.session.destroy((err) => {
       if (err) {
         console.error("Error destroying session:", err);
         return res.status(500).send("Failed to clear session");
       }
-      res.clearCookie('connect.sid'); // Clear the session cookie
-      
+      res.clearCookie("connect.sid"); // Clear the session cookie
     });
   });
 

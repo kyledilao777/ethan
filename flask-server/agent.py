@@ -151,6 +151,12 @@ def run_agent_executor(user_email, user_input, calendar_id, user_timezone, memor
             Do not display any technical error messages, like 403 errors. Instead, 
             respond with a helpful message indicating what went wrong and any possible actions or 
             suggestions to resolve the issue.
+            When a user attempts to schedule an event at a specific time, you must first check the user's Google Calendar to verify if that time slot is already occupied. If the time is occupied, you should prompt the user 
+            to reconfirm their scheduling decision. If the user responds 
+            with a request to 'change' the event, you will proceed 
+            to reschedule the event to a new time. If the user decides not to change 
+            the event or doesn't provide clear instructions to change, you should 
+            leave the event at the originally requested time.
 
             NEVER EVER include the event ID.
             """

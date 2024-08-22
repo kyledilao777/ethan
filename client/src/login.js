@@ -6,14 +6,26 @@ import ReactGA from "react-ga";
 export default function Login() {
   const handleLogin = () => {
     ReactGA.event({
-      category: 'User',
-      action: 'Logins',
-      label: 'User Logins'
+      category: "User",
+      action: "Logins",
+      label: "User Logins",
     });
     const loginUrl =
       process.env.REACT_APP_LOGIN_URL || "http://localhost:3001/login";
     window.location.href = loginUrl;
   };
+
+  const [logoutMessage, setLogoutMessage] = useState("");
+
+  useEffect(() => {
+    // Check if there's a logout message in localStorage
+    const message = localStorage.getItem("logoutMessage");
+
+    if (message) {
+      setLogoutMessage(message);
+      localStorage.removeItem("logoutMessage"); // Clear the message after displaying it
+    }
+  }, []);
 
   useEffect(() => {
     const verifyAuth = async () => {
@@ -24,14 +36,14 @@ export default function Login() {
       );
       if (data.isAuthenticated) {
         window.location.href = "http://localhost:3000/home";
-      } 
+      }
     };
 
     verifyAuth();
   }, []);
 
   return (
-    <div className="w-full h-screen flex justify-center items-center">
+    <div className="w-full h-screen flex justify-center items-center flex-col">
       <div className="flex flex-col justify-center h-fit rounded-lg bg-white w-[550px] p-5 text-black shadow-lg">
         <div className="flex flex-col justify-center items-center">
           <div>
@@ -77,6 +89,11 @@ export default function Login() {
           </div>
         </div>
       </div>
+      {logoutMessage && (
+        <div className="text-red-500 mt-5">
+         {logoutMessage}
+        </div>
+      )}
     </div>
   );
 }

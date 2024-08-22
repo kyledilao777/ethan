@@ -14,8 +14,12 @@ def get_tokens(email):
 
 def refresh_access_token(refresh_token):
     token_url = os.getenv("TOKEN_URI")
-    client_id = os.getenv("GOOGLE_CLIENT_ID")
-    client_secret = os.getenv("GOOGLE_CLIENT_SECRET")
+    client_id = os.getenv("CLIENT_ID")
+    client_secret = os.getenv("CLIENT_SECRET")
+
+
+    print(token_url, client_id, client_secret)
+    print("calling refresh token")
     
     params = {
         "grant_type": "refresh_token",
@@ -23,15 +27,37 @@ def refresh_access_token(refresh_token):
         "client_secret": client_secret,
         "refresh_token": refresh_token,
     }
-    response = requests.post(token_url, data=params)
-    response.raise_for_status()
+    
+    headers = {
+        "Content-Type": "application/x-www-form-urlencoded"
+    }
+    
+    try:
+        response = requests.post(token_url, data=params, headers=headers)
+        response.raise_for_status()
+    except requests.exceptions.HTTPError as e:
+        print(f"Error: {response.status_code} - {response.text}")
+        raise e
+    
     return response.json()
 
 def get_valid_access_token(email):
     tokens = get_tokens(email)
+    print(tokens)
     access_token = tokens.get("access_token")
     refresh_token = tokens.get("refresh_token")
 
+    # if not access_token:
+    #     try:
+    #         new_tokens = refresh_access_token(refresh_token)
+    #         access_token = new_tokens.get("access_token")
+
+    #         # Update tokens in the backend
+    #         update_tokens_in_backend(email, new_tokens)
+    #     except requests.exceptions.HTTPError as e:
+    #         print("refresh token fails")
+    #         # If token refresh fails, re-authentication might be needed
+            
     if not access_token:
         new_tokens = refresh_access_token(refresh_token)
         access_token = new_tokens.get("access_token")
@@ -46,7 +72,16 @@ def update_tokens_in_backend(email, tokens):
     response.raise_for_status()
 
 def get_calendar_events(user_email, calendar_id, start_time, end_time):
-    access_token = get_valid_access_token(user_email)
+    try:
+        # Attempt to get a valid access token
+        access_token = get_valid_access_token(user_email)
+        if not access_token:
+            raise Exception("Access token not found")
+    except Exception as e:
+        return {
+            "status": "error",
+            "message": "Failed to retrieve access token. Please reauthenticate and try again."
+        }
 
     endpoint = f"https://www.googleapis.com/calendar/v3/calendars/{calendar_id}/events"
     params = {
@@ -94,7 +129,17 @@ def get_calendar_events(user_email, calendar_id, start_time, end_time):
     return event_list
 
 def get_calendar_timezone(user_email, calendar_id):
-    access_token = get_valid_access_token(user_email)
+    try:
+        # Attempt to get a valid access token
+        access_token = get_valid_access_token(user_email)
+        if not access_token:
+            raise Exception("Access token not found")
+    except Exception as e:
+        return {
+            "status": "error",
+            "message": "Failed to retrieve access token. Please reauthenticate and try again."
+        }
+
     endpoint = f"https://www.googleapis.com/calendar/v3/calendars/{calendar_id}"
     headers = {
         "Authorization": f"Bearer {access_token}",
@@ -128,7 +173,18 @@ def get_calendar_timezone(user_email, calendar_id):
     return time_zone
 
 def create_event(user_email, calendar_id, event_name, start_datetime, end_datetime, attendees, location=None, description=None, timezone=None):
-    access_token = get_valid_access_token(user_email)
+    
+    try:
+        # Attempt to get a valid access token
+        access_token = get_valid_access_token(user_email)
+        if not access_token:
+            raise Exception("Access token not found")
+    except Exception as e:
+        return {
+            "status": "error",
+            "message": "Failed to retrieve access token. Please reauthenticate and try again."
+        }
+
     if not timezone:
         timezone = get_calendar_timezone(user_email, calendar_id)
 
@@ -191,11 +247,19 @@ def create_event(user_email, calendar_id, event_name, start_datetime, end_dateti
         "start_datetime": return_event["start"]["dateTime"],
         "end_datetime": return_event["end"]["dateTime"],
         "attendee": return_event.get("attendees", [{}])[0].get("email", "None"),
-
     }
 
 def delete_event(user_email, calendar_id, event_id):
-    access_token = get_valid_access_token(user_email)
+    try:
+        # Attempt to get a valid access token
+        access_token = get_valid_access_token(user_email)
+        if not access_token:
+            raise Exception("Access token not found")
+    except Exception as e:
+        return {
+            "status": "error",
+            "message": "Failed to retrieve access token. Please reauthenticate and try again."
+        }
 
     endpoint = f"https://www.googleapis.com/calendar/v3/calendars/{calendar_id}/events/{event_id}"
     headers = {
@@ -232,7 +296,16 @@ def delete_event(user_email, calendar_id, event_id):
         return {"error": "Failed to delete event"}
     
 def update_event(user_email, calendar_id, event_id, event_name=None, start_datetime=None, end_datetime=None, new_attendees=None, location=None, description=None):
-    access_token = get_valid_access_token(user_email)
+    try:
+        # Attempt to get a valid access token
+        access_token = get_valid_access_token(user_email)
+        if not access_token:
+            raise Exception("Access token not found")
+    except Exception as e:
+        return {
+            "status": "error",
+            "message": "Failed to retrieve access token. Please reauthenticate and try again."
+        }
 
     endpoint = f"https://www.googleapis.com/calendar/v3/calendars/{calendar_id}/events/{event_id}"
     headers = {

@@ -60,6 +60,63 @@ export default function Home() {
   };
 
   useEffect(() => {
+    // Function to check token validity
+    const checkTokenValidity = async () => {
+        try {
+          const { data } = await axios.get(
+            /*process.env
+              .REACT_APP_USER_INFO ||*/ "http://localhost:3001/check-refresh-token",
+            { withCredentials: true }
+          );
+
+            console.log(data.error, "this is from check refresh token")
+            
+            if (data.error === "Failed to refresh token") {
+              const logoutUrl = "http://localhost:3001/logout";
+              console.log("Logout URL:", logoutUrl);
+          
+              if (!logoutUrl) {
+                console.error("Logout URL is not defined!");
+                return;
+              }
+          
+              try {
+                axios
+                  .get(logoutUrl, {
+                    withCredentials: true,
+                  })
+                  .catch((error) => {
+                    console.error("Error logging out:", error);
+                  });
+
+                localStorage.setItem('logoutMessage', 'You have been logged out due to inactivity.');
+                // Refresh the page almost immediately after sending the request
+                setTimeout(() => {
+                  console.log("Logout successful, reloading page...");
+                  const loginPage = "http://localhost:3000";
+                  window.location.href = loginPage;
+                }, 100); // Adjust the timeout as needed
+              } catch (error) {
+                console.error("Error logging out:", error);
+              }
+            }
+        } catch (error) {
+            console.error('Token check failed', error);
+        }
+    };
+    const TOKEN_CHECK_INTERVAL = 15 * 60 * 1000;
+    // Set interval to check every 30 minutes
+    const interval = setInterval(checkTokenValidity, TOKEN_CHECK_INTERVAL);
+
+    // Initial check when component mounts
+    checkTokenValidity();
+
+    // Cleanup interval on component unmount
+    return () => clearInterval(interval);
+}, []);
+
+
+  useEffect(() => {
     scrollToBottom();
   }, [data]);
 
@@ -430,6 +487,9 @@ export default function Home() {
         );
 
         dispatch(setIsAuthenticated(data.isAuthenticated));
+        // if (data.isAuthenticated === false) {
+        //   window.location.href = "http://localhost:3000/"
+        // }
         console.log(`hello\nworld`);
       } catch (error) {
         console.error("Error checking authentication status:", error);
