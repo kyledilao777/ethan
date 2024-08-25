@@ -121,9 +121,16 @@ def get_calendar_events(user_email, calendar_id, start_time, end_time):
        print(f"refresh_token: {refresh_token}")
       
        new_tokens = refresh_access_token(refresh_token)
+       print("BEFORE: ", new_tokens)
        access_token = new_tokens.get("access_token")
+       
+       if "refresh_token" not in new_tokens:
+            new_tokens["refresh_token"] = refresh_token
+        
+       print("AFTER: ", new_tokens)
+
+       # Optionally update the tokens in the backend
        update_tokens_in_backend(user_email, new_tokens)
-      
       
        # Retry the request with the new access token
        headers["Authorization"] = f"Bearer {access_token}"
@@ -178,7 +185,15 @@ def get_calendar_timezone(user_email, calendar_id):
        print(f"refresh_token: {refresh_token}")
       
        new_tokens = refresh_access_token(refresh_token)
+       print("BEFORE: ", new_tokens)
        access_token = new_tokens.get("access_token")
+       
+       if "refresh_token" not in new_tokens:
+            new_tokens["refresh_token"] = refresh_token
+        
+       print("AFTER: ", new_tokens)
+
+       # Optionally update the tokens in the backend
        update_tokens_in_backend(user_email, new_tokens)
       
        # Retry the request with the new access token
@@ -256,7 +271,15 @@ def create_event(user_email, calendar_id, event_name, start_datetime, end_dateti
        print(f"refresh_token: {refresh_token}")
       
        new_tokens = refresh_access_token(refresh_token)
+       print("BEFORE: ", new_tokens)
        access_token = new_tokens.get("access_token")
+       
+       if "refresh_token" not in new_tokens:
+            new_tokens["refresh_token"] = refresh_token
+        
+       print("AFTER: ", new_tokens)
+
+       # Optionally update the tokens in the backend
        update_tokens_in_backend(user_email, new_tokens)
       
        # Retry the request with the new access token
@@ -312,7 +335,15 @@ def delete_event(user_email, calendar_id, event_id):
        print(f"refresh_token: {refresh_token}")
       
        new_tokens = refresh_access_token(refresh_token)
+       print("BEFORE: ", new_tokens)
        access_token = new_tokens.get("access_token")
+       
+       if "refresh_token" not in new_tokens:
+            new_tokens["refresh_token"] = refresh_token
+        
+       print("AFTER: ", new_tokens)
+
+       # Optionally update the tokens in the backend
        update_tokens_in_backend(user_email, new_tokens)
       
        # Retry the request with the new access token
@@ -362,7 +393,15 @@ def update_event(user_email, calendar_id, event_id, event_name=None, start_datet
        print(f"refresh_token: {refresh_token}")
       
        new_tokens = refresh_access_token(refresh_token)
+       print("BEFORE: ", new_tokens)
        access_token = new_tokens.get("access_token")
+       
+       if "refresh_token" not in new_tokens:
+            new_tokens["refresh_token"] = refresh_token
+        
+       print("AFTER: ", new_tokens)
+
+       # Optionally update the tokens in the backend
        update_tokens_in_backend(user_email, new_tokens)
       
        # Retry the request with the new access token
@@ -427,7 +466,15 @@ def update_event(user_email, calendar_id, event_id, event_name=None, start_datet
        print(f"refresh_token: {refresh_token}")
       
        new_tokens = refresh_access_token(refresh_token)
+       print("BEFORE: ", new_tokens)
        access_token = new_tokens.get("access_token")
+       
+       if "refresh_token" not in new_tokens:
+            new_tokens["refresh_token"] = refresh_token
+        
+       print("AFTER: ", new_tokens)
+
+       # Optionally update the tokens in the backend
        update_tokens_in_backend(user_email, new_tokens)
       
        # Retry the request with the new access token
