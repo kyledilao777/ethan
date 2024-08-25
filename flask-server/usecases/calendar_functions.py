@@ -64,10 +64,13 @@ def get_valid_access_token(email):
           
    if not access_token:
        new_tokens = refresh_access_token(refresh_token)
+       print("BEFORE: ", new_tokens)
        access_token = new_tokens.get("access_token")
        
        if "refresh_token" not in new_tokens:
             new_tokens["refresh_token"] = refresh_token
+        
+       print("AFTER: ", new_tokens)
 
        # Optionally update the tokens in the backend
        update_tokens_in_backend(email, new_tokens)
