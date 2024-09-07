@@ -34,7 +34,6 @@ const userSchema = new mongoose.Schema({
   occupation: { type: [String] },
   comment: { type: String },
   reason: { type: [String] }
-
 });
 
 const Token = mongoose.model("Token", tokenSchema);

@@ -369,7 +369,7 @@ def update_event(user_email, calendar_id, event_id, event_name=None, start_datet
            "status": "error",
            "message": "Failed to retrieve access token. Please reauthenticate and try again."
        }
-
+    
 
    endpoint = f"https://www.googleapis.com/calendar/v3/calendars/{calendar_id}/events/{event_id}"
    headers = {
