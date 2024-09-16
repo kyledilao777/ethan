@@ -1,36 +1,33 @@
 from dotenv import load_dotenv
-import os
-
 from datetime import datetime
 from flask_cors import CORS
+from openai import OpenAI
 
+import os
 import pytz
+import openai
+import spacy
+import json
+import re
+import threading
+import time
 
+from flask import Flask, jsonify, request, send_from_directory
+from elasticsearch import Elasticsearch
 from langchain.agents import AgentExecutor
 from langchain.memory import ConversationSummaryBufferMemory
 from langchain_openai import ChatOpenAI
 from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain.tools.render import format_tool_to_openai_function
+
 from langchain.agents.format_scratchpad import format_to_openai_function_messages
 from langchain.agents.output_parsers import OpenAIFunctionsAgentOutputParser
 from langchain_core.utils import function_calling
 from usecases.calendar_functions import get_from_session, save_to_session, clear_session
-
-from usecases.calendar_tools import GetCalendarEventsTool, TimeDeltaTool, CreateCalendarEventTool, SpecificTimeTool, DeleteCalendarEventTool, UpdateCalendarEventTool
-
-from flask import Flask, jsonify, request, send_from_directory
-
-import spacy
-import json
-from openai import OpenAI
-
-from openai import OpenAI
+from usecases.calendar_tools import GetCalendarEventsTool, TimeDeltaTool, CreateCalendarEventTool, SpecificTimeTool, DeleteCalendarEventTool, UpdateCalendarEventTool, StoreUserPreferenceTool, RetrieveUserPreferenceTool, DeleteUserPreferenceTool, ModifyUserPreferenceTool, CreateContactTool, ModifyContactTool, DeleteContactTool, RetrieveContactTool
+from elasticsearchfile import es
 
 client = OpenAI()
-import re
-
-import threading
-import time
 
 app = Flask(__name__)
 CORS(app) 
@@ -56,70 +53,26 @@ def run():
 
     return jsonify(output)
 
-def pre_processing(user_input, response_container):
-    # Prepare the prompt for the GPT-3.5-turbo model
-    prompt = f"""
-    The user has input the following text: "{user_input}". 
-    Based on this input, identify the user's intent and extract corresponding details.
-    The possible intentions are: read, update, delete, create.
-    Respond with a JSON object containing the intent and details.
-    
-    For reading an event, extract start time, end time, date, item title, location, description and attendees. If not provided, the field should be empty.
-    For creating an event, extract item title, start time, end time, date, location, description and attendees. If not provided, the field should be empty.
-    For updating an event, extract start time, end time, date, item title, location, description and attendees. If not provided, the field should be empty.
-    For deleting an event, extract item title, start time, end time and date. If not provided, the field should be empty. If not provided, the field should be empty.
-    
-    Sample Input:
-    "Hi Ethan, create a "catch up" with John (john@example.com) at jewel changi airport on 15 july from 10-11 am."
-    
-    Sample output:
-    {{
-        "intent": "create",
-        "details": {{
-            "title": "catch up",
-            "start time": "10:00 AM",
-            "end time": "11:00 AM",
-            "location": "jewel changi airport",
-            "date": "2024-07-15",
-            "attendees": {{"John": "john@example.com"}},
-        }}
-    }}
-    
-    """
 
-    # Call the OpenAI API
-    response = client.chat.completions.create(model="gpt-3.5-turbo-0125",
-    messages=[
-        {"role": "system", "content": "You are a helpful assistant."},
-        {"role": "user", "content": prompt}
-    ])
-
-    # Extract the intent from the response
-    response_text = response.choices[0].message.content.strip().lower()
-
-    try:
-        response_json = json.loads(response_text)
-        intent = response_json.get("intent", "none").lower()
-        details = response_json.get("details", {})
-    except json.JSONDecodeError:
-        intent = "none"
-        details = {}
-
-    # Validate the intent to ensure it matches one of the expected values
-    valid_intents = ["read", "update", "delete", "create"]
-    if intent not in valid_intents:
-        intent = "none"
-
-    return {"intent": intent, "details": details}
-
-def run_agent_executor(user_email, user_input, calendar_id, user_timezone, memory, response_container, intent):
+def run_agent_executor(user_email, user_input, calendar_id, user_timezone, memory, response_container):
     tools = [
+        #Standard Tools
         TimeDeltaTool(),
         GetCalendarEventsTool(),
         CreateCalendarEventTool(),
         SpecificTimeTool(),
         DeleteCalendarEventTool(),
         UpdateCalendarEventTool(),
+
+        #RAG Tools
+        StoreUserPreferenceTool(es_client=es, index_name="user_preferences"),
+        RetrieveUserPreferenceTool(es_client=es, index_name="user_preferences"),
+        DeleteUserPreferenceTool(es_client=es, index_name="user_preferences"),
+        ModifyUserPreferenceTool(es_client=es, index_name="user_preferences"),
+        CreateContactTool(es_client=es, index_name="contacts"),
+        ModifyContactTool(es_client=es, index_name="contacts"),
+        DeleteContactTool(es_client=es, index_name="contacts"),
+        RetrieveContactTool(es_client=es, index_name="contacts"),
     ]
 
     input = f"""
@@ -136,16 +89,15 @@ def run_agent_executor(user_email, user_input, calendar_id, user_timezone, memor
             "system", 
             """
             Context:
-            Your name is Ethan. You are the funniest, friendliest and most competent assistant on Earth who can help me manage my calendar or arrange for meetings,
-            even across timezones. 
+            Your name is Ethan. You are funny and friendly assistant on Earth and you like to use emojis. You are tasked to help me manage my calendar and arrange for meetings, even across timezones.
             
             Note:
-            ALWAYS talk as if you were talking to a friend. However, do not give intermediate responses. Only send the final response.            
-            NEVER EVER bold any text. NEVER EVER include the event ID.
+            If there is no email specified for attendees, keep attendees as an empty dictionary.
+            When the user provides insufficient details about an event, do not ask for confirmation. Instead, use the context and any available information to find the best timing for the event. Ensure the proposed timing fits within the user's typical schedule and avoids conflicts with existing appointments. 
+            If there is a conflict with existing appointments, ask the user for confirmation before proceeding. Only execute the scheduling if confirmation is given.
+            Always check if a person mentioned is an existing contact in the contact list. if yes, use the email in the contact list. Else ask them to create new contact.
 
-            Event-specific instructions:
-            - Before creating any event, check if the user has something on already. If yes, let him/her know and don't create anything. 
-            - If there is no email specified for attendees, keep attendees as an empty dictionary.
+            NEVER EVER include the event ID.
             """
             ),
             MessagesPlaceholder(variable_name="chat_history"),
@@ -174,13 +126,6 @@ def run_agent_executor(user_email, user_input, calendar_id, user_timezone, memor
 
     if (result):
         session = get_from_session(user_email)
-        print(session, "Session from agent.py")
-
-        if (intent != "none"):
-             response_container["isEvent"] = True
-        else:
-             response_container["isEvent"] = False
-
         response_container['eventDetails'] = session
 
 
@@ -195,13 +140,7 @@ def run_agent_executor(user_email, user_input, calendar_id, user_timezone, memor
 
 
 def agent_task(input_data, user_email, calendar_id, timezone, memory, response_container):
-    intent = pre_processing(input_data, response_container)["intent"]
-    # details = pre_processing(input_data, response_container)["details"]
-    
-    print(intent, "This is the intent")
-    run_agent_executor(user_email, input_data, calendar_id, timezone, memory, response_container, intent)
-
-    response_container['intent'] = intent
+    run_agent_executor(user_email, input_data, calendar_id, timezone, memory, response_container)
     time.sleep(2)
 
     # Append the parsed details and static message to the response container

@@ -1,12 +1,16 @@
 from datetime import datetime, timedelta
-from typing import Type, Optional, List
-from pydantic import BaseModel, Field
+from typing import Type, Optional, List, Any, Dict
+from pydantic import BaseModel, Field, PrivateAttr
 from langchain.tools import BaseTool
+from langchain_core.documents import Document
 from usecases.calendar_functions import get_calendar_events, create_event, delete_event, update_event, save_to_session, get_from_session, clear_session
 import pytz
+from uuid import uuid4
+from textembedding import get_embedding
+import numpy as np
 
 class TimeInput(BaseModel):
-    timezone: str = Field(default="UTC", description="Timezone of the user")
+    timezone: str
 
 class CurrentTimeInput(TimeInput):
     """Inputs for getting the current time"""
@@ -256,3 +260,338 @@ class UpdateCalendarEventTool(BaseTool):
 
     def _arun(self):
         raise NotImplementedError("update_calendar_event does not support async")
+    
+# RAG tools
+#user preferences
+class StoreUserPreferenceTool(BaseTool):
+    name: str = "store_user_preference"
+    description: str = "Stores a user preference in Elasticsearch using embeddings."
+
+    es_client: Any = Field(default_factory=lambda: None)
+    index_name: str = Field(default_factory=lambda: "user_preferences")
+
+    def __init__(self, es_client: Any, index_name: str):
+        super().__init__(es_client=es_client, index_name=index_name)
+
+    def _run(self, user_email: str, preference_key: str, preference_value: str) -> str:
+        try:
+            # Generate embedding for the preference value
+            embedding = get_embedding(preference_value)
+
+            document = Document(
+                page_content=preference_value,
+                metadata={"user_email": user_email, "preference_key": preference_key, "embedding": embedding}
+            )
+
+            document_id = str(uuid4())
+            self.es_client.index(index=self.index_name, id=document_id, body=document.dict())
+
+            return f"Preference '{preference_key}' stored successfully for {user_email}."
+        except Exception as e:
+            return f"Error storing preference: {str(e)}"
+
+    async def _arun(self, *args, **kwargs):
+        raise NotImplementedError("store_user_preference does not support async")
+    
+class RetrieveUserPreferenceTool(BaseTool):
+    name: str = "retrieve_user_preference"
+    description: str = "Retrieves a user preference using semantic search."
+
+    es_client: Any = Field(default_factory=lambda: None)
+    index_name: str = Field(default_factory=lambda: "user_preferences")
+
+    def __init__(self, es_client: Any, index_name: str):
+        super().__init__(es_client=es_client, index_name=index_name)
+
+    def cosine_similarity(self, a: List[float], b: List[float]) -> float:
+        return np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b))
+
+    def _run(self, user_email: str, preference_query: str) -> str:
+        try:
+            # Generate embedding for the query
+            query_embedding = get_embedding(preference_query)
+
+            # Fetch all preferences for the user without filtering by preference_key
+            search_query = {
+                "query": {
+                    "match": {"metadata.user_email": user_email}
+                },
+                "size": 100  # Adjust based on expected maximum preferences per user
+            }
+
+            result = self.es_client.search(index=self.index_name, body=search_query)
+
+            if not result['hits']['hits']:
+                return f"No preferences found for user: {user_email}"
+
+            # Calculate cosine similarity for each preference
+            similarities = []
+            for hit in result['hits']['hits']:
+                preference_embedding = hit['_source']['metadata'].get('embedding')
+                if preference_embedding:
+                    similarity = self.cosine_similarity(query_embedding, preference_embedding)
+                    similarities.append((similarity, hit))
+
+            # Sort by similarity and get the most similar preference
+            if similarities:
+                similarities.sort(key=lambda x: x[0], reverse=True)
+                top_hit = similarities[0][1]
+                score = similarities[0][0]
+                preference_key = top_hit['_source']['metadata'].get('preference_key', 'unknown')
+                preference_value = top_hit['_source'].get('page_content', 'unknown')
+                return f"Found preference: {preference_key} = {preference_value} (similarity score: {score:.2f})"
+            else:
+                return f"No relevant preference found for the query: {preference_query}"
+
+        except Exception as e:
+            print(e)
+            return f"Error retrieving preference: {str(e)}"
+
+class DeleteUserPreferenceTool(BaseTool):
+    name: str = "delete_user_preference"
+    description: str = "Deletes a specific user preference from Elasticsearch using semantic search."
+
+    es_client: Any = Field(default_factory=lambda: None)
+    index_name: str = Field(default_factory=lambda: "")
+
+    def __init__(self, es_client: Any, index_name: str):
+        super().__init__(es_client=es_client, index_name=index_name)
+
+    def _run(self, user_email: str, preference_key: str) -> str:
+        try:
+            # Generate embedding for the query
+            query_embedding = get_embedding(preference_key)
+
+            # First, find the most relevant preference
+            search_query = {
+                "query": {
+                    "script_score": {
+                        "query": {
+                            "bool": {
+                                "must": [
+                                    {"match": {"metadata.user_email": user_email}}
+                                ]
+                            }
+                        },
+                        "script": {
+                            "source": "cosineSimilarity(params.query_vector, 'metadata.embedding') + 1.0",
+                            "params": {"query_vector": query_embedding}
+                        }
+                    }
+                }
+            }
+
+            result = self.es_client.search(index=self.index_name, body=search_query)
+
+            if result['hits']['hits']:
+                top_hit = result['hits']['hits'][0]
+                document_id = top_hit['_id']
+                preference_key = top_hit['_source']['metadata']['preference_key']
+
+                # Delete the found document
+                self.es_client.delete(index=self.index_name, id=document_id)
+
+                return f"Preference '{preference_key}' for user {user_email} deleted successfully."
+            else:
+                return f"No relevant preference found for the query: {preference_key}"
+        except Exception as e:
+            return f"Error deleting user preference: {str(e)}"
+
+    async def _arun(self, *args, **kwargs):
+        raise NotImplementedError("delete_user_preference does not support async")
+
+class ModifyUserPreferenceTool(BaseTool):
+    name: str = "modify_user_preference"
+    description: str = "Modifies an existing user preference in Elasticsearch using semantic search."
+    
+    es_client: Any = Field(default_factory=lambda: None)
+    index_name: str = Field(default_factory=lambda: "")
+
+    def __init__(self, es_client: Any, index_name: str):
+        super().__init__(es_client=es_client, index_name=index_name)
+
+    def _run(self, user_email: str, preference_key: str, new_preference_value: str) -> str:
+        try:
+            # Generate embedding for the query
+            query_embedding = get_embedding(preference_key)
+
+            # First, find the most relevant preference
+            search_query = {
+                "query": {
+                    "script_score": {
+                        "query": {
+                            "bool": {
+                                "must": [
+                                    {"match": {"metadata.user_email": user_email}}
+                                ]
+                            }
+                        },
+                        "script": {
+                            "source": "cosineSimilarity(params.query_vector, 'metadata.embedding') + 1.0",
+                            "params": {"query_vector": query_embedding}
+                        }
+                    }
+                }
+            }
+            
+            result = self.es_client.search(index=self.index_name, body=search_query)
+            
+            if result['hits']['hits']:
+                top_hit = result['hits']['hits'][0]
+                document_id = top_hit['_id']
+                preference_key = top_hit['_source']['metadata']['preference_key']
+                
+                # Generate new embedding for the updated preference value
+                new_embedding = get_embedding(new_preference_value)
+
+                # Update the document
+                updated_document = Document(
+                    page_content=new_preference_value,
+                    metadata={
+                        "user_email": user_email,
+                        "preference_key": preference_key,
+                        "embedding": new_embedding
+                    }
+                )
+                
+                self.es_client.update(
+                    index=self.index_name,
+                    id=document_id,
+                    body={"doc": updated_document.dict()}
+                )
+
+                return f"Preference '{preference_key}' updated successfully for {user_email}."
+            else:
+                return f"No relevant preference found for the query: {preference_key}. Use store_user_preference to create a new preference."
+        except Exception as e:
+            return f"Error modifying preference: {str(e)}"
+
+    async def _arun(self, *args, **kwargs):
+        raise NotImplementedError("modify_user_preference does not support async")
+    
+#Contact List
+class CreateContactTool(BaseTool):
+    name: str = "create_contact"
+    description: str = "Creates a new contact in the contact list index."
+
+    es_client: Any = Field(default_factory=lambda: None)
+    index_name: str = Field(default_factory=lambda: "")
+
+    def __init__(self, es_client: Any, index_name: str):
+        super().__init__(es_client=es_client, index_name=index_name)
+
+    def _run(self, name: str, email: str, relationship: str = "") -> str:
+        try:
+            document = Document(
+                page_content=name,
+                metadata={"email": email, "relationship": relationship}
+            )
+
+            document_id = str(uuid4())
+            
+            self.es_client.index(index=self.index_name, id=document_id, body=document.dict())
+
+            return f"Contact '{name}' created successfully with ID: {document_id}"
+        except Exception as e:
+            return f"Error creating contact: {str(e)}"
+
+    async def _arun(self, *args, **kwargs):
+        raise NotImplementedError("create_contact does not support async")
+
+class RetrieveContactTool(BaseTool):
+    name: str = "retrieve_contact"
+    description: str = "Retrieves contact information from the contact list index."
+
+    es_client: Any = Field(default_factory=lambda: None)
+    index_name: str = Field(default_factory=lambda: "")
+
+    def __init__(self, es_client: Any, index_name: str):
+        super().__init__(es_client=es_client, index_name=index_name)
+
+    def _run(self, search_field: str, search_value: str) -> Dict[str, Any]:
+        try:
+            # Adjust the query to search in both metadata and page_content
+            if search_field == "name":
+                query = {
+                    "query": {
+                        "match": {"page_content": search_value}
+                    }
+                }
+            else:
+                query = {
+                    "query": {
+                        "match": {f"metadata.{search_field}": search_value}
+                    }
+                }
+            
+            result = self.es_client.search(index=self.index_name, body=query)
+            
+            if result['hits']['hits']:
+                contact = result['hits']['hits'][0]['_source']
+                return {
+                    "id": result['hits']['hits'][0]['_id'],
+                    "name": contact.get('page_content', ''),
+                    "email": contact['metadata'].get('email', ''),
+                    "relationship": contact['metadata'].get('relationship', '')
+                }
+            else:
+                return {"error": f"No contact found with {search_field}: {search_value}."}
+        except Exception as e:
+            return {"error": f"Error retrieving contact: {str(e)}"}
+
+    async def _arun(self, *args, **kwargs):
+        raise NotImplementedError("retrieve_contact does not support async")
+    
+class ModifyContactTool(BaseTool):
+    name: str = "modify_contact"
+    description: str = "Modifies an existing contact in the contact list index."
+
+    es_client: Any = Field(default_factory=lambda: None)
+    index_name: str = Field(default_factory=lambda: "")
+
+    def __init__(self, es_client: Any, index_name: str):
+        super().__init__(es_client=es_client, index_name=index_name)
+
+    def _run(self, contact_id: str, name: str = None, email: str = None, relationship: str = None) -> str:
+        try:
+            update_doc = {}
+            if name is not None:
+                update_doc["page_content"] = name
+            if email is not None or relationship is not None:
+                update_doc["metadata"] = {}
+                if email is not None:
+                    update_doc["metadata"]["email"] = email
+                if relationship is not None:
+                    update_doc["metadata"]["relationship"] = relationship
+
+            if not update_doc:
+                return "No updates provided for the contact."
+
+            self.es_client.update(index=self.index_name, id=contact_id, body={"doc": update_doc})
+
+            return f"Contact with ID {contact_id} updated successfully."
+        except Exception as e:
+            return f"Error modifying contact: {str(e)}"
+
+    async def _arun(self, *args, **kwargs):
+        raise NotImplementedError("modify_contact does not support async")
+    
+class DeleteContactTool(BaseTool):
+    name: str = "delete_contact"
+    description: str = "Deletes a contact from the contact list index."
+
+    es_client: Any = Field(default_factory=lambda: None)
+    index_name: str = Field(default_factory=lambda: "")
+
+    def __init__(self, es_client: Any, index_name: str):
+        super().__init__(es_client=es_client, index_name=index_name)
+
+    def _run(self, contact_id: str) -> str:
+        try:
+            self.es_client.delete(index=self.index_name, id=contact_id)
+            return f"Contact with ID {contact_id} deleted successfully."
+        except Exception as e:
+            return f"Error deleting contact: {str(e)}"
+
+    async def _arun(self, *args, **kwargs):
+        raise NotImplementedError("delete_contact does not support async")

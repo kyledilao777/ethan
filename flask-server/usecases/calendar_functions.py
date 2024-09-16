@@ -2,7 +2,10 @@ import os
 import time
 import requests
 from dotenv import load_dotenv
+from elasticsearch import Elasticsearch
+from uuid import uuid4
 
+# es = Elasticsearch()
 load_dotenv()
 
 BACKEND_URL = "http://localhost:3001"
@@ -22,7 +25,7 @@ def refresh_access_token(refresh_token):
         "client_id": client_id,
         "client_secret": client_secret,
         "refresh_token": refresh_token,
-    }
+    } 
     response = requests.post(token_url, data=params)
     response.raise_for_status()
     return response.json()
@@ -184,8 +187,7 @@ def create_event(user_email, calendar_id, event_name, start_datetime, end_dateti
     
     response.raise_for_status()  # Ensure any HTTP errors are raised
     return_event = response.json()
-
-
+    
     return {
         "event_name": return_event["summary"],
         "start_datetime": return_event["start"]["dateTime"],
