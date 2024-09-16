@@ -27,12 +27,6 @@ const tokenSchema = new mongoose.Schema({
 });
 
 
-const premiumTokenSchema = new mongoose.Schema({
- email: { type: String, required: true, unique: true },
- tokens: { type: Object, required: true },
-});
-
-
 const userSchema = new mongoose.Schema({
  email: { type: String, required: true, unique: true },
  name: { type: String, required: true },
@@ -49,7 +43,6 @@ const userSchema = new mongoose.Schema({
 
 const Token = mongoose.model("Token", tokenSchema);
 const User = mongoose.model("User", userSchema);
-const PremiumToken = mongoose.model("PremiumToken", premiumTokenSchema);
 
 
 const { v4: uuidv4 } = require("uuid");

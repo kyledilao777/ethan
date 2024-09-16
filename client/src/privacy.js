@@ -18,20 +18,18 @@ export default function Privacy() {
               <br></br>
             </div>
             <div className="mt-[100px]">
-              <text>Last updated: May 25, 2024</text>
+              <text>Last updated: 14 July 2024</text>
             </div>
             <p>
               This Privacy Policy describes Our policies and procedures on the
-              collection, use and disclosure of Your information when You use
+              collection, use, and disclosure of Your information when You use
               the Service and tells You about Your privacy rights and how the
               law protects You.
             </p>
             <p>
-              We use Your Personal data to provide and improve the Service. By
+              We use Your Personal Data to provide and improve the Service. By
               using the Service, You agree to the collection and use of
-              information in accordance with this Privacy Policy. This Privacy
-              Policy has been created with the help of the Privacy Policy
-              Generator.
+              information in accordance with this Privacy Policy.
             </p>
           </div>
           <div className="space-y-3">
@@ -141,7 +139,6 @@ export default function Privacy() {
               <ul className=" list-disc">
                 <li>Email address</li>
                 <li>First name and last name</li>
-                <li>Usage Data</li>
               </ul>
             </div>
             <div>
@@ -207,8 +204,7 @@ export default function Privacy() {
               Cookies can be "Persistent" or "Session" Cookies. Persistent
               Cookies remain on Your personal computer or mobile device when You
               go offline, while Session Cookies are deleted as soon as You close
-              Your web browser. You can learn more about cookies on TermsFeed
-              website article.
+              Your web browser.
             </p>
             <p>
               We use both Session and Persistent Cookies for the purposes set
@@ -225,7 +221,9 @@ export default function Privacy() {
                   services available through the Website and to enable You to
                   use some of its features. They help to authenticate users and
                   prevent fraudulent use of user accounts. Without these
-                  Cookies, the services that You have asked for cannot be
+                  Cookies, the
+
+ services that You have asked for cannot be
                   provided, and We only use these Cookies to provide You with
                   those services.
                 </p>
@@ -470,6 +468,8 @@ export default function Privacy() {
               </div>
               <p>
                 The Company may disclose Your Personal Data in the good faith
+
+
                 belief that such action is necessary to:
               </p>
               <ul className="list-disc pl-5">
@@ -560,6 +560,33 @@ export default function Privacy() {
               changes. Changes to this Privacy Policy are effective when they
               are posted on this page.
             </p>
+          </div>
+          <div className="space-y-3">
+            <div>
+              <text className="text-4xl font-bold">How Ethan Accesses, Uses, Stores, or Shares Google User Data</text>
+            </div>
+            <div className="pl-5">
+              <p><text className="font-bold">Access</text></p>
+              <ul className="list-disc pl-5">
+                <li>Ethan accesses Google user data via OAuth 2.0 for authentication and authorization.</li>
+                <li>The data accessed includes calendar events, contacts, and other Google services as authorized by the user.</li>
+              </ul>
+              <p><text className="font-bold">Use</text></p>
+              <ul className="list-disc pl-5">
+                <li>Ethan uses the data to manage and optimize your schedules, set reminders, and provide personalized recommendations.</li>
+                <li>The data is used to sync events, set reminders, and manage your tasks efficiently.</li>
+              </ul>
+              <p><text className="font-bold">Storage</text></p>
+              <ul className="list-disc pl-5">
+                <li>Ethan securely stores your Google user data in compliance with industry standards and regulations.</li>
+                <li>Data is stored only for the duration necessary to provide the services and is encrypted both in transit and at rest.</li>
+              </ul>
+              <p><text className="font-bold">Sharing</text></p>
+              <ul className="list-disc pl-5">
+                <li>Ethan does not share your Google user data with third parties without your explicit consent, except as required by law.</li>
+                <li>Data may be shared with trusted service providers who assist in delivering the service, under strict confidentiality agreements.</li>
+              </ul>
+            </div>
           </div>
           <div className="space-y-3">
             <div>
