@@ -74,13 +74,17 @@ export default function NavBar({
   useEffect(() => {
     const fetchUserInfo = async () => {
       try {
-        const { data } = await axios.get("http://localhost:3001/user-info", {
-          withCredentials: true,
-        });
+        const { data } = await axios.get(
+          /*process.env
+            .REACT_APP_USER_INFO ||*/ "http://localhost:3001/user-info",
+          { withCredentials: true }
+        );
 
         // Update userInfo state with fetched dxata
         let finalName;
         let finalPhoto;
+
+        console.log("User tier: ", data.tier)
 
         if (data.name === data.newName) {
           finalName = data.name;
@@ -101,6 +105,7 @@ export default function NavBar({
             email: data.email,
             calendarId: data.calendarId,
             occupation: data.occupation,
+            tier: data.tier
           })
         );
       } catch (error) {

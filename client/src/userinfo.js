@@ -14,7 +14,6 @@ export default function UserInfo() {
   const [reason, setReason] = useState([]);
   const [customReason, setCustomReason] = useState("");
   const [imageSrc, setImageSrc] = useState("logo.jpeg");
-  
 
   const handleNameNext = () => {
     ReactGA.event({
@@ -181,7 +180,7 @@ export default function UserInfo() {
             <div className="bg-white sxl:w-[1000px] sxl:h-fit flex items-center flex-col p-6">
               <div className="text-justify">
                 <div className="font-bold text-3xl text-justify w-full">
-                  Hello there 👋! We hope to get to know you better.
+                  Hello there 👋! We hope to get to know you better 😄
                 </div>
               </div>
 
@@ -314,6 +313,7 @@ export default function UserInfo() {
             </div>
           )}
         </div>
+
 
         <div className="flex justify-end p-2">
           <div className="">

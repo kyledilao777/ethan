@@ -11,6 +11,7 @@ import Documentation from "./documentation";
 import Privacy from "./privacy";
 import UserInfo from "./userinfo";
 import Terms from "./termsandservices";
+import Freemium from "./freemium";
 
 export default function App() {
   return (
@@ -27,6 +28,7 @@ export default function App() {
           <Route path="/routemap" element={<RouteMap />} />
           <Route path="/userinfo" element={<UserInfo />} />
           <Route path="/termsandservices" element={<Terms />} />
+          <Route path="/freemium" element={<Freemium />} />
         </Routes>
       </Router>
     </div>

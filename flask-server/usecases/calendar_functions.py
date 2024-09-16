@@ -46,6 +46,8 @@ def get_valid_access_token(email):
     print(tokens)
     access_token = tokens.get("access_token")
     refresh_token = tokens.get("refresh_token")
+    print("haloha")
+    print(access_token, refresh_token, "my bubu")
 
     # if not access_token:
     #     try:
@@ -62,6 +64,7 @@ def get_valid_access_token(email):
         new_tokens = refresh_access_token(refresh_token)
         access_token = new_tokens.get("access_token")
 
+        print("hehe")
         # Optionally update the tokens in the backend
         update_tokens_in_backend(email, new_tokens)
         
@@ -82,7 +85,7 @@ def get_calendar_events(user_email, calendar_id, start_time, end_time):
             "status": "error",
             "message": "Failed to retrieve access token. Please reauthenticate and try again."
         }
-
+    print("this is 1")
     endpoint = f"https://www.googleapis.com/calendar/v3/calendars/{calendar_id}/events"
     params = {
         "timeMin": start_time,
@@ -92,9 +95,14 @@ def get_calendar_events(user_email, calendar_id, start_time, end_time):
         "Authorization": f"Bearer {access_token}",
         "Accept": "application/json",
     }
+    print(access_token, "this is access token")
 
-    response = requests.get(endpoint, headers=headers, params=params)
-    
+    try:
+        response = requests.get(endpoint, headers=headers, params=params, timeout=10)
+        response.raise_for_status()  # Raises an HTTPError if the response was unsuccessful
+        print("this is 2")
+    except requests.exceptions.RequestException as e:
+        print(f"Request failed: {e}")
     #refresh expired tokens
     if response.status_code == 401:
         print(f"email: {user_email}")
@@ -109,7 +117,7 @@ def get_calendar_events(user_email, calendar_id, start_time, end_time):
         new_tokens = refresh_access_token(refresh_token)
         access_token = new_tokens.get("access_token")
         update_tokens_in_backend(user_email, new_tokens)
-        
+        print("this is 3")
         
         # Retry the request with the new access token
         headers["Authorization"] = f"Bearer {access_token}"
@@ -117,6 +125,7 @@ def get_calendar_events(user_email, calendar_id, start_time, end_time):
     
     response.raise_for_status()  # Ensure any HTTP errors are raised
     events = response.json()
+    print("this is 4")
 
     event_list = []
     for event in events.get("items", []):

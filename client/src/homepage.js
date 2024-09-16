@@ -33,6 +33,7 @@ export default function Home() {
   const email = useSelector((state) => state.user.email);
   const calendarId = useSelector((state) => state.user.calendarId);
   const occupation = useSelector((state) => state.user.occupation);
+  const tier = useSelector((state) => state.user.tier);
   const isAgent = useSelector((state) => state.agent.isAgent);
   const isAuthenticated = useSelector((state) => state.user.isAuthenticated);
   const [firstTypingComplete, setFirstTypingComplete] = useState(false);
@@ -153,6 +154,8 @@ export default function Home() {
         let finalName;
         let finalPhoto;
 
+        console.log("User tier: ", data.tier)
+
         if (data.name === data.newName) {
           finalName = data.name;
         } else {
@@ -172,6 +175,7 @@ export default function Home() {
             email: data.email,
             calendarId: data.calendarId,
             occupation: data.occupation,
+            tier: data.tier
           })
         );
       } catch (error) {
@@ -255,6 +259,7 @@ export default function Home() {
           user_email: email,
           calendar_id: calendarId,
           timezone: timezone,
+          tier: tier,
         }),
       }
     )
