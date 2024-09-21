@@ -65,14 +65,14 @@ def run_agent_executor(user_email, user_input, calendar_id, user_timezone, memor
         UpdateCalendarEventTool(),
 
         #RAG Tools
-        StoreUserPreferenceTool(es_client=es, index_name="user_preferences"),
-        RetrieveUserPreferenceTool(es_client=es, index_name="user_preferences"),
-        DeleteUserPreferenceTool(es_client=es, index_name="user_preferences"),
-        ModifyUserPreferenceTool(es_client=es, index_name="user_preferences"),
-        CreateContactTool(es_client=es, index_name="contacts"),
-        ModifyContactTool(es_client=es, index_name="contacts"),
-        DeleteContactTool(es_client=es, index_name="contacts"),
-        RetrieveContactTool(es_client=es, index_name="contacts"),
+        StoreUserPreferenceTool(es_client=es, user_email=user_email, index_name="user_preferences"),
+        RetrieveUserPreferenceTool(es_client=es, user_email=user_email,  index_name="user_preferences"),
+        DeleteUserPreferenceTool(es_client=es, user_email=user_email, index_name="user_preferences"),
+        ModifyUserPreferenceTool(es_client=es, user_email=user_email, index_name="user_preferences"),
+        CreateContactTool(es_client=es, user_email=user_email, index_name="contacts"),
+        ModifyContactTool(es_client=es, user_email=user_email, index_name="contacts"),
+        DeleteContactTool(es_client=es, user_email=user_email, index_name="contacts"),
+        RetrieveContactTool(es_client=es, user_email=user_email, index_name="contacts"),
     ]
 
     input = f"""
