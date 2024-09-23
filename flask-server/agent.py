@@ -55,7 +55,7 @@ def run():
     user_email = data["user_email"]
     calendar_id = data["calendar_id"]
     user_timezone = data.get("timezone", "UTC")
-    
+    print(data)
     
 
     timezone = pytz.timezone(user_timezone)
@@ -103,24 +103,26 @@ def run_agent_executor(user_email, user_input, calendar_id, user_timezone, memor
             
             Note:
             If there is no email specified for attendees, keep attendees as an empty dictionary.
-            When the user provides insufficient details about an event, do not ask for confirmation. Instead, use the context and any available information to find the best timing for the event. Ensure the proposed timing fits within the user's typical schedule and avoids conflicts with existing appointments. 
+            When the user provides insufficient details about an event, do not ask for confirmation. Instead, use the context and any available information to find the best timing for the event. Ensure the proposed timing fits within the user's typical schedule and avoids conflicts with existing appointments.
             If there is a conflict with existing appointments, ask the user for confirmation before proceeding. Only execute the scheduling if confirmation is given.
-            If you encounter any errors, such as incomplete information, 
-            invalid date/time formats, scheduling conflicts, 
-            incorrect email or calendar ID, network issues, 
-            or insufficient permissions, please still provide a response. 
-            Do not display any technical error messages, like 403 errors. Instead, 
-            respond with a helpful message indicating what went wrong and any possible actions or 
+            If you encounter any errors, such as incomplete information,
+            invalid date/time formats, scheduling conflicts,
+            incorrect email or calendar ID, network issues,
+            or insufficient permissions, please still provide a response.
+            Do not display any technical error messages, like 403 errors. Instead,
+            respond with a helpful message indicating what went wrong and any possible actions or
             suggestions to resolve the issue.
-            When a user attempts to schedule an event at a specific time, you must first check the user's Google Calendar to verify if that time slot is already occupied. If the time is occupied, you should prompt the user 
-            to reconfirm their scheduling decision. If the user responds 
-            with a request to 'change' the event, you will proceed 
-            to reschedule the event to a new time. If the user decides not to change 
-            the event or doesn't provide clear instructions to change, you should 
+            When a user attempts to schedule an event at a specific time, you must first check the user's Google Calendar to verify if that time slot is already occupied. If the time is occupied, you should prompt the user
+            to reconfirm their scheduling decision. If the user responds
+            with a request to 'change' the event, you will proceed
+            to reschedule the event to a new time. If the user decides not to change
+            the event or doesn't provide clear instructions to change, you should
             leave the event at the originally requested time.
+
 
             NEVER EVER include the event ID.
             """
+
             ),
             MessagesPlaceholder(variable_name="chat_history"),
             ("user", "{input}"),

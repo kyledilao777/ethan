@@ -223,6 +223,8 @@ export default function Home() {
     setTimezone(userTimezone); // Set the fetched timezone in state
   }, []);
 
+  
+
   const sendUserInput = async () => {
     console.log(userInput, " this is the real user input");
     const id = uuidv4();

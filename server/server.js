@@ -28,16 +28,15 @@ const tokenSchema = new mongoose.Schema({
 
 
 const userSchema = new mongoose.Schema({
- email: { type: String, required: true, unique: true },
- name: { type: String, required: true },
- photo: { type: Object, required: true },
- newName: { type: String, required: true },
- newPhoto: { type: String, required: true },
- calendarId: { type: String, required: true },
- occupation: { type: [String] },
- comment: { type: String },
- reason: { type: [String] },
- tier: { type: String, default: "free" },
+  email: { type: String, required: true, unique: true },
+  name: { type: String, required: true },
+  photo: { type: Object, required: true },
+  newName: { type: String, required: true },
+  newPhoto: { type: String, required: true },
+  calendarId: { type: String, required: true },
+  occupation: { type: [String] },
+  comment: { type: String },
+  reason: { type: [String] }
 });
 
 
