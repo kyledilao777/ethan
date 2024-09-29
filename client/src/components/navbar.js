@@ -515,7 +515,7 @@ export default function NavBar({
                   <button
                     onClick={() =>
                       window.open(
-                        "https://untangled-ai.carrd.co/#ethanplus",
+                        "https://blog.untangled-ai.com/#ethanplus",
                         "_blank"
                       )
                     }

@@ -268,10 +268,11 @@ class StoreUserPreferenceTool(BaseTool):
     description: str = "Stores a user preference in Elasticsearch using embeddings."
 
     es_client: Any = Field(default_factory=lambda: None)
+    user_email: str = Field(default_factory=lambda: "")
     index_name: str = Field(default_factory=lambda: "user_preferences")
 
-    def __init__(self, es_client: Any, index_name: str):
-        super().__init__(es_client=es_client, index_name=index_name)
+    def __init__(self, es_client: Any, user_email:str, index_name: str):
+        super().__init__(es_client=es_client, user_email=user_email, index_name=index_name)
 
     def _run(self, user_email: str, preference_key: str, preference_value: str) -> str:
         try:
@@ -298,10 +299,11 @@ class RetrieveUserPreferenceTool(BaseTool):
     description: str = "Retrieves a user preference using semantic search."
 
     es_client: Any = Field(default_factory=lambda: None)
+    user_email: str = Field(default_factory=lambda: "")
     index_name: str = Field(default_factory=lambda: "user_preferences")
 
-    def __init__(self, es_client: Any, index_name: str):
-        super().__init__(es_client=es_client, index_name=index_name)
+    def __init__(self, es_client: Any, user_email:str, index_name: str):
+        super().__init__(es_client=es_client, user_email=user_email, index_name=index_name)
 
     def cosine_similarity(self, a: List[float], b: List[float]) -> float:
         return np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b))
@@ -352,10 +354,11 @@ class DeleteUserPreferenceTool(BaseTool):
     description: str = "Deletes a specific user preference from Elasticsearch using semantic search."
 
     es_client: Any = Field(default_factory=lambda: None)
+    user_email: str = Field(default_factory=lambda: "")
     index_name: str = Field(default_factory=lambda: "")
 
-    def __init__(self, es_client: Any, index_name: str):
-        super().__init__(es_client=es_client, index_name=index_name)
+    def __init__(self, es_client: Any, user_email: str, index_name: str):
+        super().__init__(es_client=es_client, user_email=user_email, index_name=index_name)
 
     def _run(self, user_email: str, preference_key: str) -> str:
         try:
@@ -405,10 +408,11 @@ class ModifyUserPreferenceTool(BaseTool):
     description: str = "Modifies an existing user preference in Elasticsearch using semantic search."
     
     es_client: Any = Field(default_factory=lambda: None)
+    user_email: str = Field(default_factory=lambda: "")
     index_name: str = Field(default_factory=lambda: "")
 
-    def __init__(self, es_client: Any, index_name: str):
-        super().__init__(es_client=es_client, index_name=index_name)
+    def __init__(self, es_client: Any, user_email: str, index_name: str):
+        super().__init__(es_client=es_client, user_email=user_email, index_name=index_name)
 
     def _run(self, user_email: str, preference_key: str, new_preference_value: str) -> str:
         try:
@@ -475,16 +479,18 @@ class CreateContactTool(BaseTool):
     description: str = "Creates a new contact in the contact list index."
 
     es_client: Any = Field(default_factory=lambda: None)
-    index_name: str = Field(default_factory=lambda: "")
+    user_email: str = Field(default_factory=lambda: "")
+    index_name: str = Field(default_factory=lambda: "contacts")
 
-    def __init__(self, es_client: Any, index_name: str):
-        super().__init__(es_client=es_client, index_name=index_name)
+    def __init__(self, es_client: Any, user_email: str, index_name: str):
+        super().__init__(es_client=es_client, user_email=user_email, index_name=index_name)
 
     def _run(self, name: str, email: str, relationship: str = "") -> str:
         try:
             document = Document(
-                page_content=name,
-                metadata={"email": email, "relationship": relationship}
+                id=self.user_email,
+                metadata={"name": name.lower(),"email": email.lower(), "relationship": relationship},
+                page_content=""
             )
 
             document_id = str(uuid4())
@@ -500,98 +506,180 @@ class CreateContactTool(BaseTool):
 
 class RetrieveContactTool(BaseTool):
     name: str = "retrieve_contact"
-    description: str = "Retrieves contact information from the contact list index."
+    description: str = "Retrieves contacts from the contact list index."
 
     es_client: Any = Field(default_factory=lambda: None)
-    index_name: str = Field(default_factory=lambda: "")
+    user_email: str = Field(default_factory=lambda: "")
+    index_name: str = Field(default_factory=lambda: "contacts")
 
-    def __init__(self, es_client: Any, index_name: str):
-        super().__init__(es_client=es_client, index_name=index_name)
+    def __init__(self, es_client: Any, user_email: str, index_name: str):
+        super().__init__(es_client=es_client, user_email=user_email, index_name=index_name)
 
-    def _run(self, search_field: str, search_value: str) -> Dict[str, Any]:
+    def _run(self, query: str = "") -> Dict[str, Any]:
         try:
-            # Adjust the query to search in both metadata and page_content
-            if search_field == "name":
-                query = {
-                    "query": {
-                        "match": {"page_content": search_value}
-                    }
+            # Search for documents where id field matches user_email
+            search_body = {
+                "query": {
+                    "match": {"id": self.user_email}
                 }
-            else:
-                query = {
-                    "query": {
-                        "match": {f"metadata.{search_field}": search_value}
-                    }
-                }
+            }
             
-            result = self.es_client.search(index=self.index_name, body=query)
-            
-            if result['hits']['hits']:
-                contact = result['hits']['hits'][0]['_source']
-                return {
-                    "id": result['hits']['hits'][0]['_id'],
-                    "name": contact.get('page_content', ''),
-                    "email": contact['metadata'].get('email', ''),
-                    "relationship": contact['metadata'].get('relationship', '')
-                }
+            response = self.es_client.search(index=self.index_name, body=search_body)
+
+            if response['hits']['total']['value'] == 0:
+                return {"error": "No contacts found for this user"}
+
+            contacts = []
+            for hit in response['hits']['hits']:
+                user_doc = hit['_source']
+                if user_doc.get('id') == self.user_email:
+                    contacts.append(user_doc.get('metadata', {}))
+
+            if not query:
+                # If no specific query, return all contacts
+                return self._get_all_contacts(contacts)
             else:
-                return {"error": f"No contact found with {search_field}: {search_value}."}
+                # If there's a query, search for a specific contact
+                return self._get_specific_contact(contacts, query)
+
         except Exception as e:
-            return {"error": f"Error retrieving contact: {str(e)}"}
+            return {"error": f"Error retrieving contacts: {str(e)}"}
+
+    def _get_all_contacts(self, contacts: List[Dict[str, Any]]) -> Dict[str, Any]:
+        return {"contacts": contacts}
+
+    def _get_specific_contact(self, contacts: List[Dict[str, Any]], query: str) -> Dict[str, Any]:
+        for contact in contacts:
+            if query.lower() in contact.get('name', '').lower():
+                return contact
+        return {"error": f"Contact '{query}' not found"}
 
     async def _arun(self, *args, **kwargs):
         raise NotImplementedError("retrieve_contact does not support async")
-    
+
 class ModifyContactTool(BaseTool):
     name: str = "modify_contact"
     description: str = "Modifies an existing contact in the contact list index."
 
     es_client: Any = Field(default_factory=lambda: None)
-    index_name: str = Field(default_factory=lambda: "")
+    user_email: str = Field(default_factory=lambda: "")
+    index_name: str = Field(default_factory=lambda: "contacts")
 
-    def __init__(self, es_client: Any, index_name: str):
-        super().__init__(es_client=es_client, index_name=index_name)
+    def __init__(self, es_client: Any, user_email: str, index_name: str):
+        super().__init__(es_client=es_client, user_email=user_email, index_name=index_name)
 
-    def _run(self, contact_id: str, name: str = None, email: str = None, relationship: str = None) -> str:
+    def _run(self, contact_name: str, new_name: str = None, new_email: str = None, new_relationship: str = None) -> str:
         try:
-            update_doc = {}
-            if name is not None:
-                update_doc["page_content"] = name
-            if email is not None or relationship is not None:
-                update_doc["metadata"] = {}
-                if email is not None:
-                    update_doc["metadata"]["email"] = email
-                if relationship is not None:
-                    update_doc["metadata"]["relationship"] = relationship
+            print(f"Attempting to modify contact. Current name: {contact_name}")
+            print(f"User email: {self.user_email}, Index name: {self.index_name}")
 
-            if not update_doc:
+            # Query for the specific contact
+            search_body = {
+                "query": {
+                    "bool": {
+                        "must": [
+                            {"match": {"id": self.user_email}},
+                            {"term": {"metadata.name.keyword": contact_name.lower()}}
+                        ]
+                    }
+                }
+            }
+
+            response = self.es_client.search(index=self.index_name, body=search_body)
+            print(f"Search response: {response}")
+
+            if response['hits']['total']['value'] == 0:
+                return f"Contact '{contact_name}' not found for user {self.user_email}"
+
+            # Get the contact document
+            contact_doc = response['hits']['hits'][0]
+            
+            # Prepare the update body
+            update_body = {"doc": {"metadata": {}}}
+            
+            if new_name is not None:
+                update_body["doc"]["metadata"]["name"] = new_name
+                print(f"Updating name to: {new_name}")
+            if new_email is not None:
+                update_body["doc"]["metadata"]["email"] = new_email
+                print(f"Updating email to: {new_email}")
+            if new_relationship is not None:
+                update_body["doc"]["metadata"]["relationship"] = new_relationship
+                print(f"Updating relationship to: {new_relationship}")
+
+            if not update_body["doc"]["metadata"]:
                 return "No updates provided for the contact."
 
-            self.es_client.update(index=self.index_name, id=contact_id, body={"doc": update_doc})
+            # Update the document in Elasticsearch
+            result = self.es_client.update(index=self.index_name, id=contact_doc['_id'], body=update_body)
+            print(f"Update operation result: {result}")
 
-            return f"Contact with ID {contact_id} updated successfully."
+            if result['result'] == 'updated':
+                updated_name = new_name if new_name else contact_name
+                return f"Contact '{updated_name}' updated successfully."
+            else:
+                return f"Failed to update contact '{contact_name}'. Elasticsearch response: {result['result']}"
+
         except Exception as e:
+            print(f"Error occurred: {str(e)}")
             return f"Error modifying contact: {str(e)}"
 
     async def _arun(self, *args, **kwargs):
         raise NotImplementedError("modify_contact does not support async")
+
     
 class DeleteContactTool(BaseTool):
     name: str = "delete_contact"
     description: str = "Deletes a contact from the contact list index."
 
     es_client: Any = Field(default_factory=lambda: None)
-    index_name: str = Field(default_factory=lambda: "")
+    user_email: str = Field(default_factory=lambda: "")
+    index_name: str = Field(default_factory=lambda: "contacts")
 
-    def __init__(self, es_client: Any, index_name: str):
-        super().__init__(es_client=es_client, index_name=index_name)
+    def __init__(self, es_client: Any, user_email: str, index_name: str):
+        super().__init__(es_client=es_client, user_email=user_email, index_name=index_name)
 
-    def _run(self, contact_id: str) -> str:
+    def _run(self, name: str = None, email: str = None) -> str:
         try:
-            self.es_client.delete(index=self.index_name, id=contact_id)
-            return f"Contact with ID {contact_id} deleted successfully."
+            print(f"Attempting to delete contact. Name: {name}, Email: {email}")
+            print(f"User email: {self.user_email}, Index name: {self.index_name}")
+            
+            must_conditions = [
+                {"match": {"id": self.user_email}}
+            ]
+
+            if name:
+                must_conditions.append({"term": {"metadata.name.keyword": name}})
+                print(f"Adding name condition: {name}")
+            
+            if email:
+                must_conditions.append({"term": {"metadata.email.keyword": email}})
+                print(f"Adding email condition: {email}")
+                
+            if len(must_conditions) == 1:
+                return "No valid contact information provided for deletion."
+
+            search_body = {
+                "query": {
+                    "bool": {
+                        "must": must_conditions
+                    }
+                }
+            }
+            
+            print(f"Search body: {search_body}")
+            
+            result = self.es_client.delete_by_query(index=self.index_name, body=search_body)
+            print(f"Delete operation result: {result}")
+            
+            deleted_count = result.get('deleted', 0)
+
+            if deleted_count > 0:
+                return f"Successfully deleted {deleted_count} contact(s)."
+            else:
+                return "No matching contacts found to delete."
+
         except Exception as e:
+            print(f"Error occurred: {str(e)}")
             return f"Error deleting contact: {str(e)}"
 
-    async def _arun(self, *args, **kwargs):
-        raise NotImplementedError("delete_contact does not support async")

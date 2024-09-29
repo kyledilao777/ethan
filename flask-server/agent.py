@@ -55,35 +55,64 @@ def run():
     user_email = data["user_email"]
     calendar_id = data["calendar_id"]
     user_timezone = data.get("timezone", "UTC")
+    user_tier = data.get("tier")
     print(data)
     
 
     timezone = pytz.timezone(user_timezone)
-    output = start_agent(user_input, user_email, calendar_id, timezone, persistent_memory)
+    output = start_agent(user_input, user_email, calendar_id, timezone, persistent_memory, user_tier)
 
     return jsonify(output)
 
 
-def run_agent_executor(user_email, user_input, calendar_id, user_timezone, memory, response_container):
-    tools = [
-        #Standard Tools
+def run_agent_executor(user_email, user_input, calendar_id, user_timezone, memory, response_container, user_tier):
+    print(user_tier, "this is user tier")
+    tools = []
+    base_tools = [
         TimeDeltaTool(),
         GetCalendarEventsTool(),
         CreateCalendarEventTool(),
         SpecificTimeTool(),
         DeleteCalendarEventTool(),
         UpdateCalendarEventTool(),
-
-        #RAG Tools
-        StoreUserPreferenceTool(es_client=es, index_name="user_preferences"),
-        RetrieveUserPreferenceTool(es_client=es, index_name="user_preferences"),
-        DeleteUserPreferenceTool(es_client=es, index_name="user_preferences"),
-        ModifyUserPreferenceTool(es_client=es, index_name="user_preferences"),
-        CreateContactTool(es_client=es, index_name="contacts"),
-        ModifyContactTool(es_client=es, index_name="contacts"),
-        DeleteContactTool(es_client=es, index_name="contacts"),
-        RetrieveContactTool(es_client=es, index_name="contacts"),
     ]
+
+    rag_tools = [
+        StoreUserPreferenceTool(es_client=es, user_email=user_email, index_name="user_preferences"),
+        RetrieveUserPreferenceTool(es_client=es, user_email=user_email,  index_name="user_preferences"),
+        DeleteUserPreferenceTool(es_client=es, user_email=user_email, index_name="user_preferences"),
+        ModifyUserPreferenceTool(es_client=es, user_email=user_email, index_name="user_preferences"),
+        CreateContactTool(es_client=es, user_email=user_email, index_name="contacts"),
+        ModifyContactTool(es_client=es, user_email=user_email, index_name="contacts"),
+        DeleteContactTool(es_client=es, user_email=user_email, index_name="contacts"),
+        RetrieveContactTool(es_client=es, user_email=user_email, index_name="contacts"),
+    ]
+
+    if user_tier == "premium":
+        tools = base_tools + rag_tools
+        print("rag tools used")
+    else:
+        tools = base_tools
+        print("base tools used")
+    # tools = [
+    #     #Standard Tools
+    #     TimeDeltaTool(),
+    #     GetCalendarEventsTool(),
+    #     CreateCalendarEventTool(),
+    #     SpecificTimeTool(),
+    #     DeleteCalendarEventTool(),
+    #     UpdateCalendarEventTool(),
+
+    #     #RAG Tools
+    #     StoreUserPreferenceTool(es_client=es, user_email=user_email, index_name="user_preferences"),
+    #     RetrieveUserPreferenceTool(es_client=es, user_email=user_email,  index_name="user_preferences"),
+    #     DeleteUserPreferenceTool(es_client=es, user_email=user_email, index_name="user_preferences"),
+    #     ModifyUserPreferenceTool(es_client=es, user_email=user_email, index_name="user_preferences"),
+    #     CreateContactTool(es_client=es, user_email=user_email, index_name="contacts"),
+    #     ModifyContactTool(es_client=es, user_email=user_email, index_name="contacts"),
+    #     DeleteContactTool(es_client=es, user_email=user_email, index_name="contacts"),
+    #     RetrieveContactTool(es_client=es, user_email=user_email, index_name="contacts"),
+    # ]
 
     input = f"""
     calendar_id: {calendar_id}
@@ -163,16 +192,16 @@ def run_agent_executor(user_email, user_input, calendar_id, user_timezone, memor
     response_container['response'] = result.get("output")
 
 
-def agent_task(input_data, user_email, calendar_id, timezone, memory, response_container):
-    run_agent_executor(user_email, input_data, calendar_id, timezone, memory, response_container)
+def agent_task(input_data, user_email, calendar_id, timezone, memory, response_container, user_tier):
+    run_agent_executor(user_email, input_data, calendar_id, timezone, memory, response_container, user_tier)
     time.sleep(2)
 
     # Append the parsed details and static message to the response container
 
 
-def start_agent(input_data, user_email, calendar_id, timezone, memory):
+def start_agent(input_data, user_email, calendar_id, timezone, memory, user_tier):
     response_container = {}
-    agent_thread = threading.Thread(target=agent_task, args=(input_data, user_email, calendar_id, timezone, memory, response_container))
+    agent_thread = threading.Thread(target=agent_task, args=(input_data, user_email, calendar_id, timezone, memory, response_container, user_tier))
     agent_thread.start()
     agent_thread.join()
 
