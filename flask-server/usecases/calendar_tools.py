@@ -280,8 +280,9 @@ class StoreUserPreferenceTool(BaseTool):
             embedding = get_embedding(preference_value)
 
             document = Document(
+                id = self.user_email,
+                metadata={"preference_key": preference_key, "embedding": embedding},
                 page_content=preference_value,
-                metadata={"user_email": user_email, "preference_key": preference_key, "embedding": embedding}
             )
 
             document_id = str(uuid4())
@@ -302,52 +303,154 @@ class RetrieveUserPreferenceTool(BaseTool):
     user_email: str = Field(default_factory=lambda: "")
     index_name: str = Field(default_factory=lambda: "user_preferences")
 
-    def __init__(self, es_client: Any, user_email:str, index_name: str):
+    def __init__(self, es_client: Any, user_email: str, index_name: str):
         super().__init__(es_client=es_client, user_email=user_email, index_name=index_name)
 
-    def cosine_similarity(self, a: List[float], b: List[float]) -> float:
-        return np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b))
-
-    def _run(self, user_email: str, preference_query: str) -> str:
+    def _run(self, query: str = "") -> Dict[str, Any]:
         try:
-            # Generate embedding for the query
-            query_embedding = get_embedding(preference_query)
-
-            # Fetch all preferences for the user without filtering by preference_key
-            search_query = {
+            # Search for preferences that match the user's email
+            search_body = {
                 "query": {
-                    "match": {"metadata.user_email": user_email}
-                },
-                "size": 100  # Adjust based on expected maximum preferences per user
+                    "match": {"id": self.user_email}
+                }
             }
 
-            result = self.es_client.search(index=self.index_name, body=search_query)
+            response = self.es_client.search(index=self.index_name, body=search_body)
 
-            if not result['hits']['hits']:
-                return f"No preferences found for user: {user_email}"
+            if response['hits']['total']['value'] == 0:
+                return {"error": "No preferences found for this user"}
 
-            # Calculate cosine similarity for each preference
-            similarities = []
-            for hit in result['hits']['hits']:
-                preference_embedding = hit['_source']['metadata'].get('embedding')
-                if preference_embedding:
-                    similarity = self.cosine_similarity(query_embedding, preference_embedding)
-                    similarities.append((similarity, hit))
+            preferences = []
+            for hit in response['hits']['hits']:
+                preference_doc = hit['_source']
+                if preference_doc.get('id') == self.user_email:
+                    preferences.append(preference_doc.get('metadata', {}))
 
-            # Sort by similarity and get the most similar preference
-            if similarities:
-                similarities.sort(key=lambda x: x[0], reverse=True)
-                top_hit = similarities[0][1]
-                score = similarities[0][0]
-                preference_key = top_hit['_source']['metadata'].get('preference_key', 'unknown')
-                preference_value = top_hit['_source'].get('page_content', 'unknown')
-                return f"Found preference: {preference_key} = {preference_value} (similarity score: {score:.2f})"
+            if not query:
+                # If no specific query, return all preferences
+                return self._get_all_preferences(preferences)
             else:
-                return f"No relevant preference found for the query: {preference_query}"
+                # If there's a query, return the most relevant preference
+                return self._get_specific_preference(preferences, query)
 
         except Exception as e:
-            print(e)
-            return f"Error retrieving preference: {str(e)}"
+            return {"error": f"Error retrieving preferences: {str(e)}"}
+
+    def _get_all_preferences(self, preferences: List[Dict[str, Any]]) -> Dict[str, Any]:
+        return {"preferences": preferences}
+
+    def _get_specific_preference(self, preferences: List[Dict[str, Any]], query: str) -> Dict[str, Any]:
+        # Calculate cosine similarity for the given query against each preference
+        query_embedding = self._get_query_embedding(query)
+        if not query_embedding:
+            return {"error": f"Unable to generate embedding for query: {query}"}
+
+        similarities = []
+        for preference in preferences:
+            preference_embedding = preference.get('embedding')
+            if preference_embedding:
+                similarity = self.cosine_similarity(query_embedding, preference_embedding)
+                similarities.append((similarity, preference))
+
+        if similarities:
+            # Sort preferences by similarity and return the most relevant one
+            similarities.sort(key=lambda x: x[0], reverse=True)
+            top_preference = similarities[0][1]
+            return top_preference
+        else:
+            return {"error": f"No relevant preferences found for query: '{query}'"}
+
+    def cosine_similarity(self, a: List[float], b: List[float]) -> float:
+        """Calculates the cosine similarity between two vectors."""
+        return np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b))
+
+    def _get_query_embedding(self, query: str) -> List[float]:
+        """Generates an embedding for the given query."""
+        try:
+            return get_embedding(query)  # Replace with actual embedding function
+        except Exception as e:
+            print(f"Error generating embedding: {e}")
+            return []
+
+    async def _arun(self, *args, **kwargs):
+        raise NotImplementedError("retrieve_user_preference does not support async")
+    
+class ModifyUserPreferenceTool(BaseTool):
+    name: str = "modify_user_preference"
+    description: str = "Modifies an existing user preference in Elasticsearch using semantic search."
+
+    es_client: Any = Field(default_factory=lambda: None)
+    user_email: str = Field(default_factory=lambda: "")
+    index_name: str = Field(default_factory=lambda: "user_preferences")
+
+    def __init__(self, es_client: Any, user_email: str, index_name: str):
+        super().__init__(es_client=es_client, user_email=user_email, index_name=index_name)
+
+    def _run(self, preference_key: str, new_value: str = None) -> str:
+        try:
+            print(f"Attempting to modify preference. Preference key: {preference_key}")
+            print(f"User email: {self.user_email}, Index name: {self.index_name}")
+
+            # Search for the specific preference using user email and preference key
+            search_body = {
+                "query": {
+                    "bool": {
+                        "must": [
+                            {"match": {"id": self.user_email}},
+                            {"term": {"metadata.preference_key.keyword": preference_key}}
+                        ]
+                    }
+                }
+            }
+
+            response = self.es_client.search(index=self.index_name, body=search_body)
+            print(f"Search response: {response}")
+
+            if response['hits']['total']['value'] == 0:
+                return f"Preference '{preference_key}' not found for user {self.user_email}"
+
+            # Get the preference document
+            preference_doc = response['hits']['hits'][0]
+            
+            # Prepare the update body
+            update_body = {"doc": {"metadata": {}}}
+            
+            if new_value is not None:
+                # Generate new embedding for the updated preference value
+                new_embedding = self._get_new_embedding(new_value)
+                if not new_embedding:
+                    return f"Error generating embedding for the new preference value: {new_value}"
+                
+                update_body["doc"]["metadata"]["embedding"] = new_embedding
+                update_body["doc"]["page_content"] = new_value
+                print(f"Updating preference value to: {new_value}")
+            
+            if not update_body["doc"]["metadata"]:
+                return "No updates provided for the preference."
+
+            # Update the document in Elasticsearch
+            result = self.es_client.update(index=self.index_name, id=preference_doc['_id'], body=update_body)
+            print(f"Update operation result: {result}")
+
+            if result['result'] == 'updated':
+                return f"Preference '{preference_key}' updated successfully."
+            else:
+                return f"Failed to update preference '{preference_key}'. Elasticsearch response: {result['result']}"
+
+        except Exception as e:
+            print(f"Error occurred: {str(e)}")
+            return f"Error modifying preference: {str(e)}"
+
+    def _get_new_embedding(self, new_value: str) -> List[float]:
+        """Generates an embedding for the new preference value."""
+        try:
+            return get_embedding(new_value)  # Replace with actual embedding generation function
+        except Exception as e:
+            print(f"Error generating new embedding: {e}")
+            return []
+
+    async def _arun(self, *args, **kwargs):
+        raise NotImplementedError("modify_user_preference does not support async")
 
 class DeleteUserPreferenceTool(BaseTool):
     name: str = "delete_user_preference"
@@ -372,7 +475,7 @@ class DeleteUserPreferenceTool(BaseTool):
                         "query": {
                             "bool": {
                                 "must": [
-                                    {"match": {"metadata.user_email": user_email}}
+                                    {"match": {"id": self.user_email}}
                                 ]
                             }
                         },
@@ -403,76 +506,7 @@ class DeleteUserPreferenceTool(BaseTool):
     async def _arun(self, *args, **kwargs):
         raise NotImplementedError("delete_user_preference does not support async")
 
-class ModifyUserPreferenceTool(BaseTool):
-    name: str = "modify_user_preference"
-    description: str = "Modifies an existing user preference in Elasticsearch using semantic search."
-    
-    es_client: Any = Field(default_factory=lambda: None)
-    user_email: str = Field(default_factory=lambda: "")
-    index_name: str = Field(default_factory=lambda: "")
 
-    def __init__(self, es_client: Any, user_email: str, index_name: str):
-        super().__init__(es_client=es_client, user_email=user_email, index_name=index_name)
-
-    def _run(self, user_email: str, preference_key: str, new_preference_value: str) -> str:
-        try:
-            # Generate embedding for the query
-            query_embedding = get_embedding(preference_key)
-
-            # First, find the most relevant preference
-            search_query = {
-                "query": {
-                    "script_score": {
-                        "query": {
-                            "bool": {
-                                "must": [
-                                    {"match": {"metadata.user_email": user_email}}
-                                ]
-                            }
-                        },
-                        "script": {
-                            "source": "cosineSimilarity(params.query_vector, 'metadata.embedding') + 1.0",
-                            "params": {"query_vector": query_embedding}
-                        }
-                    }
-                }
-            }
-            
-            result = self.es_client.search(index=self.index_name, body=search_query)
-            
-            if result['hits']['hits']:
-                top_hit = result['hits']['hits'][0]
-                document_id = top_hit['_id']
-                preference_key = top_hit['_source']['metadata']['preference_key']
-                
-                # Generate new embedding for the updated preference value
-                new_embedding = get_embedding(new_preference_value)
-
-                # Update the document
-                updated_document = Document(
-                    page_content=new_preference_value,
-                    metadata={
-                        "user_email": user_email,
-                        "preference_key": preference_key,
-                        "embedding": new_embedding
-                    }
-                )
-                
-                self.es_client.update(
-                    index=self.index_name,
-                    id=document_id,
-                    body={"doc": updated_document.dict()}
-                )
-
-                return f"Preference '{preference_key}' updated successfully for {user_email}."
-            else:
-                return f"No relevant preference found for the query: {preference_key}. Use store_user_preference to create a new preference."
-        except Exception as e:
-            return f"Error modifying preference: {str(e)}"
-
-    async def _arun(self, *args, **kwargs):
-        raise NotImplementedError("modify_user_preference does not support async")
-    
 #Contact List
 class CreateContactTool(BaseTool):
     name: str = "create_contact"
@@ -596,6 +630,7 @@ class ModifyContactTool(BaseTool):
             
             # Prepare the update body
             update_body = {"doc": {"metadata": {}}}
+            print(update_body)
             
             if new_name is not None:
                 update_body["doc"]["metadata"]["name"] = new_name

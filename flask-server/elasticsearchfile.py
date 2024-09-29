@@ -16,7 +16,7 @@ es = Elasticsearch(
   os.getenv("ES_CLOUD_SERVER_URL"),
   api_key=os.getenv("ES_CLOUD_API_KEY"),
 )
-# Test your Elasticsearch connection
+#Test your Elasticsearch connection
 # info = es.info()
 # print(info)  # This should print the Elasticsearch cluster information
 
