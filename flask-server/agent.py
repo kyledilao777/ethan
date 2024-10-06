@@ -3,6 +3,8 @@ from datetime import datetime
 from flask_cors import CORS
 from openai import OpenAI
 
+import asyncio
+
 import os
 import pytz
 import openai
@@ -24,15 +26,15 @@ from langchain.agents.format_scratchpad import format_to_openai_function_message
 from langchain.agents.output_parsers import OpenAIFunctionsAgentOutputParser
 from langchain_core.utils import function_calling
 from usecases.calendar_functions import get_from_session, save_to_session, clear_session
-
-from usecases.calendar_tools import GetCalendarEventsTool, TimeDeltaTool, CreateCalendarEventTool, SpecificTimeTool, DeleteCalendarEventTool, UpdateCalendarEventTool, StoreUserPreferenceTool, RetrieveUserPreferenceTool, DeleteUserPreferenceTool, ModifyUserPreferenceTool, CreateContactTool, ModifyContactTool, DeleteContactTool, RetrieveContactTool
-from elasticsearchfile import es
+from ragmongo import CreateContactTool, ModifyContactTool, DeleteContactTool, RetrieveContactTool
+from usecases.calendar_tools import GetCalendarEventsTool, TimeDeltaTool, CreateCalendarEventTool, SpecificTimeTool, DeleteCalendarEventTool, UpdateCalendarEventTool
 from flask import Flask, jsonify, request, send_from_directory
+
+from mongoconnect import connect_to_mongo  # Import the async connection function]
+
 
 import spacy
 import json
-from openai import OpenAI
-
 from openai import OpenAI
 
 client = OpenAI()
@@ -47,6 +49,8 @@ OPENAI_MODEL = "gpt-4o"
 
 llm = ChatOpenAI(temperature=0, model=OPENAI_MODEL, api_key=OPENAI_API_KEY)
 persistent_memory = ConversationSummaryBufferMemory(llm=llm,memory_key="chat_history", return_messages=True, max_token_limit=2000)
+
+db = connect_to_mongo()
 
 @app.route("/agent", methods=["POST"])
 def run():
@@ -67,6 +71,10 @@ def run():
 
 def run_agent_executor(user_email, user_input, calendar_id, user_timezone, memory, response_container, user_tier):
     print(user_tier, "this is user tier")
+    
+    if db is None:
+        raise ValueError("Database `db` is not initialized. Please check the MongoDB connection.")
+
     tools = []
     base_tools = [
         TimeDeltaTool(),
@@ -78,15 +86,12 @@ def run_agent_executor(user_email, user_input, calendar_id, user_timezone, memor
     ]
 
     rag_tools = [
-        StoreUserPreferenceTool(es_client=es, user_email=user_email, index_name="user_preferences"),
-        RetrieveUserPreferenceTool(es_client=es, user_email=user_email,  index_name="user_preferences"),
-        DeleteUserPreferenceTool(es_client=es, user_email=user_email, index_name="user_preferences"),
-        ModifyUserPreferenceTool(es_client=es, user_email=user_email, index_name="user_preferences"),
-        CreateContactTool(es_client=es, user_email=user_email, index_name="contacts"),
-        ModifyContactTool(es_client=es, user_email=user_email, index_name="contacts"),
-        DeleteContactTool(es_client=es, user_email=user_email, index_name="contacts"),
-        RetrieveContactTool(es_client=es, user_email=user_email, index_name="contacts"),
+        CreateContactTool(db=db, user_email=user_email),
+        ModifyContactTool(db=db, user_email=user_email),
+        DeleteContactTool(db=db, user_email=user_email),
+        RetrieveContactTool(db=db, user_email=user_email),
     ]
+    
 
     if user_tier == "premium":
         tools = base_tools + rag_tools
@@ -94,25 +99,6 @@ def run_agent_executor(user_email, user_input, calendar_id, user_timezone, memor
     else:
         tools = base_tools
         print("base tools used")
-    # tools = [
-    #     #Standard Tools
-    #     TimeDeltaTool(),
-    #     GetCalendarEventsTool(),
-    #     CreateCalendarEventTool(),
-    #     SpecificTimeTool(),
-    #     DeleteCalendarEventTool(),
-    #     UpdateCalendarEventTool(),
-
-    #     #RAG Tools
-    #     StoreUserPreferenceTool(es_client=es, user_email=user_email, index_name="user_preferences"),
-    #     RetrieveUserPreferenceTool(es_client=es, user_email=user_email,  index_name="user_preferences"),
-    #     DeleteUserPreferenceTool(es_client=es, user_email=user_email, index_name="user_preferences"),
-    #     ModifyUserPreferenceTool(es_client=es, user_email=user_email, index_name="user_preferences"),
-    #     CreateContactTool(es_client=es, user_email=user_email, index_name="contacts"),
-    #     ModifyContactTool(es_client=es, user_email=user_email, index_name="contacts"),
-    #     DeleteContactTool(es_client=es, user_email=user_email, index_name="contacts"),
-    #     RetrieveContactTool(es_client=es, user_email=user_email, index_name="contacts"),
-    # ]
 
     input = f"""
     calendar_id: {calendar_id}
@@ -146,7 +132,8 @@ def run_agent_executor(user_email, user_input, calendar_id, user_timezone, memor
             with a request to 'change' the event, you will proceed
             to reschedule the event to a new time. If the user decides not to change
             the event or doesn't provide clear instructions to change, you should
-            leave the event at the originally requested time.
+            leave the event at the originally requested time. 
+            Additionally, remember to add a spacing after every bullet point in your final output.
 
 
             NEVER EVER include the event ID.
@@ -177,34 +164,25 @@ def run_agent_executor(user_email, user_input, calendar_id, user_timezone, memor
     agent_executor = AgentExecutor.from_agent_and_tools(agent=agent, tools=tools, verbose=True, memory=memory, max_iterations=15)
     result = agent_executor.invoke({"input": input})
 
-    if (result):
+    if result:
         session = get_from_session(user_email)
         response_container['eventDetails'] = session
-
-
-    for step in result.get("intermediate_steps", []):
-        if step["tool"] == "get_calendar_events":
-            response_container['events'] = step["output"]
-            print(step["output"], "This is step output")
-
-    clear_session(user_email)
-
-    response_container['response'] = result.get("output")
+        for step in result.get("intermediate_steps", []):
+            if step[0].tool == "get_calendar_events":
+                response_container['events'] = step[1]
+                print(step[1], "This is step output")
+        clear_session(user_email)
+        response_container['response'] = result.get("output")
 
 
 def agent_task(input_data, user_email, calendar_id, timezone, memory, response_container, user_tier):
     run_agent_executor(user_email, input_data, calendar_id, timezone, memory, response_container, user_tier)
-    time.sleep(2)
-
-    # Append the parsed details and static message to the response container
-
 
 def start_agent(input_data, user_email, calendar_id, timezone, memory, user_tier):
     response_container = {}
     agent_thread = threading.Thread(target=agent_task, args=(input_data, user_email, calendar_id, timezone, memory, response_container, user_tier))
     agent_thread.start()
     agent_thread.join()
-
     return response_container
 
 if __name__ == "__main__":
