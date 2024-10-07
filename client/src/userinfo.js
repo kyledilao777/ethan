@@ -1,7 +1,8 @@
 import { useState } from "react";
 import axios from "axios";
 import Select from "react-select";
-import ReactGA from "react-ga";
+import { Link } from "react-router-dom";
+
 
 export default function UserInfo() {
   const [name, setName] = useState("");
@@ -16,11 +17,7 @@ export default function UserInfo() {
   const [imageSrc, setImageSrc] = useState("logo.jpeg");
 
   const handleNameNext = () => {
-    ReactGA.event({
-      category: "User",
-      action: "Clicks Next",
-      label: "User Clicks Next",
-    });
+    
 
     const hasOtherOccupation = occupation.some(
       (option) => option.value === "Others"
@@ -43,11 +40,6 @@ export default function UserInfo() {
   };
 
   const handlePhotoBack = () => {
-    ReactGA.event({
-      category: "User",
-      action: "Backs to Name",
-      label: "User Backs to Name",
-    });
 
     setIsName(true);
     setIsPhoto(false);
@@ -103,11 +95,7 @@ export default function UserInfo() {
   };
 
   const handleImageChange = (event) => {
-    ReactGA.event({
-      category: "User",
-      action: "Changes Image",
-      label: "User Changes Image",
-    });
+   
     const file = event.target.files[0];
     if (file && file.type.substr(0, 5) === "image") {
       const reader = new FileReader();
@@ -122,11 +110,7 @@ export default function UserInfo() {
   };
 
   const sendData = async () => {
-    ReactGA.event({
-      category: "User",
-      action: "Sends User Data",
-      label: "User Sends User Data",
-    });
+    
     const processedReason = reason.map((obj) => obj.value);
     const processedOccupation = occupation.map((obj) => obj.value);
     try {
@@ -150,8 +134,9 @@ export default function UserInfo() {
           withCredentials: true, // Include this in the same object as headers
         }
       );
+      alert("Profile updated successfully!");
       console.log(res.data.message);
-      window.location.href = "http://localhost:3000/home?auth=success"; // Redirect to the specified URL
+       // Redirect to the specified URL
     } catch (error) {
       console.error("Error updating user profile:", error);
       alert("Failed to update profile.");
@@ -269,7 +254,7 @@ export default function UserInfo() {
                 </div>
               </div>
               <button
-                className="bg-blueNav w-[100px] mt-5 rounded-md h-[40px] text-white font-semibold"
+                className="bg-blueNav w-[100px] mt-5 hover:scale-105  transition-transform duration-300 ease-in-out rounded-lg h-[40px] text-white font-semibold"
                 onClick={handleNameNext}
               >
                 Next
@@ -277,9 +262,14 @@ export default function UserInfo() {
             </div>
           )}
           {isPhoto && (
-            <div className="sxl:w-[450px] sxl:h-[250px] flex items-center flex-col p-6">
+            <div className={`sxl:w-[450px] sxl:h-[250px] flex items-center justify-center flex-col p-6 transition-opacity duration-1000 ease-in-out ${
+              isPhoto ? "opacity-100" : "opacity-0"
+            }`}>
               <div className="text-center font-bold mb-4 text-lg">
                 Choose a Profile Photo
+              </div>
+              <div className="text-center font-bold mb-4 text-md text-red-500">
+                All files uploaded must be .jpg file OR .png only
               </div>
               <img
                 src={imageSrc}
@@ -299,17 +289,26 @@ export default function UserInfo() {
                 <span className="text-sm text-gray-500">{fileName}</span>
               </div>
               <button
-                className="bg-blueNav w-[150px] rounded-xl p-1 my-3 text-white font-semibold"
+                className="bg-blueNav w-[150px] hover:scale-105  transition-transform duration-300 ease-in-out rounded-xl p-1 my-3 text-white font-semibold"
                 onClick={sendData}
               >
                 Submit
               </button>
               <button
-                className="bg-gray-500 w-[150px] rounded-xl p-1 my-3 text-white font-semibold"
+                className="bg-blueNav w-[200px] hover:scale-105  transition-transform duration-300 ease-in-out rounded-xl p-1 my-3 text-white font-semibold"
+                onClick={handlePhotoBack}
+              >
+                <Link  to={{ pathname: "/freemium" }}>
+                  Choose your plan now!
+                </Link>
+              </button>
+              <button
+                className="bg-gray-500 w-[150px] hover:scale-105  transition-transform duration-300 ease-in-out rounded-xl p-1 my-3 text-white font-semibold"
                 onClick={handlePhotoBack}
               >
                 Back
               </button>
+             
             </div>
           )}
         </div>

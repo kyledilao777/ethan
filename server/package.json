@@ -11,6 +11,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@stripe/react-stripe-js": "^2.8.0",
+    "@stripe/stripe-js": "^4.6.0",
     "axios": "^1.6.8",
     "connect-loki": "^1.2.0",
     "connect-mongo": "^5.1.0",

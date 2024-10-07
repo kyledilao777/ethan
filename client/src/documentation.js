@@ -4,16 +4,22 @@ import NavBar from "./components/navbar";
 import { setIsAgent, setAgentResponse } from "./redux/reducers/agentReducer";
 import { setData } from "./redux/reducers/userReducer";
 import AccordionItem from "./components/AccordionItem"; // Import the new AccordionItem component
+import { useEffect } from "react";
 
 export default function Documentation() {
   const [isNavOpen, setIsNavOpen] = useState(false);
   const [openItem, setOpenItem] = useState(null);
+  const [isLoaded, setIsLoaded] = useState(false);
 
   const mainContentClass = isNavOpen ? "xsm:ml-[300px] sxl:ml-[0px]" : "";
 
   const handleToggle = (id) => {
     setOpenItem(openItem === id ? null : id);
   };
+
+  useEffect(() => {
+    setIsLoaded(true); // Set the state to true to trigger the transition
+  }, []);
 
   return (
     <div className="w-full h-full">
@@ -26,7 +32,9 @@ export default function Documentation() {
           setData={setData}
         />
         <div
-          className={`flex flex-col w-full p-10 justify-between h-full transition-all duration-300 ${mainContentClass}`}
+          className={`flex flex-col w-full p-10 justify-between h-full transition-all duration-300 ${mainContentClass} transition-opacity duration-1500 ease-in-out ${
+            isLoaded ? "opacity-100" : "opacity-0"
+          }`}
         >
           <div className={`w-full sxl:mt-0 xsm:mt-10`}>
             <div>

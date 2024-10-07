@@ -38,6 +38,12 @@ export default function Home() {
   const isAuthenticated = useSelector((state) => state.user.isAuthenticated);
   const [firstTypingComplete, setFirstTypingComplete] = useState(false);
   const containerRef = useRef(null);
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  useEffect(() => {
+    setIsLoaded(true); // Set the state to true to trigger the transition
+  }, []);
+
 
   const dispatch = useDispatch();
   const messagesEndRef = useRef(null);
@@ -517,11 +523,13 @@ export default function Home() {
 
 
   return (
-    <div className={`w-full ${isScrollable ? "h-fit" : "h-screen"}`}>
+    <div className={`w-full  ${isScrollable ? "h-fit" : "h-screen"} `}>
       <div className="w-full flex sxl:flex-row xsm:flex-row h-screen">
         <NavBar setIsNavOpen={setIsNavOpen} isHome={true} setIsAgent={setIsAgent} setAgentResponse={setAgentResponse} setData={setData} />
         <div
-          className={`flex flex-col w-full h-full transition-all duration-300 ${mainContentClass} `}
+          className={`flex flex-col w-full h-full transition-all duration-300 ${mainContentClass} transition-opacity duration-1000 ease-in-out ${
+            isLoaded ? "opacity-100" : "opacity-0"
+          }`}
         >
           {!isAgent && (
             <div
