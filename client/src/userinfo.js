@@ -14,10 +14,11 @@ export default function UserInfo() {
   const [comment, setComment] = useState("");
   const [reason, setReason] = useState([]);
   const [customReason, setCustomReason] = useState("");
-  const [imageSrc, setImageSrc] = useState("logo.jpeg");
+  const [imageSrc, setImageSrc] = useState("profilephoto.png");
+  const [errorMessage, setErrorMessage] = useState("");
 
   const handleNameNext = () => {
-    
+
 
     const hasOtherOccupation = occupation.some(
       (option) => option.value === "Others"
@@ -95,24 +96,32 @@ export default function UserInfo() {
   };
 
   const handleImageChange = (event) => {
-   
+
     const file = event.target.files[0];
-    if (file && file.type.substr(0, 5) === "image") {
+    const validExtensions = ["image/jpeg", "image/png"];
+
+    if (file && file.type.substr(0, 5) === "image" && validExtensions.includes(file.type)) {
       const reader = new FileReader();
       reader.onload = () => {
         setImageSrc(reader.result);
         setFileName(file ? file.name : "No file chosen");
+        setErrorMessage("");
       };
       reader.readAsDataURL(file);
     } else {
-      setImageSrc("logo.jpeg"); // Reset to default or handle error
+      setErrorMessage("All files chosen must be in JPG or PNG format");
+      setImageSrc("profilephoto.png"); // Reset to default or handle error
     }
   };
 
   const sendData = async () => {
-    
+
     const processedReason = reason.map((obj) => obj.value);
     const processedOccupation = occupation.map((obj) => obj.value);
+    if (imageSrc == "profilephoto.png") {
+      alert("You have not uploaded any profile photo yet");
+      return;
+    }
     try {
       const res = await axios.post(
         "http://localhost:3001/update-profile",
@@ -134,9 +143,10 @@ export default function UserInfo() {
           withCredentials: true, // Include this in the same object as headers
         }
       );
-      alert("Profile updated successfully!");
+      alert("You have sucessfully updated your profile! Please proceed to choosing plans if you have not done so!");
+      window.location.href = "http://localhost:3000/freemium";
       console.log(res.data.message);
-       // Redirect to the specified URL
+      // Redirect to the specified URL
     } catch (error) {
       console.error("Error updating user profile:", error);
       alert("Failed to update profile.");
@@ -262,19 +272,21 @@ export default function UserInfo() {
             </div>
           )}
           {isPhoto && (
-            <div className={`sxl:w-[450px] sxl:h-[250px] flex items-center justify-center flex-col p-6 transition-opacity duration-1000 ease-in-out ${
-              isPhoto ? "opacity-100" : "opacity-0"
-            }`}>
+            <div className={`sxl:w-[450px] sxl:h-[250px] flex items-center justify-center flex-col p-6 transition-opacity duration-1000 ease-in-out ${isPhoto ? "opacity-100" : "opacity-0"
+              }`}>
               <div className="text-center font-bold mb-4 text-lg">
                 Choose a Profile Photo
               </div>
-              <div className="text-center font-bold mb-4 text-md text-red-500">
-                All files uploaded must be .jpg file OR .png only
-              </div>
+              {errorMessage && (
+                <div className="text-center font-bold mb-4 text-md text-red-500">
+                  {errorMessage}
+                </div>
+              )}
+
               <img
                 src={imageSrc}
                 alt="Profile"
-                className="w-32 h-32 rounded-full mb-4"
+                className="w-32 h-32 rounded-full object-cover mb-4"
               />
               <div className="bg-white space-x-3 flex items-center mb-4">
                 <label className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-4 rounded-lg cursor-pointer">
@@ -289,26 +301,19 @@ export default function UserInfo() {
                 <span className="text-sm text-gray-500">{fileName}</span>
               </div>
               <button
-                className="bg-blueNav w-[150px] hover:scale-105  transition-transform duration-300 ease-in-out rounded-xl p-1 my-3 text-white font-semibold"
+                className="bg-blueNav w-[150px] hover:scale-105 transition-transform duration-300 ease-in-out rounded-xl p-1 my-3 text-white font-semibold"
                 onClick={sendData}
               >
-                Submit
+                Next
               </button>
-              <button
-                className="bg-blueNav w-[200px] hover:scale-105  transition-transform duration-300 ease-in-out rounded-xl p-1 my-3 text-white font-semibold"
-                onClick={handlePhotoBack}
-              >
-                <Link to={{ pathname: "/freemium" }}>
-                  Choose your plan now!
-                </Link>
-              </button>
+
               <button
                 className="bg-gray-500 w-[150px] hover:scale-105  transition-transform duration-300 ease-in-out rounded-xl p-1 my-3 text-white font-semibold"
                 onClick={handlePhotoBack}
               >
                 Back
               </button>
-             
+
             </div>
           )}
         </div>
