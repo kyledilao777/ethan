@@ -100,7 +100,6 @@ def run_agent_executor(user_email, user_input, calendar_id, user_timezone, memor
         RetrieveContactTool(db=db, user_email=user_email),
     ]
     
-
     if user_tier == "premium":
         tools = base_tools + rag_tools
         print("rag tools used")
