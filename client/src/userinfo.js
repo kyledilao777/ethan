@@ -298,7 +298,7 @@ export default function UserInfo() {
                 className="bg-blueNav w-[200px] hover:scale-105  transition-transform duration-300 ease-in-out rounded-xl p-1 my-3 text-white font-semibold"
                 onClick={handlePhotoBack}
               >
-                <Link  to={{ pathname: "/freemium" }}>
+                <Link to={{ pathname: "/freemium" }}>
                   Choose your plan now!
                 </Link>
               </button>

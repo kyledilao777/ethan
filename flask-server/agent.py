@@ -25,9 +25,10 @@ from langchain.tools.render import format_tool_to_openai_function
 from langchain.agents.format_scratchpad import format_to_openai_function_messages
 from langchain.agents.output_parsers import OpenAIFunctionsAgentOutputParser
 from langchain_core.utils import function_calling
-from usecases.calendar_functions import get_from_session, save_to_session, clear_session
-from ragmongo import CreateContactTool, ModifyContactTool, DeleteContactTool, RetrieveContactTool
-from usecases.calendar_tools import GetCalendarEventsTool, TimeDeltaTool, CreateCalendarEventTool, SpecificTimeTool, DeleteCalendarEventTool, UpdateCalendarEventTool
+from base_tools.calendar_functions import get_from_session, clear_session
+from base_tools.calendar_tools import GetCalendarEventsTool, TimeDeltaTool, CreateCalendarEventTool, SpecificTimeTool, DeleteCalendarEventTool, UpdateCalendarEventTool
+from rag_tools.contact_list import CreateContactTool, ModifyContactTool, DeleteContactTool, RetrieveContactTool
+from rag_tools.user_preferences import StoreUserPreferenceTool, FetchUserPreferenceTool, DeleteUserPreferenceTool, ModifyUserPreferenceTool
 from flask import Flask, jsonify, request, send_from_directory
 
 from mongoconnect import connect_to_mongo  # Import the async connection function]
@@ -86,6 +87,13 @@ def run_agent_executor(user_email, user_input, calendar_id, user_timezone, memor
     ]
 
     rag_tools = [
+        #User Preference Tools
+        StoreUserPreferenceTool(db=db, user_id=user_email),
+        FetchUserPreferenceTool(db=db, user_id=user_email),
+        DeleteUserPreferenceTool(db=db, user_id=user_email),
+        ModifyUserPreferenceTool(db=db, user_id=user_email),
+        
+        #Contact List Tools
         CreateContactTool(db=db, user_email=user_email),
         ModifyContactTool(db=db, user_email=user_email),
         DeleteContactTool(db=db, user_email=user_email),

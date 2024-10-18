@@ -3,7 +3,7 @@ from typing import Type, Optional, List, Any, Dict
 from pydantic import BaseModel, Field, PrivateAttr
 from langchain.tools import BaseTool
 from langchain_core.documents import Document
-from usecases.calendar_functions import get_calendar_events, create_event, delete_event, update_event, save_to_session, get_from_session, clear_session
+from base_tools.calendar_functions import get_calendar_events, create_event, delete_event, update_event, save_to_session, get_from_session, clear_session
 import pytz
 from uuid import uuid4
 from textembedding import get_embedding

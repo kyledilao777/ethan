@@ -1,10 +1,8 @@
 import os
-import time
 import requests
 from dotenv import load_dotenv
 from elasticsearch import Elasticsearch
 from uuid import uuid4
-import pytz  # Ensure pytz is imported
 
 # es = Elasticsearch()
 load_dotenv()

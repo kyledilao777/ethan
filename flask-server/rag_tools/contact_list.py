@@ -175,7 +175,7 @@ class RetrieveContactTool(BaseTool):
     def _run(self, query: str = "") -> Dict[str, Any]:
         try:
             # Search for documents where created_by field matches user_email
-            search_filter = {"metadata.created_by": self.user_email}
+            search_filter = {"id": self.user_email}
             
             contacts = list(self.db[self.collection_name].find(search_filter))
 
