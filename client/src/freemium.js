@@ -72,7 +72,9 @@ export default function Freemium() {
                 <li>Create your own contact list</li>
               </ul>
               <button
-                onClick={() => { setTier("premium"); window.location.href = "https://buy.stripe.com/14kdRO6zVcWpeGI4gh"; }}
+                onClick={() => {     
+                  alert("Please remember to open main.untangled-ai.com again after payment.");
+                  window.location.href = "https://buy.stripe.com/14kdRO6zVcWpeGI4gh"; }}
                 className="mt-12 w-full border-2 border-blueNav hover:scale-105 transition-transform duration-300 ease-in-out rounded-md text-white bg-blueNav py-3"
               >
                 Get Premium

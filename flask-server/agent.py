@@ -2,6 +2,7 @@ from dotenv import load_dotenv
 from datetime import datetime
 from flask_cors import CORS
 from openai import OpenAI
+import stripe
 
 import asyncio
 
@@ -48,10 +49,14 @@ load_dotenv()
 OPENAI_API_KEY = os.getenv("OPEN_AI_API_KEY")
 OPENAI_MODEL = "gpt-4o"
 
+stripe.api_key = os.getenv("STRIPE_API_KEY")
+
 llm = ChatOpenAI(temperature=0, model=OPENAI_MODEL, api_key=OPENAI_API_KEY)
 persistent_memory = ConversationSummaryBufferMemory(llm=llm,memory_key="chat_history", return_messages=True, max_token_limit=2000)
 
-db = connect_to_mongo()
+client = connect_to_mongo()
+db_rag = client["rag_database"]
+db_test = client["test"]
 
 @app.route("/agent", methods=["POST"])
 def run():
@@ -61,20 +66,29 @@ def run():
     calendar_id = data["calendar_id"]
     user_timezone = data.get("timezone", "UTC")
     user_tier = data.get("tier")
-    print(data)
     
-
+    print("tier", user_tier)
+    
+    if user_tier == "":
+        try:
+            check_stripe=stripe.Customer.list(email=user_email)
+            user_tier = "premium" if check_stripe.data else "free"
+            db_test['users'].update_one({"email": user_email}, {"$set": {"tier": user_tier}})
+            print("Tier updated successfully!")
+        
+        except:
+            print("Error updating tier")
+        
     timezone = pytz.timezone(user_timezone)
     output = start_agent(user_input, user_email, calendar_id, timezone, persistent_memory, user_tier)
 
     return jsonify(output)
 
-
 def run_agent_executor(user_email, user_input, calendar_id, user_timezone, memory, response_container, user_tier):
     print(user_tier, "this is user tier")
     
-    if db is None:
-        raise ValueError("Database `db` is not initialized. Please check the MongoDB connection.")
+    if client is None:
+        raise ValueError("MongoDB Client is not initialized. Please check theconnection.")
 
     tools = []
     base_tools = [
@@ -88,16 +102,16 @@ def run_agent_executor(user_email, user_input, calendar_id, user_timezone, memor
 
     rag_tools = [
         #User Preference Tools
-        StoreUserPreferenceTool(db=db, user_id=user_email),
-        FetchUserPreferenceTool(db=db, user_id=user_email),
-        DeleteUserPreferenceTool(db=db, user_id=user_email),
-        ModifyUserPreferenceTool(db=db, user_id=user_email),
+        StoreUserPreferenceTool(db=db_rag, user_id=user_email),
+        FetchUserPreferenceTool(db=db_rag, user_id=user_email),
+        DeleteUserPreferenceTool(db=db_rag, user_id=user_email),
+        ModifyUserPreferenceTool(db=db_rag, user_id=user_email),
         
         #Contact List Tools
-        CreateContactTool(db=db, user_email=user_email),
-        ModifyContactTool(db=db, user_email=user_email),
-        DeleteContactTool(db=db, user_email=user_email),
-        RetrieveContactTool(db=db, user_email=user_email),
+        CreateContactTool(db=db_rag, user_email=user_email),
+        ModifyContactTool(db=db_rag, user_email=user_email),
+        DeleteContactTool(db=db_rag, user_email=user_email),
+        RetrieveContactTool(db=db_rag, user_email=user_email),
     ]
     
     if user_tier == "premium":

@@ -1,10 +1,8 @@
 import os
 import requests
 from dotenv import load_dotenv
-from elasticsearch import Elasticsearch
 from uuid import uuid4
 
-# es = Elasticsearch()
 load_dotenv()
 
 BACKEND_URL = "http://localhost:3001"
@@ -51,19 +49,6 @@ def get_valid_access_token(email):
    access_token = tokens.get("access_token")
    refresh_token = tokens.get("refresh_token")
 
-
-   # if not access_token:
-   #     try:
-   #         new_tokens = refresh_access_token(refresh_token)
-   #         access_token = new_tokens.get("access_token")
-
-
-   #         # Update tokens in the backend
-   #         update_tokens_in_backend(email, new_tokens)
-   #     except requests.exceptions.HTTPError as e:
-   #         print("refresh token fails")
-   #         # If token refresh fails, re-authentication might be needed
-          
    if not access_token:
        new_tokens = refresh_access_token(refresh_token)
        print("BEFORE: ", new_tokens)

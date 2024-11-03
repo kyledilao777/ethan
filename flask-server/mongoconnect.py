@@ -11,5 +11,4 @@ MONGO_URI = os.getenv("MONGODB_URI")
 
 def connect_to_mongo():
     client = MongoClient(MONGO_URI)
-    db = client["rag_database"]
-    return db
+    return client
