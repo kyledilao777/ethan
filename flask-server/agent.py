@@ -69,7 +69,7 @@ def run():
     
     print("tier", user_tier)
     
-    if user_tier == "":
+    if user_tier != "premium":
         try:
             check_stripe=stripe.Customer.list(email=user_email)
             user_tier = "premium" if check_stripe.data else "free"
