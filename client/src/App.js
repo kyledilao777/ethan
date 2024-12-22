@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 
+import NavBar from "./components/navbar";
 import Home from "./homepage";
 import Calendar from "./calendar";
 import Meeting from "./meeting";
@@ -9,13 +10,15 @@ import Login from "./login";
 import Documentation from "./documentation";
 import Privacy from "./privacy";
 import UserInfo from "./userinfo";
+import Terms from "./termsandservices";
+import Freemium from "./freemium";
 
 export default function App() {
   return (
     <div>
       <Router>
         <Routes>
-          <Route path="/login" element={<Login />} />
+          <Route path="/" element={<Login />} />
           <Route path="/home" element={<Home />} />
           <Route path="/calendar" element={<Calendar />} />
           <Route path="/privacy" element={<Privacy />} />
@@ -24,7 +27,8 @@ export default function App() {
           <Route path="/todo" element={<Todo />} />
           <Route path="/routemap" element={<RouteMap />} />
           <Route path="/userinfo" element={<UserInfo />} />
-          <Route path="/" element={<Navigate to="/login" />} />
+          <Route path="/termsandservices" element={<Terms />} />
+          <Route path="/freemium" element={<Freemium />} />
         </Routes>
       </Router>
     </div>

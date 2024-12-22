@@ -13,15 +13,17 @@ const userSlice = createSlice({
     data: [],
     input: "",
     occupation: "",
+    tier: "",
   },
   reducers: {
     setUserInfo: (state, action) => {
-      const { name, photo, email, calendarId, occupation } = action.payload;
+      const { name, photo, email, calendarId, occupation, tier } = action.payload;
       state.name = name;
       state.photo = photo;
       state.email = email;
       state.calendarId = calendarId;
       state.occupation = occupation;
+      state.tier =  tier;
     },
 
     setData: (state, action) => {

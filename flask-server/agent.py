@@ -24,8 +24,16 @@ from langchain.agents.format_scratchpad import format_to_openai_function_message
 from langchain.agents.output_parsers import OpenAIFunctionsAgentOutputParser
 from langchain_core.utils import function_calling
 from usecases.calendar_functions import get_from_session, save_to_session, clear_session
+
 from usecases.calendar_tools import GetCalendarEventsTool, TimeDeltaTool, CreateCalendarEventTool, SpecificTimeTool, DeleteCalendarEventTool, UpdateCalendarEventTool, StoreUserPreferenceTool, RetrieveUserPreferenceTool, DeleteUserPreferenceTool, ModifyUserPreferenceTool, CreateContactTool, ModifyContactTool, DeleteContactTool, RetrieveContactTool
 from elasticsearchfile import es
+from flask import Flask, jsonify, request, send_from_directory
+
+import spacy
+import json
+from openai import OpenAI
+
+from openai import OpenAI
 
 client = OpenAI()
 
@@ -47,24 +55,29 @@ def run():
     user_email = data["user_email"]
     calendar_id = data["calendar_id"]
     user_timezone = data.get("timezone", "UTC")
+    user_tier = data.get("tier")
+    print(data)
+    
 
     timezone = pytz.timezone(user_timezone)
-    output = start_agent(user_input, user_email, calendar_id, timezone, persistent_memory)
+    output = start_agent(user_input, user_email, calendar_id, timezone, persistent_memory, user_tier)
 
     return jsonify(output)
 
 
-def run_agent_executor(user_email, user_input, calendar_id, user_timezone, memory, response_container):
-    tools = [
-        #Standard Tools
+def run_agent_executor(user_email, user_input, calendar_id, user_timezone, memory, response_container, user_tier):
+    print(user_tier, "this is user tier")
+    tools = []
+    base_tools = [
         TimeDeltaTool(),
         GetCalendarEventsTool(),
         CreateCalendarEventTool(),
         SpecificTimeTool(),
         DeleteCalendarEventTool(),
         UpdateCalendarEventTool(),
+    ]
 
-        #RAG Tools
+    rag_tools = [
         StoreUserPreferenceTool(es_client=es, user_email=user_email, index_name="user_preferences"),
         RetrieveUserPreferenceTool(es_client=es, user_email=user_email,  index_name="user_preferences"),
         DeleteUserPreferenceTool(es_client=es, user_email=user_email, index_name="user_preferences"),
@@ -74,6 +87,32 @@ def run_agent_executor(user_email, user_input, calendar_id, user_timezone, memor
         DeleteContactTool(es_client=es, user_email=user_email, index_name="contacts"),
         RetrieveContactTool(es_client=es, user_email=user_email, index_name="contacts"),
     ]
+
+    if user_tier == "premium":
+        tools = base_tools + rag_tools
+        print("rag tools used")
+    else:
+        tools = base_tools
+        print("base tools used")
+    # tools = [
+    #     #Standard Tools
+    #     TimeDeltaTool(),
+    #     GetCalendarEventsTool(),
+    #     CreateCalendarEventTool(),
+    #     SpecificTimeTool(),
+    #     DeleteCalendarEventTool(),
+    #     UpdateCalendarEventTool(),
+
+    #     #RAG Tools
+    #     StoreUserPreferenceTool(es_client=es, user_email=user_email, index_name="user_preferences"),
+    #     RetrieveUserPreferenceTool(es_client=es, user_email=user_email,  index_name="user_preferences"),
+    #     DeleteUserPreferenceTool(es_client=es, user_email=user_email, index_name="user_preferences"),
+    #     ModifyUserPreferenceTool(es_client=es, user_email=user_email, index_name="user_preferences"),
+    #     CreateContactTool(es_client=es, user_email=user_email, index_name="contacts"),
+    #     ModifyContactTool(es_client=es, user_email=user_email, index_name="contacts"),
+    #     DeleteContactTool(es_client=es, user_email=user_email, index_name="contacts"),
+    #     RetrieveContactTool(es_client=es, user_email=user_email, index_name="contacts"),
+    # ]
 
     input = f"""
     calendar_id: {calendar_id}
@@ -93,12 +132,26 @@ def run_agent_executor(user_email, user_input, calendar_id, user_timezone, memor
             
             Note:
             If there is no email specified for attendees, keep attendees as an empty dictionary.
-            When the user provides insufficient details about an event, do not ask for confirmation. Instead, use the context and any available information to find the best timing for the event. Ensure the proposed timing fits within the user's typical schedule and avoids conflicts with existing appointments. 
+            When the user provides insufficient details about an event, do not ask for confirmation. Instead, use the context and any available information to find the best timing for the event. Ensure the proposed timing fits within the user's typical schedule and avoids conflicts with existing appointments.
             If there is a conflict with existing appointments, ask the user for confirmation before proceeding. Only execute the scheduling if confirmation is given.
-            Always check if a person mentioned is an existing contact in the contact list. if yes, use the email in the contact list. Else ask them to create new contact.
+            If you encounter any errors, such as incomplete information,
+            invalid date/time formats, scheduling conflicts,
+            incorrect email or calendar ID, network issues,
+            or insufficient permissions, please still provide a response.
+            Do not display any technical error messages, like 403 errors. Instead,
+            respond with a helpful message indicating what went wrong and any possible actions or
+            suggestions to resolve the issue.
+            When a user attempts to schedule an event at a specific time, you must first check the user's Google Calendar to verify if that time slot is already occupied. If the time is occupied, you should prompt the user
+            to reconfirm their scheduling decision. If the user responds
+            with a request to 'change' the event, you will proceed
+            to reschedule the event to a new time. If the user decides not to change
+            the event or doesn't provide clear instructions to change, you should
+            leave the event at the originally requested time.
+
 
             NEVER EVER include the event ID.
             """
+
             ),
             MessagesPlaceholder(variable_name="chat_history"),
             ("user", "{input}"),
@@ -139,16 +192,16 @@ def run_agent_executor(user_email, user_input, calendar_id, user_timezone, memor
     response_container['response'] = result.get("output")
 
 
-def agent_task(input_data, user_email, calendar_id, timezone, memory, response_container):
-    run_agent_executor(user_email, input_data, calendar_id, timezone, memory, response_container)
+def agent_task(input_data, user_email, calendar_id, timezone, memory, response_container, user_tier):
+    run_agent_executor(user_email, input_data, calendar_id, timezone, memory, response_container, user_tier)
     time.sleep(2)
 
     # Append the parsed details and static message to the response container
 
 
-def start_agent(input_data, user_email, calendar_id, timezone, memory):
+def start_agent(input_data, user_email, calendar_id, timezone, memory, user_tier):
     response_container = {}
-    agent_thread = threading.Thread(target=agent_task, args=(input_data, user_email, calendar_id, timezone, memory, response_container))
+    agent_thread = threading.Thread(target=agent_task, args=(input_data, user_email, calendar_id, timezone, memory, response_container, user_tier))
     agent_thread.start()
     agent_thread.join()
 

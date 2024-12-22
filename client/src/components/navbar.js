@@ -24,28 +24,48 @@ export default function NavBar({
   const occupation = useSelector((state) => state.user.occupation);
   const dispatch = useDispatch();
 
-  axios.interceptors.response.use(
-    (response) => response,
-    (error) => {
-      if (error.response && error.response.status === 401) {
-        window.location.href = "http://localhost:3000/login";
-      }
-      return Promise.reject(error);
-    }
-  );
+  // axios.interceptors.response.use(
+  //   (response) => response,
+  //   (error) => {
+  //     if (error.response && error.response.status === 401) {
+  //       window.location.href =
+  //         /*process.env.REACT_MAIN_URL */ "http://localhost:3000/";
+  //     }
+  //     return Promise.reject(error);
+  //   }
+  // );
 
   const handleLogout = async () => {
+    console.log("confirmation here 1");
     const confirmation = window.confirm("Are you sure you want to log out?");
+    console.log(confirmation, "confirmation here 2");
     if (!confirmation) {
       return; // Abort logout if user cancels
     }
 
+    const logoutUrl = "http://localhost:3001/logout";
+    console.log("Logout URL:", logoutUrl);
+
+    if (!logoutUrl) {
+      console.error("Logout URL is not defined!");
+      return;
+    }
+
     try {
-      await axios.get("http://localhost:3001/logout", {
-        withCredentials: true,
-      });
-      window.location.href = "http://localhost:3000/login";
-      console.log("halo");
+      axios
+        .get(logoutUrl, {
+          withCredentials: true,
+        })
+        .catch((error) => {
+          console.error("Error logging out:", error);
+        });
+
+      // Refresh the page almost immediately after sending the request
+      setTimeout(() => {
+        console.log("Logout successful, reloading page...");
+        const loginPage = "http://localhost:3000";
+        window.location.href = loginPage;
+      }, 100); // Adjust the timeout as needed
     } catch (error) {
       console.error("Error logging out:", error);
     }
@@ -63,6 +83,8 @@ export default function NavBar({
         // Update userInfo state with fetched dxata
         let finalName;
         let finalPhoto;
+
+        console.log("User tier: ", data.tier)
 
         if (data.name === data.newName) {
           finalName = data.name;
@@ -83,6 +105,7 @@ export default function NavBar({
             email: data.email,
             calendarId: data.calendarId,
             occupation: data.occupation,
+            tier: data.tier
           })
         );
       } catch (error) {
@@ -147,32 +170,42 @@ export default function NavBar({
     setIsNavOpen(false);
   };
 
-  const bgContentClass = isOpen ? "mt-5" : "bg-white";
-
-  const bgMargin = isOpen ? "mt-5" : "mt-0";
-
+  
   const bgMargin2 = isOpen ? "mt-2" : "mt-0";
 
-  const navbarRef = useRef(null);
-
-  const handleClickOutside = (event) => {
-    if (navbarRef.current && !navbarRef.current.contains(event.target)) {
-      setIsOpen(false);
-      setIsNavOpen(false);
-    }
-  };
+  const mobileNavbarRef = useRef(null);
+  const desktopNavbarRef = useRef(null)
 
   useEffect(() => {
-    document.addEventListener("click", handleClickOutside, true);
+    const handleClickOutside = (event) => {
+      if (
+        mobileNavbarRef.current &&
+        !mobileNavbarRef.current.contains(event.target) &&
+        desktopNavbarRef.current &&
+        !desktopNavbarRef.current.contains(event.target)
+      ) {
+        setIsOpen(false);
+        setIsNavOpen(false)
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
     return () => {
-      document.removeEventListener("click", handleClickOutside, true);
+      document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
+
+  // useEffect(() => {
+  //   document.addEventListener("click", handleClickOutside, true);
+  //   return () => {
+  //     document.removeEventListener("click", handleClickOutside, true);
+  //   };
+  // }, []);
 
   return (
     <div className=" font-poppins">
       <div
-        ref={navbarRef}
+        ref={mobileNavbarRef}
         className="w-full bg-white visible xsm:visible sxl:hidden xl:hidden xsm:fixed border h-[50px] flex justify-between px-[20px] py-[10px]"
       >
         <div className="visible xsm:visible sxl:hidden xl:hidden  ">
@@ -183,12 +216,13 @@ export default function NavBar({
               <Menu size="30" /> {/* Replaced <text> with <span> */}
             </button>
           )}
+          <div></div>
           <div
             className={`fixed z-20 duration-500 left-0 top-0 h-screen bg-white transition-all border rounded-lg ${
               isOpen ? "w-[285px]" : "w-0"
             }`} // Use Tailwind's width utilities for animation
           >
-            <div className="flex justify-center">
+            <div className="flex justify-center ">
               <div className="flex items-center space-x-5 h-20 mt-5">
                 {isOpen && (
                   <div className="flex items-center space-x-5">
@@ -214,7 +248,7 @@ export default function NavBar({
                       <button
                         onClick={() =>
                           window.open(
-                            "https://untangled-ai.carrd.co/#ethanplus",
+                            "https://blog.untangled-ai.com/#ethanplus",
                             "_blank"
                           )
                         }
@@ -420,11 +454,16 @@ export default function NavBar({
                     <div className="flex flex-row items-center justify-between w-full space-x-5 mt-2 p-3 bg-white rounded-lg">
                       <button
                         onClick={handleLogout}
-                        className="flex flex-row items-center w-full"
+                        className="flex flex-row items-center w-full space-x-5"
                       >
-                        <LogOut size="30" className="opacity-80" />
+                        <div><img
+                          src="exit.png"
+                          alt="exit"
+                          className="h-[32px] w-[31px]"
+                        /></div>
+                        
                         {isOpen && (
-                          <span className="font-medium text-blackNav opacity-70 ml-5">
+                          <span className="font-medium text-blackNav opacity-70">
                             Logout
                           </span>
                         )}
@@ -448,13 +487,12 @@ export default function NavBar({
           <img src="logo.jpeg" alt="logo" className="h-[33px]" />
         </div>
       </div>
-
       <div
         className={`duration-500 visible xsm:hidden xl:block sxl:block h-full text-black ${
           isOpen ? "w-[285px]" : "w-[70px]"
         } transition-width border rounded-lg`}
-        onMouseEnter={handleButton}
-        onMouseLeave={handleButton2}
+        ref={desktopNavbarRef}
+        onClick={handleButton}
       >
         <div className="flex justify-center">
           <div className="flex items-center space-x-5 h-20 mt-5">
@@ -477,7 +515,7 @@ export default function NavBar({
                   <button
                     onClick={() =>
                       window.open(
-                        "https://untangled-ai.carrd.co/#ethanplus",
+                        "https://blog.untangled-ai.com/#ethanplus",
                         "_blank"
                       )
                     }
@@ -760,20 +798,29 @@ export default function NavBar({
                             </text>
                           </div>
                         )}
+                        
                       </Link>
                     </div>
                     <div className="flex flex-row items-center justify-between w-full space-x-5 mt-2 p-3 bg-white rounded-lg">
                       <button
                         onClick={handleLogout}
-                        className="flex flex-row items-center w-full"
+                        className="flex flex-row items-center w-full space-x-5"
                       >
-                        <LogOut size="30" className="opacity-80" />
+                        <div>
+                          <img
+                            src="exit.png"
+                            alt="exit"
+                            className="h-[32px] w-[31px]"
+                          />
+                        </div>
+
                         {isOpen && (
-                          <span className="font-medium text-blackNav opacity-70 ml-2">
+                          <span className="font-medium text-blackNav opacity-70">
                             Logout
                           </span>
                         )}
                       </button>
+                      
                     </div>
                   </div>
                 </div>
@@ -781,16 +828,27 @@ export default function NavBar({
             </nav>
           </div>
         </div>
+        {/* {isOpen && (
+          <div
+            className={`flex flex-row justify-center items-center w-full   space-x-8 px-5  mt-25vh`}
+          >
+            <a href="https://untangled.carrd.co/">
+              <img
+                src="new_website.png"
+                alt="website"
+                className="h-[40px] w-[40px]"
+              />
+            </a>
+            <a href="https://www.linkedin.com/company/untangled-ai">
+              <img
+                src="linkedin.png"
+                alt="linkedin"
+                className="h-[40px] w-[40px]"
+              />
+            </a>
+          </div>
+        )} */}
       </div>
     </div>
   );
 }
-
-// <div className="flex flex-row justify-center space-x-5 xsm:invisible sxl:visible items-center">
-//                 <a href="https://untangled.carrd.co/">
-//                   <img src="website.png" alt="website" className="h-[60px]" />
-//                 </a>
-//                 <a href="https://www.linkedin.com/company/untangled-ai">
-//                   <img src="linkedin.png" alt="linkedin" className="h-[40px]" />
-//                 </a>
-//               </div>

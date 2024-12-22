@@ -33,6 +33,7 @@ export default function Home() {
   const email = useSelector((state) => state.user.email);
   const calendarId = useSelector((state) => state.user.calendarId);
   const occupation = useSelector((state) => state.user.occupation);
+  const tier = useSelector((state) => state.user.tier);
   const isAgent = useSelector((state) => state.agent.isAgent);
   const isAuthenticated = useSelector((state) => state.user.isAuthenticated);
   const [firstTypingComplete, setFirstTypingComplete] = useState(false);
@@ -58,6 +59,63 @@ export default function Home() {
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
+
+  useEffect(() => {
+    // Function to check token validity
+    const checkTokenValidity = async () => {
+        try {
+          const { data } = await axios.get(
+            /*process.env
+              .REACT_APP_USER_INFO ||*/ "http://localhost:3001/check-refresh-token",
+            { withCredentials: true }
+          );
+
+            console.log(data.error, "this is from check refresh token")
+            
+            if (data.error === "Failed to refresh token") {
+              const logoutUrl = "http://localhost:3001/logout";
+              console.log("Logout URL:", logoutUrl);
+          
+              if (!logoutUrl) {
+                console.error("Logout URL is not defined!");
+                return;
+              }
+          
+              try {
+                axios
+                  .get(logoutUrl, {
+                    withCredentials: true,
+                  })
+                  .catch((error) => {
+                    console.error("Error logging out:", error);
+                  });
+
+                localStorage.setItem('logoutMessage', 'You have been logged out due to inactivity.');
+                // Refresh the page almost immediately after sending the request
+                setTimeout(() => {
+                  console.log("Logout successful, reloading page...");
+                  const loginPage = "http://localhost:3000";
+                  window.location.href = loginPage;
+                }, 100); // Adjust the timeout as needed
+              } catch (error) {
+                console.error("Error logging out:", error);
+              }
+            }
+        } catch (error) {
+            console.error('Token check failed', error);
+        }
+    };
+    const TOKEN_CHECK_INTERVAL = 15 * 60 * 1000;
+    // Set interval to check every 30 minutes
+    const interval = setInterval(checkTokenValidity, TOKEN_CHECK_INTERVAL);
+
+    // Initial check when component mounts
+    checkTokenValidity();
+
+    // Cleanup interval on component unmount
+    return () => clearInterval(interval);
+}, []);
+
 
   useEffect(() => {
     scrollToBottom();
@@ -96,6 +154,9 @@ export default function Home() {
         let finalName;
         let finalPhoto;
 
+        console.log(data, "this is data")
+        console.log("User tier: ", data.tier)
+
         if (data.name === data.newName) {
           finalName = data.name;
         } else {
@@ -115,6 +176,7 @@ export default function Home() {
             email: data.email,
             calendarId: data.calendarId,
             occupation: data.occupation,
+            tier: data.tier
           })
         );
       } catch (error) {
@@ -162,6 +224,8 @@ export default function Home() {
     setTimezone(userTimezone); // Set the fetched timezone in state
   }, []);
 
+  
+
   const sendUserInput = async () => {
     console.log(userInput, " this is the real user input");
     const id = uuidv4();
@@ -198,6 +262,7 @@ export default function Home() {
           user_email: email,
           calendar_id: calendarId,
           timezone: timezone,
+          tier: tier,
         }),
       }
     )
@@ -281,7 +346,7 @@ export default function Home() {
         try {
           if (!temporaryResponse) {
             itemResponse =
-              "I'm sorry, an error occured. Please re-login or rephrase your query.";
+              "Your session has timed out. Please logout and log in again. If the error persists, please contact us at blog.untangled-ai.com/#contactus.";
           } else {
             itemResponse = temporaryResponse;
           }
@@ -334,7 +399,7 @@ export default function Home() {
       let [name, times] = event.split(": ");
       let [start_time, end_time] = times.split(" to ");
       let real_end_time;
-      let event_id;
+      
 
       const matches = end_time.split(" ");
       real_end_time = matches[0];
@@ -430,6 +495,9 @@ export default function Home() {
         );
 
         dispatch(setIsAuthenticated(data.isAuthenticated));
+        // if (data.isAuthenticated === false) {
+        //   window.location.href = "http://localhost:3000/"
+        // }
         console.log(`hello\nworld`);
       } catch (error) {
         console.error("Error checking authentication status:", error);
@@ -450,7 +518,7 @@ export default function Home() {
 
   return (
     <div className={`w-full ${isScrollable ? "h-fit" : "h-screen"}`}>
-      <div className="w-full flex sxl:flex-row xsm:flex-col h-screen">
+      <div className="w-full flex sxl:flex-row xsm:flex-row h-screen">
         <NavBar setIsNavOpen={setIsNavOpen} isHome={true} setIsAgent={setIsAgent} setAgentResponse={setAgentResponse} setData={setData} />
         <div
           className={`flex flex-col w-full h-full transition-all duration-300 ${mainContentClass} `}
@@ -534,7 +602,7 @@ export default function Home() {
                               <img
                                 src={photo}
                                 alt="logo"
-                                className="rounded-full  w-full h-full border"
+                                className="rounded-full w-full h-full border"
                               />
                             </div>
                           </div>
@@ -614,12 +682,9 @@ export default function Home() {
                 ))}
                 <div className="absolute bottom-8 right-10">
                 <button
-                    onClick={() => {
-                      window.scrollTo({
-                        top: document.documentElement.scrollHeight,
-                        behavior: "smooth",
-                      });
-                    }}
+                    onClick={
+                      scrollToBottom
+                    }
                     className="p-2 bg-gray-300 rounded-full"
                   >
                     <ArrowDown color="black" size={20} />

@@ -17,8 +17,8 @@ class CurrentTimeInput(TimeInput):
     pass
 
 class CurrentTimeTool(BaseTool):
-    name = "get_current_time"
-    description = """
+    name: str = "get_current_time"
+    description: str = """
     Useful when you want to get the current time in an RFC3339 timestamp, in this format YYYY-MM-DDTHH:MM:SS+HH:MM"
     """
     args_schema: Type[BaseModel] = CurrentTimeInput
@@ -50,8 +50,8 @@ class TimeDeltaInput(BaseModel):
     )
 
 class TimeDeltaTool(BaseTool):
-    name = "get_future_time"
-    description = """
+    name: str = "get_future_time"
+    description: str = """
     Useful when you want to get a future time in an RFC3339 timestamp in the user timezone, given a time delta such as 1 day, 2 hours, 3 minutes, 4 seconds. 
     Handles terms like 'tomorrow' correctly by adjusting the date and time accurately.
     """
@@ -93,8 +93,8 @@ class SpecificTimeInput(BaseModel):
 
 
 class SpecificTimeTool(BaseTool):
-    name = "set_specific_time"
-    description = "Sets a specific time for an event, for example when you want to create an event at 3pm on June 3rd, 2021."
+    name: str = "set_specific_time"
+    description: str = "Sets a specific time for an event, for example when you want to create an event at 3pm on June 3rd, 2021."
     args_schema: Type[BaseModel] = SpecificTimeInput
 
     def _run(self, year: int, month: int, day: int, hour: int, minute: int):
@@ -119,8 +119,8 @@ class CalendarEventSearchInput(BaseModel):
     )
 
 class GetCalendarEventsTool(BaseTool):
-    name = "get_calendar_events"
-    description = """
+    name: str = "get_calendar_events"
+    description: str = """
         Useful for retrieving calendar events in a particular date or time range.
         This tool should also be triggered whenever the user wants to update or reschedule an existing event to fetch the necessary event details.
         """
@@ -171,8 +171,8 @@ class CreateCalendarEventInput(BaseModel):
     )
 
 class CreateCalendarEventTool(BaseTool):
-    name = "create_event"
-    description = """
+    name: str = "create_event"
+    description: str = """
     Create a calendar event when the user wants to schedule a meeting
     """
     args_schema: Type[BaseModel] = CreateCalendarEventInput
@@ -200,8 +200,8 @@ class CalendarDeleteInput(BaseModel):
 
 
 class DeleteCalendarEventTool(BaseTool):
-    name = "delete_calendar_event"
-    description = """
+    name: str = "delete_calendar_event"
+    description: str = """
     Useful for when you want to delete an event given a calendar id and an event id. Make sure to pass the FULL event id.
     """
     args_schema: Type[BaseModel] = CalendarDeleteInput
@@ -227,8 +227,8 @@ class UpdateCalendarEventInput(BaseModel):
     description: Optional[str] = Field(default=None, description="Description of the event.")
 
 class UpdateCalendarEventTool(BaseTool):
-    name = "update_calendar_event"
-    description = """
+    name: str = "update_calendar_event"
+    description: str = """
     Useful when you want to update a calendar event given new event details. Trigger whenever the user wants to update an event, the number of changes DOES NOT matter
     """
     # given a calendar id, event id, and new event details.
