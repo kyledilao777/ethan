@@ -8,6 +8,7 @@ const mongoose = require("mongoose");
 const { google } = require("googleapis");
 const axios = require("axios");
 const port = process.env.PORT || 3001;
+const stripe = require("stripe")(process.env.STRIPE_API_KEY);
 
 const clientId = process.env.GOOGLE_CLIENT_ID;
 const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
@@ -294,8 +295,8 @@ async function main() {
 
       // Verify the access token
       await oAuth2Client.getTokenInfo(tokens.access_token);
-      console.log("auth check", tokens.access_token);
       return res.json({ isAuthenticated: true });
+
     } catch (error) {
       console.error("Invalid or expired token:", error);
 
@@ -357,8 +358,25 @@ async function main() {
       console.log("User info: ", email);
 
       // console.log("me: ", me.data)
-      const user = await User.findOne({ email: email });
-      console.log("this is user: ", user.tier);
+      // Fetch user from MongoDB
+      const user = await User.findOne({ email });
+      if (!user) {
+        return res.status(404).send("User not found");
+      }
+
+      console.log("Current tier: ", user.tier);
+
+      // Verify if user is a paying customer in Stripe
+      const customers = await stripe.customers.list({ email });
+      const isPaidUser = customers.data.length > 0;
+
+      if (isPaidUser) {
+        console.log("User is a paying customer. Updating tier to 'premium'.");
+        user.tier = "premium";
+        await user.save();
+      } else {
+        console.log("User is not a paying customer. Keeping existing tier.");
+      }
       const userInfo = {
         name: user.name,
         photo: user.photo,
@@ -370,16 +388,7 @@ async function main() {
         tier: user.tier,
       };
 
-      console.log("User Info:", userInfo);
-
-      // const calendarList = await calendarService.calendarList.list();
-      // const primaryCalendar = calendarList.data.items.find(
-      //   (calendar) => calendar.primary
-      // );
-
-      // userInfo.calendarId = primaryCalendar
-      //   ? primaryCalendar.id
-      //   : "No primary calendar found";
+      console.log(userInfo.tier)
 
       res.json(userInfo);
     } catch (error) {

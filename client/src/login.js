@@ -1,15 +1,11 @@
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import axios from "axios";
-import ReactGA from "react-ga";
+
 
 export default function Login() {
   const handleLogin = () => {
-    ReactGA.event({
-      category: "User",
-      action: "Logins",
-      label: "User Logins",
-    });
+    
     const loginUrl =
       process.env.REACT_APP_LOGIN_URL || "http://localhost:3001/login";
     window.location.href = loginUrl;
@@ -78,8 +74,8 @@ export default function Login() {
           <div className="flex justify-center items-center flex-col mt-3">
             <div className="flex flex-wrap justify-center text-center">
               <span>By continuing, you agree to the</span>
-              <Link to="/termsandservices" className="ml-1 underline">
-                Terms and Services
+              <Link to="/termsofservice" className="ml-1 underline">
+                Terms of Service
               </Link>
               <span className="ml-1">and acknowledge you've read our</span>
               <Link to="/privacy-policy" className="ml-1 underline">

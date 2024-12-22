@@ -35,46 +35,51 @@ export default function Freemium() {
   return (
     <div className="w-full h-full">
       <div className="w-full h-screen flex justify-center items-center px-10">
-        <div className="w-full space-y-5">
-          {" "}
-          <div className="flex justify-center text-3xl font-extrabold">
-            <text>Plans available!</text>
+        <div className="w-full space-y-8">
+          <div className="text-center text-3xl font-extrabold">
+            Take your pick 
           </div>
-          <div className="flex xmd:flex-row xsm:flex-col w-full xmd:space-x-3 xsm:space-y-3 xmd:space-y-0 justify-center">
-            <div className="xmd:w-[450px] bg-white rounded-md flex flex-col p-4 border-gray-200 border-solid border">
-              <text className="text-blueNav font-bold text-xl">Ethan</text>
-              <text className="font-medium text-2xl">Free</text>
-              <ul className="list-disc p-3">
-                <li>Create, Retrieve, Change and Delete Events</li>
-                <li>
-                Attach Google Meet, Zoom Conferencing or Microsoft Teams link
-                </li>
-                <li>
-                Invite multiple attendees
-                </li>
-                <li>
-                Add description notes to event
-                </li>
+          <div className="flex flex-wrap justify-center gap-8">
+            <div className="max-w-sm w-full bg-white rounded-lg shadow-md p-8 border border-gray-200">
+              <h3 className="text-blueNav font-bold text-xl mb-2">Ethan</h3>
+              <p className="font-medium text-2xl mb-4">Free</p>
+              <ul className="list-disc pl-6 space-y-2">
+                <li>Create and change your schedules using natural language</li>
+                <li>Generate a Google Meets link</li>
+                <li>Send an email invite to your friends</li>
+                <li>Add descriptions to each event in your planner</li>
                 <li>Schedule across timezones</li>
               </ul>
-              <button onClick={() => setTier("free")} className="border-2 mt-3 hover:scale-105  transition-transform duration-300 ease-in-out border-blueNav text-blueNav rounded-md p-2">Try Ethan for free</button>
+              <button
+                onClick={() => setTier("free")}
+                className="mt-5 w-full border-2 hover:scale-105 transition-transform duration-300 ease-in-out border-blueNav text-blueNav rounded-md py-3"
+              >
+                Start for Free
+              </button>
             </div>
-            <div className="xmd:w-[450px] bg-white rounded-md flex flex-col p-4 border-gray-200 border-solid border">
-              <text className="text-blueNav font-bold text-xl">Ethan+</text>
-              <text className="font-medium text-2xl">US$10/month*</text>
-              <ul className="list-disc p-3">
+            <div className="max-w-sm w-full bg-white rounded-lg shadow-md p-8 border border-gray-200">
+              <h3 className="text-blueNav font-bold text-xl mb-2">Ethan+</h3>
+              <p className="font-medium text-2xl mb-4">US$10/month*</p>
+              <p className="font-medium text-lg mb-1">
+                Everything in Ethan, plus:
+              </p>
+              <ul className="list-disc pl-6 space-y-2">
                 <li>Enhanced query understanding with more advanced models</li>
                 <li>
-                Train Ethan to understand your preferred timings and activities
+                  Train Ethan to understand your preferred timings and
+                  activities
                 </li>
-                <li>
-                Create your own contact list
-                </li>
+                <li>Create your own contact list</li>
               </ul>
-              <text>*billed annually. US$15/month if billed monthly</text>
-              <button onClick={() => setTier("premium")} className="border-2 mt-3 border-blueNav hover:scale-105  transition-transform duration-300 ease-in-out rounded-md text-white bg-blueNav p-2">Premium Tier</button>
+              <button
+                onClick={() => {     
+                  alert("Please remember to open main.untangled-ai.com again after payment.");
+                  window.location.href = "https://buy.stripe.com/14kdRO6zVcWpeGI4gh"; }}
+                className="mt-12 w-full border-2 border-blueNav hover:scale-105 transition-transform duration-300 ease-in-out rounded-md text-white bg-blueNav py-3"
+              >
+                Get Premium
+              </button>
             </div>
-            
           </div>
         </div>
       </div>
