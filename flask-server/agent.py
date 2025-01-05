@@ -16,7 +16,6 @@ import threading
 import time
 
 from flask import Flask, jsonify, request, send_from_directory
-from elasticsearch import Elasticsearch
 from langchain.agents import AgentExecutor
 from langchain.memory import ConversationSummaryBufferMemory
 from langchain_openai import ChatOpenAI
